@@ -1,0 +1,6 @@
+[submodule "cmake"]
+	path = vendor/RC/CMake
+	url = https://gitlab.com/__RC/cmake
+[submodule "PolyHook_2_0"]
+	path = vendor/stevemk14ebr/PolyHook_2_0
+	url = https://github.com/stevemk14ebr/PolyHook_2_0

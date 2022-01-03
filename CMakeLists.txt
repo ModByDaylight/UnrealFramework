@@ -93,6 +93,8 @@ if (${RC_UNREAL_SHARED_LIBS} EQUAL 1)
 else ()
     message("Creating static ${TARGET} library")
     add_library(${TARGET} STATIC ${SOURCES})
+    target_compile_options(${TARGET} PUBLIC /MT)
+    target_link_options(${TARGET} PUBLIC /NODEFAULTLIB:MSVCRT)
 endif ()
 
 add_rc_dependency_to_target(${TARGET} Helpers)

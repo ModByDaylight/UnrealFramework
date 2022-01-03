@@ -4,3 +4,24 @@
 [submodule "PolyHook_2_0"]
 	path = vendor/stevemk14ebr/PolyHook_2_0
 	url = https://github.com/stevemk14ebr/PolyHook_2_0
+[submodule "helpers"]
+	path = vendor/RC/Helpers
+	url = https://gitlab.com/__RC/helpers
+[submodule "File"]
+	path = vendor/RC/File
+	url = https://gitlab.com/__RC/File
+[submodule "function"]
+	path = vendor/RC/Function
+	url = https://gitlab.com/__RC/function
+[submodule "constructs"]
+	path = vendor/RC/Constructs
+	url = https://gitlab.com/__RC/constructs
+[submodule "singlepasssigscanner"]
+	path = vendor/RC/SinglePassSigScanner
+	url = https://gitlab.com/__RC/singlepasssigscanner
+[submodule "scopedtimer"]
+	path = vendor/RC/ScopedTimer
+	url = https://gitlab.com/__RC/scopedtimer
+[submodule "dynamicoutput"]
+	path = vendor/RC/DynamicOutput
+	url = https://gitlab.com/__RC/dynamicoutput

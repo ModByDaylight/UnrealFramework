@@ -129,7 +129,6 @@ set(POLYHOOK_DISASM_ZYDIS ON CACHE BOOL "Enable Zydis support." FORCE)
 
 set(PolyHook2Loc ${RC_VENDOR_DIR}/stevemk14ebr/PolyHook_2_0)
 add_subdirectory(${PolyHook2Loc} ${CMAKE_CURRENT_BINARY_DIR}/vendor/stevemk14ebr/PolyHook_2_0)
-#include_directories(${PolyHook2Loc})
 target_include_directories(${TARGET} PUBLIC ${PolyHook2Loc})
 # For some reason, PolyHook isn't adding the capstone or zydis include directories
 target_include_directories(${TARGET} PUBLIC ${PolyHook2Loc}/capstone/include)

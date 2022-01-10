@@ -93,9 +93,10 @@ if (${RC_UNREAL_SHARED_LIBS} EQUAL 1)
 else ()
     message("Creating static ${TARGET} library")
     add_library(${TARGET} OBJECT ${SOURCES})
-    target_compile_options(${TARGET} PUBLIC /MT$<$<CONFIG:DEBUG>:d>)
+    target_compile_options(${TARGET} PRIVATE /MT$<$<CONFIG:DEBUG>:d>)
     target_link_options(${TARGET} PUBLIC /NODEFAULTLIB:MSVCRT)
 endif ()
+
 
 add_rc_dependency_to_target(${TARGET} Helpers)
 add_rc_dependency_to_target(${TARGET} File)
@@ -106,6 +107,7 @@ add_rc_dependency_to_target(${TARGET} ScopedTimer)
 add_rc_dependency_to_target(${TARGET} DynamicOutput)
 
 target_include_directories(${TARGET} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_compile_options(${TARGET} /MP)
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 
 # Third-Party Dependencies

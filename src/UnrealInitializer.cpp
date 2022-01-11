@@ -314,49 +314,50 @@ namespace RC::Unreal::UnrealInitializer
         else
         {
             enum class SuppressScanAttemptMessage { Yes, No };
-            auto do_scan = [&](auto scanner_function, SuppressScanAttemptMessage suppress_scan_attempt_message = SuppressScanAttemptMessage::No) {
-                enum class OutputErrorsByThrowing { Yes, No };
-                enum class ErrorsOnly { Yes, No };
-                auto output_result = [](Signatures::ScanResult& scan_result, OutputErrorsByThrowing output_errors_by_throwing = OutputErrorsByThrowing::No, ErrorsOnly errors_only = ErrorsOnly::No) {
-                    if (scan_result.scan_status == Signatures::ScanStatus::Failed)
+            enum class OutputErrorsByThrowing { Yes, No };
+            enum class ErrorsOnly { Yes, No };
+
+            auto output_result = [](Signatures::ScanResult& scan_result, OutputErrorsByThrowing output_errors_by_throwing = OutputErrorsByThrowing::No, ErrorsOnly errors_only = ErrorsOnly::No) {
+                if (scan_result.scan_status == Signatures::ScanStatus::Failed)
+                {
+                    std::string all_errors{"AOB scans could not be completed because of the following reasons:\n"};
+                    std::string fatal_errors{};
+                    std::string non_fatal_errors{};
+                    for (const auto& error : scan_result.errors)
                     {
-                        std::string all_errors{"AOB scans could not be completed because of the following reasons:\n"};
-                        std::string fatal_errors{};
-                        std::string non_fatal_errors{};
-                        for (const auto& error : scan_result.errors)
+                        if (error.is_fatal)
                         {
-                            if (error.is_fatal)
-                            {
-                                fatal_errors.append(error.message + "\n\n");
-                            }
-                            else
-                            {
-                                non_fatal_errors.append(error.message + "\n\n");
-                            }
-                        }
-
-                        all_errors.append(fatal_errors);
-                        all_errors.append(non_fatal_errors);
-
-                        if (!fatal_errors.empty() && output_errors_by_throwing == OutputErrorsByThrowing::Yes)
-                        {
-                            throw std::runtime_error{all_errors};
+                            fatal_errors.append(error.message + "\n\n");
                         }
                         else
                         {
-                            Output::send(to_wstring(all_errors));
+                            non_fatal_errors.append(error.message + "\n\n");
                         }
                     }
 
-                    if (errors_only == ErrorsOnly::No)
+                    all_errors.append(fatal_errors);
+                    all_errors.append(non_fatal_errors);
+
+                    if (!fatal_errors.empty() && output_errors_by_throwing == OutputErrorsByThrowing::Yes)
                     {
-                        for (const auto& success_message : scan_result.success_messages)
-                        {
-                            Output::send(success_message);
-                        }
+                        throw std::runtime_error{all_errors};
                     }
-                };
+                    else
+                    {
+                        Output::send(to_wstring(all_errors));
+                    }
+                }
 
+                if (errors_only == ErrorsOnly::No)
+                {
+                    for (const auto& success_message : scan_result.success_messages)
+                    {
+                        Output::send(success_message);
+                    }
+                }
+            };
+
+            auto do_scan = [&](auto scanner_function, SuppressScanAttemptMessage suppress_scan_attempt_message = SuppressScanAttemptMessage::No) {
                 // Modular games have much smaller binaries, therefore many scans can be completed very quickly
                 static const int num_scans_before_fatal_failure = SigScannerStaticData::m_is_modular ? config.num_scan_attempts_modular : config.num_scan_attempts_normal;
 

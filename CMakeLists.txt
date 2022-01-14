@@ -3,16 +3,22 @@ message("Project: Unreal")
 
 set(RC_VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
-if (NOT DEFINED RC_LOCAL_REPO_PATH)
+if (NOT EXISTS "${CMAKE_SOURCE_DIR}/local_repo_path.build_option")
     # Path to RC is not defined, so we'll assume that git submodules are being used
     set(RC_LOCAL_REPO_PATH_INTERNAL ${RC_VENDOR_DIR}/RC)
     set(RC_COMMON_CMAKE_FILE ${RC_VENDOR_DIR}/RC/CMake/RC_Common.cmake)
     message("Path to RC repo not defined. Using default: '${RC_LOCAL_REPO_PATH_INTERNAL}'")
-else ()
-    set(RC_LOCAL_REPO_PATH_INTERNAL ${RC_LOCAL_REPO_PATH}RC)
+else()
+    file(READ ${CMAKE_SOURCE_DIR}/local_repo_path.build_option RC_LOCAL_REPO_PATH_FROM_FILE)
+    if (IS_ABSOLUTE ${RC_LOCAL_REPO_PATH_FROM_FILE})
+        set(RC_LOCAL_REPO_PATH_INTERNAL ${RC_LOCAL_REPO_PATH_FROM_FILE})
+
+    else ()
+        set(RC_LOCAL_REPO_PATH_INTERNAL ${CMAKE_CURRENT_SOURCE_DIR}/${RC_LOCAL_REPO_PATH_FROM_FILE})
+    endif ()
     set(RC_COMMON_CMAKE_FILE ${RC_LOCAL_REPO_PATH_INTERNAL}/CMake/RC_Common.cmake)
     message("Path for the 'RC' repo overridden, RC_LOCAL_REPO_PATH=${RC_LOCAL_REPO_PATH_INTERNAL}")
-endif ()
+endif()
 
 set(TARGET Unreal)
 project(${TARGET})

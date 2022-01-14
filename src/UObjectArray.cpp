@@ -13,6 +13,11 @@ namespace RC::Unreal
         Container::m_unreal_vc_base->FUObjectItem_set_object_root_set(this);
     }
 
+    auto FUObjectItem::set_gc_keep() -> void
+    {
+        Container::m_unreal_vc_base->FUObjectItem_set_object_gc_keep(this);
+    }
+
     auto FUObjectItem::get_uobject() -> UObject*
     {
         return static_cast<UObject*>(Container::m_unreal_vc_base->FUObjectItem_get_uobject(this));

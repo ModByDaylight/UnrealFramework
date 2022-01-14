@@ -29,6 +29,10 @@ namespace RC::Unreal
             {
                 cluster_and_flags = cluster_and_flags | static_cast<int32_t>(EInternalObjectFlags::RootSet);
             }
+            auto set_gc_keep()
+            {
+                cluster_and_flags = cluster_and_flags | static_cast<int32_t>(EInternalObjectFlags::GarbageCollectionKeepFlags);
+            }
         };
 
         // Abstraction Layer -> START
@@ -48,6 +52,14 @@ namespace RC::Unreal
             FUObjectItem* p_typed_this = static_cast<FUObjectItem*>(p_this);
 
             p_typed_this->set_root_set();
+        }
+
+        auto FUObjectItem_set_object_gc_keep(void* p_this) -> void override
+        {
+            if (!p_this) { return; }
+            FUObjectItem* p_typed_this = static_cast<FUObjectItem*>(p_this);
+
+            p_typed_this->set_gc_keep();
         }
 
         auto FUObjectItem_is_valid(void* p_this, bool b_even_if_pending_kill) -> bool override

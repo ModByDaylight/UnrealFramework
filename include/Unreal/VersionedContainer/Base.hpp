@@ -50,6 +50,7 @@ namespace RC::Unreal
         using UObject = void;
         virtual auto FUObjectItem_is_object_unreachable(FUObjectItem* p_this) const -> bool = 0;
         virtual auto FUObjectItem_set_object_root_set(FUObjectItem* p_this) -> void = 0;
+        virtual auto FUObjectItem_set_object_gc_keep(FUObjectItem* p_this) -> void = 0;
         virtual auto FUObjectItem_is_valid(FUObjectItem* p_this, bool b_even_if_pending_kill) -> bool = 0;
         virtual auto FUObjectItem_get_serial_number(int32_t index) -> int32_t = 0;
         virtual auto FUObjectItem_get_serial_number(FUObjectItem* p_this) -> int32_t = 0;
@@ -122,6 +123,11 @@ namespace RC::Unreal
             {
                 flags = flags | static_cast<int32_t>(EInternalObjectFlags::RootSet);
             }
+
+            auto set_gc_keep()
+            {
+                flags = flags | static_cast<int32_t>(EInternalObjectFlags::GarbageCollectionKeepFlags);
+            }
         };
 
         // Abstraction Layer -> START
@@ -141,6 +147,14 @@ namespace RC::Unreal
             FUObjectItem* typed_this = static_cast<FUObjectItem*>(p_this);
 
             typed_this->set_root_set();
+        }
+
+        auto FUObjectItem_set_object_gc_keep(void* p_this) -> void override
+        {
+            if (!p_this) { return; }
+            FUObjectItem* typed_this = static_cast<FUObjectItem*>(p_this);
+
+            typed_this->set_gc_keep();
         }
 
         auto FUObjectItem_get_serial_number(int32_t index) -> int32_t override

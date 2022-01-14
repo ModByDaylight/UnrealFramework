@@ -12,6 +12,7 @@ namespace RC::Unreal
     {
         auto is_unreachable() -> bool;
         auto set_root_set() -> void;
+        auto set_gc_keep() -> void;
         auto get_uobject() -> class UObject*;
     };
 

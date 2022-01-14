@@ -11,7 +11,10 @@ namespace RC::Unreal
 
         out_line.append(std::format(L"[{:016X}] ", reinterpret_cast<uintptr_t>(p_this)));
         p_typed_this->get_full_name(out_line);
-        out_line.append(std::format(L" [n: {:X}] [c: {:016X}]", p_typed_this->get_fname().get_comparison_index(), reinterpret_cast<uintptr_t>(p_typed_this->get_uclass())));
+        out_line.append(std::format(L" [n: {:X}] [c: {:016X}] [or: {:016X}]",
+                                    p_typed_this->get_fname().get_comparison_index(),
+                                    reinterpret_cast<uintptr_t>(p_typed_this->get_uclass()),
+                                    reinterpret_cast<uintptr_t>(p_typed_this->get_outer())));
     }
 
     auto UObject::to_string(void* p_this, std::wstring& out_line) -> void

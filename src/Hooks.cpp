@@ -38,6 +38,19 @@ namespace RC::Unreal
         }
     }
 
+    auto Hook::register_process_event_callback(ProcessEventCallback callback, HookType hook_type) -> void
+    {
+        switch (hook_type)
+        {
+            case HookType::Pre:
+                StaticStorage::process_event_pre_callbacks.emplace_back(callback);
+                break;
+            case HookType::Post:
+                StaticStorage::process_event_post_callbacks.emplace_back(callback);
+                break;
+        }
+    }
+
     auto get_hooked_functions_map() -> HookedUFunctionMap&
     {
         return g_hooked_script_functions;
@@ -165,9 +178,19 @@ namespace RC::Unreal
         return constructed_object;
     }
 
-    auto hooked_process_event(UObject* p_this, UFunction* function, void* parms) -> void
+    auto hooked_process_event(UObject* context, UFunction* function, void* parms) -> void
     {
-        PLH::FnCast(hook_trampoline_process_event, UObject::process_event_internal.get_function_pointer())(p_this, function, parms);
+        for (const auto& callback : Hook::StaticStorage::process_event_pre_callbacks)
+        {
+            callback(context, function, parms);
+        }
+
+        PLH::FnCast(hook_trampoline_process_event, UObject::process_event_internal.get_function_pointer())(context, function, parms);
+
+        for (const auto& callback : Hook::StaticStorage::process_event_post_callbacks)
+        {
+            callback(context, function, parms);
+        }
 
         // TODO: Uncomment when UE4SS & Unreal have been decoupled
         /*

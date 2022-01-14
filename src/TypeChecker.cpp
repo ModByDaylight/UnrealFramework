@@ -80,6 +80,8 @@ namespace RC::Unreal
         m_core_package_name                                              = FName(L"Package");
         m_property_name                                                  = FName(L"Property");
         m_core_enum_name                                                 = FName(L"Enum");
+        m_core_object_name                                               = FName(L"/Script/CoreUObject");
+        m_core_engine_name                                               = FName(L"/Script/Engine");
 
         // Properties
         m_boolproperty_name                                              = FName(L"BoolProperty");
@@ -136,6 +138,10 @@ namespace RC::Unreal
         UClass* anim_bp_generated_class_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.AnimBlueprintGeneratedClass");
         UAnimBlueprintGeneratedClass::set_static_obj_ptr(anim_bp_generated_class_ptr);
         m_object_to_string_functions[anim_bp_generated_class_ptr] = &UClass::to_string;
+
+        UClass* widget_bp_generated_class_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.WidgetBlueprintGeneratedClass");
+        UAnimBlueprintGeneratedClass::set_static_obj_ptr(widget_bp_generated_class_ptr);
+        m_object_to_string_functions[widget_bp_generated_class_ptr] = &UClass::to_string;
 
         // Not available in 4.12 (I've not checked exactly when it starts being available)
         UScriptStruct* asset_data_ptr = UObjectGlobals::static_find_object<UScriptStruct*>(nullptr, nullptr, STR("/Script/AssetRegistry.AssetData"));

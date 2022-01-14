@@ -42,6 +42,8 @@ namespace RC::Unreal
         static inline FName m_core_level_name{};
         static inline FName m_core_package_name{};
         static inline FName m_core_enum_name{};
+        static inline FName m_core_object_name{};
+        static inline FName m_core_engine_name{};
 
         // Property Names
         static inline FName m_property_name{};

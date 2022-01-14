@@ -20,7 +20,8 @@ namespace RC::Unreal
             {
                 get_path_name_recursive(outer, stop_outer, out_path);
 
-                if (outer->get_uclass()->get_fname() != TypeChecker::m_core_package_name &&
+                if (outer->get_uclass() &&
+                    outer->get_uclass()->get_fname() != TypeChecker::m_core_package_name &&
                     outer->get_outer()->get_uclass()->get_fname() == TypeChecker::m_core_package_name)
                 {
                     out_path.append(L":");

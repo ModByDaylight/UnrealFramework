@@ -93,7 +93,7 @@ if (${RC_UNREAL_SHARED_LIBS} EQUAL 1)
 else ()
     message("Creating static ${TARGET} library")
     add_library(${TARGET} OBJECT ${SOURCES})
-    target_compile_options(${TARGET} PRIVATE /MT$<$<CONFIG:DEBUG>:d>)
+    target_compile_options(${TARGET} PUBLIC /MT$<$<CONFIG:DEBUG>:d>)
     target_link_options(${TARGET} PUBLIC /NODEFAULTLIB:MSVCRT)
 endif ()
 

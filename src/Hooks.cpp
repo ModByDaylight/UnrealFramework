@@ -5,6 +5,7 @@
 #include <Unreal/UObjectGlobals.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/UClass.hpp>
+#include <Unreal/UAssetRegistry.hpp>
 // TODO: Uncomment when Lua & Unreal have been decoupled
 //#include <LuaType/LuaUObject.hpp>
 // TODO: Uncomment when UE4SS & Unreal have been decoupled
@@ -192,18 +193,15 @@ namespace RC::Unreal
             callback(context, function, parms);
         }
 
-        // TODO: Uncomment when UE4SS & Unreal have been decoupled
-        /*
-        if (UE4SSProgram::m_should_load_all_assets && !UE4SSProgram::m_assets_are_loading)
+        if (UAssetRegistry::should_load_all_assets() && !UAssetRegistry::assets_are_loading())
         {
-            UE4SSProgram::load_all_assets_thread();
+            UAssetRegistry::load_all_assets_thread();
 
             // Loading assets is an asynchronous operation
             // It's very important to not reset this bool until after the assets have been loaded
             // This is what keeps the load-requester waiting until all the assets have been loaded
-            UE4SSProgram::m_should_load_all_assets = false;
+            UAssetRegistry::set_should_load_all_assets(false);
         }
-        //*/
     }
 
     auto hook_static_construct_object() -> void

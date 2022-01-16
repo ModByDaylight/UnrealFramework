@@ -49,17 +49,14 @@ namespace RC::Unreal
         StaticStorage::static_construct_object_post_callbacks.emplace_back(callback);
     }
 
-    auto Hook::register_process_event_callback(ProcessEventCallback callback, HookType hook_type) -> void
+    auto Hook::register_process_event_pre_callback(ProcessEventCallback callback) -> void
     {
-        switch (hook_type)
-        {
-            case HookType::Pre:
-                StaticStorage::process_event_pre_callbacks.emplace_back(callback);
-                break;
-            case HookType::Post:
-                StaticStorage::process_event_post_callbacks.emplace_back(callback);
-                break;
-        }
+        StaticStorage::process_event_pre_callbacks.emplace_back(callback);
+    }
+
+    auto Hook::register_process_event_post_callback(ProcessEventCallback callback) -> void
+    {
+        StaticStorage::process_event_post_callbacks.emplace_back(callback);
     }
 
     auto get_hooked_functions_map() -> HookedUFunctionMap&

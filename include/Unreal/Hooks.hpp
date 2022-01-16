@@ -66,7 +66,8 @@ namespace RC::Unreal
         // Callbacks may not alter the return value 'ProcessEvent', because there is no return value
         // Alterations to parameters in the 'pre' callback are applied prior to object construction
         // Alterations to parameters in the 'post' callback have no effect
-        auto RC_API register_process_event_callback(ProcessEventCallback, HookType) -> void;
+        auto RC_API register_process_event_pre_callback(ProcessEventCallback) -> void;
+        auto RC_API register_process_event_post_callback(ProcessEventCallback) -> void;
     }
 
     using HookedUFunctionMap = std::unordered_map<const UFunction*, UnrealScriptFunctionData>;

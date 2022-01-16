@@ -10,12 +10,22 @@ namespace RC::Unreal
 
     auto FUObjectItem::set_root_set() -> void
     {
-        Container::m_unreal_vc_base->FUObjectItem_set_object_root_set(this);
+        Container::m_unreal_vc_base->FUObjectItem_set_object_root_set(this, Base::SetOrUnsetFlag::Set);
+    }
+
+    auto FUObjectItem::unset_root_set() -> void
+    {
+        Container::m_unreal_vc_base->FUObjectItem_set_object_root_set(this, Base::SetOrUnsetFlag::Unset);
     }
 
     auto FUObjectItem::set_gc_keep() -> void
     {
-        Container::m_unreal_vc_base->FUObjectItem_set_object_gc_keep(this);
+        Container::m_unreal_vc_base->FUObjectItem_set_object_gc_keep(this, Base::SetOrUnsetFlag::Set);
+    }
+
+    auto FUObjectItem::unset_gc_keep() -> void
+    {
+        Container::m_unreal_vc_base->FUObjectItem_set_object_gc_keep(this, Base::SetOrUnsetFlag::Unset);
     }
 
     auto FUObjectItem::get_uobject() -> UObject*

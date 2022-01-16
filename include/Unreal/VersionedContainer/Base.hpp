@@ -48,9 +48,10 @@ namespace RC::Unreal
         // FUObjectItem -> START
         using FUObjectItem = void;
         using UObject = void;
+        enum class SetOrUnsetFlag { Set, Unset };
         virtual auto FUObjectItem_is_object_unreachable(FUObjectItem* p_this) const -> bool = 0;
-        virtual auto FUObjectItem_set_object_root_set(FUObjectItem* p_this) -> void = 0;
-        virtual auto FUObjectItem_set_object_gc_keep(FUObjectItem* p_this) -> void = 0;
+        virtual auto FUObjectItem_set_object_root_set(FUObjectItem* p_this, SetOrUnsetFlag) -> void = 0;
+        virtual auto FUObjectItem_set_object_gc_keep(FUObjectItem* p_this, SetOrUnsetFlag) -> void = 0;
         virtual auto FUObjectItem_is_valid(FUObjectItem* p_this, bool b_even_if_pending_kill) -> bool = 0;
         virtual auto FUObjectItem_get_serial_number(int32_t index) -> int32_t = 0;
         virtual auto FUObjectItem_get_serial_number(FUObjectItem* p_this) -> int32_t = 0;
@@ -119,14 +120,28 @@ namespace RC::Unreal
                 return !!(flags & static_cast<int32_t>(EInternalObjectFlags::PendingKill));
             }
 
-            auto set_root_set()
+            auto set_root_set(SetOrUnsetFlag set_or_unset_flag)
             {
-                flags = flags | static_cast<int32_t>(EInternalObjectFlags::RootSet);
+                if (set_or_unset_flag == SetOrUnsetFlag::Set)
+                {
+                    flags = flags | static_cast<int32_t>(EInternalObjectFlags::RootSet);
+                }
+                else
+                {
+                    flags = flags & ~static_cast<int32_t>(EInternalObjectFlags::RootSet);
+                }
             }
 
-            auto set_gc_keep()
+            auto set_gc_keep(SetOrUnsetFlag set_or_unset_flag)
             {
-                flags = flags | static_cast<int32_t>(EInternalObjectFlags::GarbageCollectionKeepFlags);
+                if (set_or_unset_flag == SetOrUnsetFlag::Set)
+                {
+                    flags = flags | static_cast<int32_t>(EInternalObjectFlags::GarbageCollectionKeepFlags);
+                }
+                else
+                {
+                    flags = flags & ~static_cast<int32_t>(EInternalObjectFlags::GarbageCollectionKeepFlags);
+                }
             }
         };
 
@@ -141,20 +156,20 @@ namespace RC::Unreal
             return p_typed_this->is_unreachable();
         }
 
-        auto FUObjectItem_set_object_root_set(void* p_this) -> void override
+        auto FUObjectItem_set_object_root_set(void* p_this, SetOrUnsetFlag set_or_unset_flag) -> void override
         {
             if (!p_this) { return; }
             FUObjectItem* typed_this = static_cast<FUObjectItem*>(p_this);
 
-            typed_this->set_root_set();
+            typed_this->set_root_set(set_or_unset_flag);
         }
 
-        auto FUObjectItem_set_object_gc_keep(void* p_this) -> void override
+        auto FUObjectItem_set_object_gc_keep(void* p_this, SetOrUnsetFlag set_or_unset_flag) -> void override
         {
             if (!p_this) { return; }
             FUObjectItem* typed_this = static_cast<FUObjectItem*>(p_this);
 
-            typed_this->set_gc_keep();
+            typed_this->set_gc_keep(set_or_unset_flag);
         }
 
         auto FUObjectItem_get_serial_number(int32_t index) -> int32_t override

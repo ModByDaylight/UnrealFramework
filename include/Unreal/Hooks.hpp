@@ -20,6 +20,7 @@ namespace RC::Unreal
 {
     class UClass;
     class UFunction;
+    struct FStaticConstructObjectParameters;
 
     namespace Hook
     {
@@ -29,14 +30,9 @@ namespace RC::Unreal
             Post,
         };
 
-        using ProcessEventCallback = void(*)(UObject* context, UFunction*, void* parms);
-
-        struct RC_API LuaCallbackData
-        {
-            const LuaMadeSimple::Lua& lua;
-            UClass* instance_of_class;
-            int32_t registry_index;
-        };
+        using ProcessEventCallback = void (*)(UObject* context, UFunction* function, void* parms);
+        using StaticConstructObjectPreCallback = UObject* (*)(const FStaticConstructObjectParameters& params);
+        using StaticConstructObjectPostCallback = UObject* (*)(const FStaticConstructObjectParameters& params, UObject* constructed_object);
 
         struct RC_API StaticStorage
         {
@@ -51,12 +47,25 @@ namespace RC::Unreal
             static inline bool all_required_objects_constructed{false};
             static inline std::unique_ptr<::PLH::x64Detour> static_construct_object_detour;
             static inline std::unique_ptr<::PLH::x64Detour> process_event_detour;
-            static inline std::vector<LuaCallbackData> static_construct_object_lua_callbacks;
+            static inline std::vector<StaticConstructObjectPreCallback> static_construct_object_pre_callbacks;
+            static inline std::vector<StaticConstructObjectPostCallback> static_construct_object_post_callbacks;
             static inline std::vector<ProcessEventCallback> process_event_pre_callbacks;
             static inline std::vector<ProcessEventCallback> process_event_post_callbacks;
         };
 
         auto RC_API add_required_object(const std::wstring& object_full_typeless_name) -> void;
+
+        // Registers a callback to be called whenever 'StaticConstructObject' is called
+        // Callbacks may alter the return value of 'StaticConstructObject', and the last one to alter it is the one that takes effect
+        // Alterations to parameters in the 'pre' callback are applied prior to object construction
+        // Alterations to parameters in the 'post' callback have no effect
+        auto RC_API register_static_construct_object_pre_callback(StaticConstructObjectPreCallback) -> void;
+        auto RC_API register_static_construct_object_post_callback(StaticConstructObjectPostCallback) -> void;
+
+        // Registers a callback to be called whenever 'ProcessEvent' is called
+        // Callbacks may not alter the return value 'ProcessEvent', because there is no return value
+        // Alterations to parameters in the 'pre' callback are applied prior to object construction
+        // Alterations to parameters in the 'post' callback have no effect
         auto RC_API register_process_event_callback(ProcessEventCallback, HookType) -> void;
     }
 

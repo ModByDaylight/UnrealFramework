@@ -39,6 +39,16 @@ namespace RC::Unreal
         }
     }
 
+    auto Hook::register_static_construct_object_pre_callback(StaticConstructObjectPreCallback callback) -> void
+    {
+        StaticStorage::static_construct_object_pre_callbacks.emplace_back(callback);
+    }
+
+    auto Hook::register_static_construct_object_post_callback(StaticConstructObjectPostCallback callback) -> void
+    {
+        StaticStorage::static_construct_object_post_callbacks.emplace_back(callback);
+    }
+
     auto Hook::register_process_event_callback(ProcessEventCallback callback, HookType hook_type) -> void
     {
         switch (hook_type)
@@ -94,7 +104,17 @@ namespace RC::Unreal
         }
     }
 
-    auto hooked_static_construct_object_body(UObject* constructed_object) -> void
+    auto hooked_static_construct_object_pre(const FStaticConstructObjectParameters& params) -> UObject*
+    {
+        UObject* altered_return_value{};
+        for (const auto& callback : Hook::StaticStorage::static_construct_object_pre_callbacks)
+        {
+            altered_return_value = callback(params);
+        }
+        return altered_return_value;
+    }
+
+    auto hooked_static_construct_object_post(const FStaticConstructObjectParameters& params, UObject* constructed_object) -> UObject*
     {
         if (!Hook::StaticStorage::all_required_objects_constructed)
         {
@@ -118,38 +138,31 @@ namespace RC::Unreal
             }
         }
 
-        // TODO: Uncomment when Lua & Unreal have been decoupled
-        /*
-        if (UnrealInitializer::StaticStorage::is_initialized)
+        UObject* altered_return_value{};
+        for (const auto& callback : Hook::StaticStorage::static_construct_object_post_callbacks)
         {
-            UStruct* object_class = constructed_object->get_uclass();
-            while (object_class)
-            {
-                for (const auto& callback_data : Hook::StaticStorage::static_construct_object_lua_callbacks)
-                {
-                    if (callback_data.instance_of_class == object_class)
-                    {
-                        try
-                        {
-                            callback_data.lua.registry().get_function_ref(callback_data.registry_index);
-                            LuaType::auto_construct_object(callback_data.lua, constructed_object);
-                            callback_data.lua.call_function(1, 0);
-                        }
-                        catch (std::runtime_error& e)
-                        {
-                            Output::send(STR("{}\n"), to_wstring(e.what()));
-                        }
-                    }
-                }
-
-                object_class = object_class->get_super_struct();
-            }
+            altered_return_value = callback(params, constructed_object);
         }
-        //*/
+        return altered_return_value == constructed_object ? constructed_object : altered_return_value;
     }
 
     auto hooked_static_construct_object_deprecated(StaticConstructObject_Internal_Params_Deprecated) -> UObject*
     {
+        const FStaticConstructObjectParameters params{
+            .Class = InClass_,
+            .Outer = InOuter_,
+            .Name = InName_,
+            .SetFlags = InFlags_,
+            .InternalSetFlags = InternalSetFlags_,
+            .bCopyTransientsFromClassDefaults = bCopyTransientsFromClassDefaults_,
+            .bAssumeTemplateIsArchetype = bAssumeTemplateIsArchetype_,
+            .Template = InTemplate_,
+            .InstanceGraph = InInstanceGraph_,
+            .ExternalPackage = static_cast<struct UPackage*>(ExternalPackage_),
+            .SubobjectOverrides = nullptr
+        };
+
+        UObject* altered_return_value = hooked_static_construct_object_pre(params);
         UObject* constructed_object = PLH::FnCast(hook_trampoline_static_construct_object, UObjectGlobals::GlobalState::static_construct_object_internal_deprecated.get_function_pointer())(
                 InClass_,
                 InOuter_,
@@ -162,21 +175,20 @@ namespace RC::Unreal
                 bAssumeTemplateIsArchetype_,
                 ExternalPackage_
         );
+        altered_return_value = hooked_static_construct_object_post(params, constructed_object);
 
-        hooked_static_construct_object_body(constructed_object);
-
-        return constructed_object;
+        return altered_return_value == constructed_object ? constructed_object : altered_return_value;
     }
 
     auto hooked_static_construct_object(const FStaticConstructObjectParameters& params) -> UObject*
     {
+        UObject* altered_return_value = hooked_static_construct_object_pre(params);
         UObject* constructed_object = PLH::FnCast(hook_trampoline_static_construct_object, UObjectGlobals::GlobalState::static_construct_object_internal.get_function_pointer())(
                 params
         );
+        altered_return_value = hooked_static_construct_object_post(params, constructed_object);
 
-        hooked_static_construct_object_body(constructed_object);
-
-        return constructed_object;
+        return altered_return_value == constructed_object ? constructed_object : altered_return_value;
     }
 
     auto hooked_process_event(UObject* context, UFunction* function, void* parms) -> void

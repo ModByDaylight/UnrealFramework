@@ -59,6 +59,7 @@ namespace RC::Unreal
 
             if (auto* object_item = loaded_asset->get_object_item(); object_item)
             {
+                StaticStorage::forcefully_loaded_assets.emplace_back(object_item);
                 // TODO: Undo this, it's very important or we leak multiple gigabytes of memory
                 object_item->set_root_set();
                 object_item->set_gc_keep();
@@ -68,6 +69,15 @@ namespace RC::Unreal
         });
 
         set_assets_are_loading(false);
+    }
+
+    auto UAssetRegistry::free_all_forcefully_loaded_assets() -> void
+    {
+        std::erase_if(StaticStorage::forcefully_loaded_assets, [&](FUObjectItem* item) -> bool {
+            item->unset_root_set();
+            item->unset_gc_keep();
+            return true;
+        });
     }
 
     auto UAssetRegistry::load_all_assets() -> void

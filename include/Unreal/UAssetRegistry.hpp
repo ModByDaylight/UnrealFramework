@@ -30,6 +30,7 @@ namespace RC::Unreal
         {
             static inline bool assets_are_loading{false};
             static inline bool should_load_all_assets{false};
+            static inline std::vector<FUObjectItem*> forcefully_loaded_assets{};
         };
 
     public:
@@ -40,6 +41,7 @@ namespace RC::Unreal
         auto static should_load_all_assets() -> bool { return StaticStorage::should_load_all_assets; }
         auto static set_assets_are_loading(bool new_value) -> void { StaticStorage::assets_are_loading = new_value; }
         auto static set_should_load_all_assets(bool new_value) -> void { StaticStorage::should_load_all_assets = new_value; }
+        auto static free_all_forcefully_loaded_assets() -> void;
 
     private:
         // Internal function, do not use!

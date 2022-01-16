@@ -140,7 +140,7 @@ namespace RC::Unreal
         {
             altered_return_value = callback(params, constructed_object);
         }
-        return altered_return_value == constructed_object ? constructed_object : altered_return_value;
+        return altered_return_value;
     }
 
     auto hooked_static_construct_object_deprecated(StaticConstructObject_Internal_Params_Deprecated) -> UObject*
@@ -174,7 +174,7 @@ namespace RC::Unreal
         );
         altered_return_value = hooked_static_construct_object_post(params, constructed_object);
 
-        return altered_return_value == constructed_object ? constructed_object : altered_return_value;
+        return altered_return_value ? altered_return_value : constructed_object;
     }
 
     auto hooked_static_construct_object(const FStaticConstructObjectParameters& params) -> UObject*
@@ -185,7 +185,7 @@ namespace RC::Unreal
         );
         altered_return_value = hooked_static_construct_object_post(params, constructed_object);
 
-        return altered_return_value == constructed_object ? constructed_object : altered_return_value;
+        return altered_return_value ? altered_return_value : constructed_object;
     }
 
     auto hooked_process_event(UObject* context, UFunction* function, void* parms) -> void

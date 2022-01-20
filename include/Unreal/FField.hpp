@@ -84,6 +84,7 @@ namespace RC::Unreal
 
     public:
         auto get_fname() -> FName;
+        auto get_name() -> File::StringType;
     };
 
     class RC_API FFieldVariant

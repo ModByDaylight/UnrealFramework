@@ -98,4 +98,9 @@ namespace RC::Unreal
     {
         return Container::m_unreal_vc_base->FFieldClass_get_fname(this);
     }
+
+    auto FFieldClass::get_name() -> File::StringType
+    {
+        return get_fname().to_string();
+    }
 }

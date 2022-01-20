@@ -3,9 +3,10 @@
 
 namespace RC::Unreal
 {
-    auto XFieldPathProperty::get_property_class() -> UClass*
+    auto XFieldPathProperty::get_property_class() -> FFieldClass*
     {
-        return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::ObjectProperty_PropertyClass));
+        // TODO: Stop relying on an unrelated offset that just coincidentally happens to be the same as the right one
+        return Helper::Casting::offset_deref<FFieldClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::ObjectProperty_PropertyClass));
     }
 
     auto XFieldPathProperty::construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]XProperty* p_inner_this, void* v_data) -> InnerType*

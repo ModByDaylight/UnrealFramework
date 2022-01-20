@@ -38,7 +38,7 @@ namespace RC::Unreal
         auto static read_data(PropertyDataVC data) -> InnerType*;
 
     public:
-        auto get_property_class() -> UClass*;
+        auto get_property_class() -> FFieldClass*;
 
     public:
         static auto to_string(void* p_this, std::wstring& out_line) -> void;

@@ -22,6 +22,7 @@ namespace RC::Unreal
 
                 if (outer->get_uclass() &&
                     outer->get_uclass()->get_fname() != TypeChecker::m_core_package_name &&
+                    outer->get_outer() &&
                     outer->get_outer()->get_uclass()->get_fname() == TypeChecker::m_core_package_name)
                 {
                     out_path.append(L":");

@@ -101,6 +101,7 @@ namespace RC::Unreal
         auto get_type() -> UObjectType;
         auto get_name() -> std::wstring;
         auto get_name() const -> std::wstring;
+        auto is_a(UClass* uclass) -> bool;
 
         auto get_flags() const -> int32_t;
         auto set_flags(const EObjectFlags new_flag) -> void;
@@ -121,6 +122,12 @@ namespace RC::Unreal
         auto is_any_class() -> bool;
         auto is_enum() -> bool;
         auto get_name_prefix() -> File::StringType;
+
+        template<UObjectGlobals::UObjectDerivative UObjectDerivedType>
+        auto is_a() -> bool
+        {
+            return is_a(UObjectDerivedType::static_class());
+        }
 
         auto get_outermost() -> UObject*
         {
@@ -235,6 +242,12 @@ namespace RC::Unreal
         static auto trivial_dump_to_string(void* p_this, std::wstring& out_line, const wchar_t* post_delimiter = L".") -> void;
         static auto to_string(void* p_this, std::wstring& out_line) -> void;
     };
+
+    template<UObjectGlobals::UObjectDerivative CastResultType>
+    auto cast_uobject(UObject* object) -> CastResultType*
+    {
+        return object != nullptr && object->is_a<CastResultType>() ? static_cast<CastResultType*>(object) : nullptr;
+    }
 }
 
 

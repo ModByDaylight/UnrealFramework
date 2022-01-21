@@ -65,6 +65,8 @@ namespace RC::Unreal
         auto get_owner_variant() -> FFieldVariant;
         auto get_owner_variant() const -> FFieldVariant;
 
+        auto get_outermost_owner() -> UObject*;
+
         // Use only after confirming that the version of UE is <4.25
         auto as_object() const -> const class UField*;
         auto as_object() -> class UField*;

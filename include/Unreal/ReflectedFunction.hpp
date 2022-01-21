@@ -8,7 +8,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API ReflectedFunctionBase
+    class RC_UE_API ReflectedFunctionBase
     {
     protected:
         class UFunction* m_function{nullptr};
@@ -24,7 +24,7 @@ namespace RC::Unreal
     };
 
     template<typename Owner>
-    class RC_API StaticReflectedFunctionBase : public ReflectedFunctionBase
+    class RC_UE_API StaticReflectedFunctionBase : public ReflectedFunctionBase
     {
     public:
         template<typename ParamsType>
@@ -34,7 +34,7 @@ namespace RC::Unreal
         }
     };
 
-    class RC_API InstancedReflectedFunction: public ReflectedFunctionBase
+    class RC_UE_API InstancedReflectedFunction: public ReflectedFunctionBase
     {
     public:
         template<typename ParamsType>

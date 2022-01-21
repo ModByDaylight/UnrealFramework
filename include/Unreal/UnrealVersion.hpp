@@ -14,7 +14,7 @@
 
 namespace RC::Unreal
 {
-    struct RC_API VersionStatus
+    struct RC_UE_API VersionStatus
     {
         enum StatusCode
         {
@@ -29,7 +29,7 @@ namespace RC::Unreal
         VersionStatus(StatusCode status_code_param, std::wstring error_message_param) : status_code(status_code_param), error_message(std::move(error_message_param)) {}
     };
 
-    class RC_API Version
+    class RC_UE_API Version
     {
     public:
         static inline int32_t major{-1};

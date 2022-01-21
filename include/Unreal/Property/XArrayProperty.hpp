@@ -8,14 +8,14 @@
 
 namespace RC::Unreal
 {
-    struct RC_API UntypedTArray
+    struct RC_UE_API UntypedTArray
     {
         void* elements_ptr;
         int32_t num_elements;
         int32_t max_elements;
     };
 
-    class RC_API XArrayProperty : public XProperty
+    class RC_UE_API XArrayProperty : public XProperty
     {
     private:
 

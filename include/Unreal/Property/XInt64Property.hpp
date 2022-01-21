@@ -7,7 +7,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XInt64Property : public XNumericProperty
+    class RC_UE_API XInt64Property : public XNumericProperty
     {
     private:
 

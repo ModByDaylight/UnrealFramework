@@ -5,7 +5,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XNumericProperty : public XProperty
+    class RC_UE_API XNumericProperty : public XProperty
     {
     public:
         // DO NOT USE... MEANT FOR INTERNAL USE ONLY

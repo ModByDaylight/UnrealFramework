@@ -8,7 +8,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XWeakObjectProperty : public XObjectProperty
+    class RC_UE_API XWeakObjectProperty : public XObjectProperty
     {
     private:
 

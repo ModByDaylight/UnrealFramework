@@ -15,7 +15,7 @@ namespace RC::Unreal
         auto load_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
     }
 
-    class RC_API FString
+    class RC_UE_API FString
     {
     protected:
         friend auto UnrealInitializer::create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;

@@ -9,7 +9,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API UAssetRegistry : public UObject
+    class RC_UE_API UAssetRegistry : public UObject
     {
     public:
         struct Functions

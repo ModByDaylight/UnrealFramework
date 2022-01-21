@@ -15,7 +15,7 @@ namespace RC::Unreal
         Map,
     };
 
-    class RC_API TypeChecker
+    class RC_UE_API TypeChecker
     {
     private:
         constexpr static int32_t ffield_class_offset = 0x8;

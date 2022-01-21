@@ -8,7 +8,7 @@
 
 namespace RC::Unreal
 {
-    struct RC_API FUObjectItem
+    struct RC_UE_API FUObjectItem
     {
         auto is_unreachable() -> bool;
         auto set_root_set() -> void;
@@ -18,7 +18,7 @@ namespace RC::Unreal
         auto get_uobject() -> class UObject*;
     };
 
-    class RC_API UObjectArray
+    class RC_UE_API UObjectArray
     {
     public:
         auto static setup_guobjectarray_address(void* address) -> void;

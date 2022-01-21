@@ -12,7 +12,7 @@ namespace RC::Unreal
 
     using UnrealScriptFunction = void(*)(UObject* context, FFrame& the_stack, void* result_decl);
 
-    struct RC_API UnrealScriptFunctionCallableContextParam
+    struct RC_UE_API UnrealScriptFunctionCallableContextParam
     {
         UObject* context;
         FFrame& the_stack;
@@ -32,7 +32,7 @@ namespace RC::Unreal
     };
     using UnrealScriptFunctionCallable = std::function<void(UnrealScriptFunctionCallableContextParam context, void* custom_data)>;
 
-    struct RC_API UnrealScriptFunctionPreCallback
+    struct RC_UE_API UnrealScriptFunctionPreCallback
     {
         UnrealScriptFunctionCallable callable;
 
@@ -41,7 +41,7 @@ namespace RC::Unreal
         void* custom_data{};
     };
 
-    struct RC_API UnrealScriptFunctionPostCallback
+    struct RC_UE_API UnrealScriptFunctionPostCallback
     {
         UnrealScriptFunctionCallable callable;
 
@@ -50,7 +50,7 @@ namespace RC::Unreal
         void* custom_data{};
     };
 
-    struct RC_API UnrealScriptFunctionData
+    struct RC_UE_API UnrealScriptFunctionData
     {
         UnrealScriptFunction original_func;
         std::vector<UnrealScriptFunctionPreCallback> pre_callbacks{};

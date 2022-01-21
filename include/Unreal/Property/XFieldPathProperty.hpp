@@ -6,7 +6,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XFieldPathProperty : public XProperty
+    class RC_UE_API XFieldPathProperty : public XProperty
     {
     private:
 

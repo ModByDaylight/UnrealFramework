@@ -8,12 +8,12 @@
 namespace RC::Unreal
 {
     // TODO: Implement this properly
-    class RC_API TSet
+    class RC_UE_API TSet
     {
         char padding[0x50];
     };
 
-    class RC_API XSetProperty : public XProperty
+    class RC_UE_API XSetProperty : public XProperty
     {
     private:
 

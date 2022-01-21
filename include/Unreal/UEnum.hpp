@@ -15,7 +15,7 @@ namespace RC::Unreal
     using EnumNamesPair = TPair<FName, int64_t>;
     using EnumNamesArray = TArray<EnumNamesPair>;
 
-    class RC_API UEnum : public UField
+    class RC_UE_API UEnum : public UField
     {
     private:
         static inline class UClass* m_static_obj{};
@@ -92,7 +92,7 @@ namespace RC::Unreal
         }
     };
 
-    class RC_API UUserDefinedEnum : public UEnum
+    class RC_UE_API UUserDefinedEnum : public UEnum
     {
     private:
         static inline class UClass* m_static_obj{};

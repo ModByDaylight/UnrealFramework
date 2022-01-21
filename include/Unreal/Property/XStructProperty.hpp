@@ -14,7 +14,7 @@ namespace RC::Unreal
     class UScriptStruct;
     class XStructData;
 
-    class RC_API XStructProperty : public XProperty
+    class RC_UE_API XStructProperty : public XProperty
     {
     private:
 

@@ -9,13 +9,13 @@ namespace RC::Unreal
 {
     class FString;
 
-    struct RC_API TTextData
+    struct RC_UE_API TTextData
     {
         void* vtable{};
         FString* string{};
     };
 
-    class RC_API FText
+    class RC_UE_API FText
     {
     public:
         TTextData* m_text_data{nullptr};

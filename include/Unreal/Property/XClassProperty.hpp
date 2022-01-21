@@ -7,7 +7,7 @@ namespace RC::Unreal
 {
     class UClass;
 
-    class RC_API XClassProperty : public XObjectProperty
+    class RC_UE_API XClassProperty : public XObjectProperty
     {
     private:
 

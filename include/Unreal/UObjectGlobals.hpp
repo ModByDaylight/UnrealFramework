@@ -29,7 +29,7 @@ namespace RC::Unreal
     void* ExternalPackage_\
 
     // Struct From UE4.26 Source
-    struct RC_API FStaticConstructObjectParameters
+    struct RC_UE_API FStaticConstructObjectParameters
     {
         /** The class of the object to create */
         /*const*/ class UClass* Class; // Making this non-const for the hook
@@ -89,11 +89,11 @@ namespace RC::Unreal::UObjectGlobals
     };
 
     // Setup internal game functions
-    auto RC_API setup_static_find_object_address(void* function_address) -> void;
-    auto RC_API setup_static_construct_object_internal_address(void* function_address) -> void;
+    auto RC_UE_API setup_static_find_object_address(void* function_address) -> void;
+    auto RC_UE_API setup_static_construct_object_internal_address(void* function_address) -> void;
 
     // Internal work-around for not having access to UnrealVersion due to circ-inclusion
-    auto RC_API version_is_atmost(uint32_t major_p, uint32_t minor_p) -> bool;
+    auto RC_UE_API version_is_atmost(uint32_t major_p, uint32_t minor_p) -> bool;
 
     // Internal game function implementations
     // Slow implementation that's to be avoided whenever possible
@@ -149,21 +149,21 @@ namespace RC::Unreal::UObjectGlobals
     // Does not find ClassDefaultObjects (CDO) or non-instances of classes
     // Takes inheritance into account, that means you can give it an FName of "Controller" and
     // it will also find instances of "PlayerController" and any instances from any other derived class
-    auto RC_API find_first_of(FName class_name) -> UObject*;
-    auto RC_API find_first_of(const wchar_t* class_name) -> UObject*;
-    auto RC_API find_first_of(std::wstring_view class_name) -> UObject*;
-    auto RC_API find_first_of(const std::wstring& class_name) -> UObject*;
-    auto RC_API find_first_of(std::string_view class_name) -> UObject*;
-    auto RC_API find_first_of(const std::string& class_name) -> UObject*;
+    auto RC_UE_API find_first_of(FName class_name) -> UObject*;
+    auto RC_UE_API find_first_of(const wchar_t* class_name) -> UObject*;
+    auto RC_UE_API find_first_of(std::wstring_view class_name) -> UObject*;
+    auto RC_UE_API find_first_of(const std::wstring& class_name) -> UObject*;
+    auto RC_UE_API find_first_of(std::string_view class_name) -> UObject*;
+    auto RC_UE_API find_first_of(const std::string& class_name) -> UObject*;
 
     // Find all instances of a class
     // Follows the same rules as 'find_first_of'
-    auto RC_API find_all_of(FName class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_API find_all_of(const wchar_t* class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_API find_all_of(std::wstring_view class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_API find_all_of(const std::wstring& class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_API find_all_of(std::string_view class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_API find_all_of(const std::string& class_name, std::vector<UObject*>& out_storage) -> void;
+    auto RC_UE_API find_all_of(FName class_name, std::vector<UObject*>& out_storage) -> void;
+    auto RC_UE_API find_all_of(const wchar_t* class_name, std::vector<UObject*>& out_storage) -> void;
+    auto RC_UE_API find_all_of(std::wstring_view class_name, std::vector<UObject*>& out_storage) -> void;
+    auto RC_UE_API find_all_of(const std::wstring& class_name, std::vector<UObject*>& out_storage) -> void;
+    auto RC_UE_API find_all_of(std::string_view class_name, std::vector<UObject*>& out_storage) -> void;
+    auto RC_UE_API find_all_of(const std::string& class_name, std::vector<UObject*>& out_storage) -> void;
 
     // Find a specified number of objects with the specified class (or none) and name (or none)
     // Must have at least either class or name, or both
@@ -171,14 +171,14 @@ namespace RC::Unreal::UObjectGlobals
     using FlagsForFindObjects = std::array<EObjectFlags, EObjectFlags_Max>;
     // Find one or specified amount of objects
     // Specify 0 for 'num_objects_to_find' to not limit to number of objects to find
-    auto RC_API find_objects(size_t num_objects_to_find, const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
-    auto RC_API find_objects(size_t num_objects_to_find, const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
-    auto RC_API find_object(const FName class_name, const FName object_short_name, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> UObject*;
-    auto RC_API find_object(const wchar_t* class_name, const wchar_t* object_short_name, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> UObject*;
+    auto RC_UE_API find_objects(size_t num_objects_to_find, const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
+    auto RC_UE_API find_objects(size_t num_objects_to_find, const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
+    auto RC_UE_API find_object(const FName class_name, const FName object_short_name, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> UObject*;
+    auto RC_UE_API find_object(const wchar_t* class_name, const wchar_t* object_short_name, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> UObject*;
 
     // Find all objects
-    auto RC_API find_objects(const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
-    auto RC_API find_objects(const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
+    auto RC_UE_API find_objects(const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
+    auto RC_UE_API find_objects(const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
     // Custom Helpers -> END
 }
 

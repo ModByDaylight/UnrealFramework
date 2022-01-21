@@ -17,14 +17,14 @@ namespace RC::Unreal
     class TArray;
 
     // TODO: Move to a more appropriate place ?
-    struct RC_API FImplementedInterface
+    struct RC_UE_API FImplementedInterface
     {
         UClass* Class;
         int32_t PointerOffset;
         bool bImplementedByK2;
     };
 
-    class RC_API UClass : public UStruct
+    class RC_UE_API UClass : public UStruct
     {
     private:
         static inline class UClass* m_static_obj{};
@@ -88,7 +88,7 @@ namespace RC::Unreal
         static auto to_string(void* p_this, std::wstring& out_line) -> void;
     };
 
-    class RC_API UBlueprintGeneratedClass : public UClass
+    class RC_UE_API UBlueprintGeneratedClass : public UClass
     {
     private:
         static inline class UClass* m_static_obj{};
@@ -108,7 +108,7 @@ namespace RC::Unreal
         }
     };
 
-    class RC_API UAnimBlueprintGeneratedClass : public UClass
+    class RC_UE_API UAnimBlueprintGeneratedClass : public UClass
     {
     private:
         static inline class UClass* m_static_obj{};

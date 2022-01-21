@@ -13,7 +13,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API UStruct : public UField
+    class RC_UE_API UStruct : public UField
     {
     private:
         static inline class UClass* m_static_obj{};

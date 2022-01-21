@@ -5,7 +5,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XSoftClassProperty : public XSoftObjectProperty
+    class RC_UE_API XSoftClassProperty : public XSoftObjectProperty
     {
     private:
 

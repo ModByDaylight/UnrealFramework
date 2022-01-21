@@ -9,7 +9,7 @@ namespace RC::Unreal
 {
     struct FFrame;
 
-    class RC_API UFunction : public UStruct
+    class RC_UE_API UFunction : public UStruct
     {
     private:
         static inline class UClass* m_static_obj{};

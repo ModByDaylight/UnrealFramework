@@ -7,14 +7,14 @@
 
 namespace RC::Unreal
 {
-    struct RC_API MapData
+    struct RC_UE_API MapData
     {
         void* elements_ptr;
         int32_t num_elements;
         int32_t max_elements;
     };
 
-    class RC_API XMapProperty : public XProperty
+    class RC_UE_API XMapProperty : public XProperty
     {
     private:
 

@@ -8,7 +8,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XStrProperty : public XProperty
+    class RC_UE_API XStrProperty : public XProperty
     {
     private:
 

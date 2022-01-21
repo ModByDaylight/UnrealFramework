@@ -25,14 +25,14 @@ namespace RC::Unreal
     class TUEnum;
 
     // Temporary location for the FVector & FRotator structs
-    struct RC_API FVector
+    struct RC_UE_API FVector
     {
         float X;
         float Y;
         float Z;
     };
 
-    struct RC_API FRotator
+    struct RC_UE_API FRotator
     {
         float Pitch;
         float Yaw;
@@ -50,7 +50,7 @@ namespace RC::Unreal
         TestThree,
     };
 
-    class RC_API UObjectType
+    class RC_UE_API UObjectType
     {
     private:
         class UObject* m_object{};
@@ -63,7 +63,7 @@ namespace RC::Unreal
         [[nodiscard]] auto as_fname() -> FName;
     };
 
-    class RC_API UObject : public UObjectBaseUtility
+    class RC_UE_API UObject : public UObjectBaseUtility
     {
     public:
         using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;

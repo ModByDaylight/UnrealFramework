@@ -5,7 +5,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XPropertyType
+    class RC_UE_API XPropertyType
     {
     private:
         class XProperty* m_property{};
@@ -17,7 +17,7 @@ namespace RC::Unreal
         [[nodiscard]] auto as_fname() -> FName;
     };
 
-    class RC_API XProperty : public FField
+    class RC_UE_API XProperty : public FField
     {
     private:
 

@@ -13,7 +13,7 @@ namespace RC::Unreal
 
     using FlowStackType = uint8_t[0x30];
 
-    class RC_API FOutputDevice
+    class RC_UE_API FOutputDevice
     {
     protected:
         uint8_t* vtable;
@@ -24,7 +24,7 @@ namespace RC::Unreal
         bool bAutoEmitLineTerminator;
     };
 
-    struct RC_API FFrame : public FOutputDevice
+    struct RC_UE_API FFrame : public FOutputDevice
     {
         // Variables.
         UFunction* Node;

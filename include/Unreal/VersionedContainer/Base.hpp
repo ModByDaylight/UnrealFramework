@@ -17,7 +17,7 @@ namespace RC::Unreal
     class FFieldClass;
     class XProperty;
 
-    struct RC_API PropertyDataVC
+    struct RC_UE_API PropertyDataVC
     {
         void* property_ptr{};
         void* uobject_ptr{};

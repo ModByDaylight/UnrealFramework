@@ -20,7 +20,7 @@ namespace RC::Unreal
     template<typename ArrayInnerType>
     constexpr bool ArraySizeIsImplicit = !(std::is_same_v<ArrayInnerType, struct FAssetData>);
 
-    auto RC_API get_struct_data_at(void* data_param, size_t index) -> XStructData*;
+    auto RC_UE_API get_struct_data_at(void* data_param, size_t index) -> XStructData*;
 
     template<typename ArrayInnerType>
     class TArray

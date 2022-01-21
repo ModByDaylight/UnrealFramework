@@ -34,7 +34,7 @@ namespace RC::Unreal
         using StaticConstructObjectPreCallback = UObject* (*)(const FStaticConstructObjectParameters& params);
         using StaticConstructObjectPostCallback = UObject* (*)(const FStaticConstructObjectParameters& params, UObject* constructed_object);
 
-        struct RC_API StaticStorage
+        struct RC_UE_API StaticStorage
         {
             struct RequiredObject
             {
@@ -53,29 +53,29 @@ namespace RC::Unreal
             static inline std::vector<ProcessEventCallback> process_event_post_callbacks;
         };
 
-        auto RC_API add_required_object(const std::wstring& object_full_typeless_name) -> void;
+        auto RC_UE_API add_required_object(const std::wstring& object_full_typeless_name) -> void;
 
         // Registers a callback to be called whenever 'StaticConstructObject' is called
         // Callbacks may alter the return value of 'StaticConstructObject', and the last one to alter it is the one that takes effect
         // Alterations to parameters in the 'pre' callback are applied prior to object construction
         // Alterations to parameters in the 'post' callback have no effect
-        auto RC_API register_static_construct_object_pre_callback(StaticConstructObjectPreCallback) -> void;
-        auto RC_API register_static_construct_object_post_callback(StaticConstructObjectPostCallback) -> void;
+        auto RC_UE_API register_static_construct_object_pre_callback(StaticConstructObjectPreCallback) -> void;
+        auto RC_UE_API register_static_construct_object_post_callback(StaticConstructObjectPostCallback) -> void;
 
         // Registers a callback to be called whenever 'ProcessEvent' is called
         // Callbacks may not alter the return value 'ProcessEvent', because there is no return value
         // Alterations to parameters in the 'pre' callback are applied prior to object construction
         // Alterations to parameters in the 'post' callback have no effect
-        auto RC_API register_process_event_pre_callback(ProcessEventCallback) -> void;
-        auto RC_API register_process_event_post_callback(ProcessEventCallback) -> void;
+        auto RC_UE_API register_process_event_pre_callback(ProcessEventCallback) -> void;
+        auto RC_UE_API register_process_event_post_callback(ProcessEventCallback) -> void;
     }
 
     using HookedUFunctionMap = std::unordered_map<const UFunction*, UnrealScriptFunctionData>;
-    auto RC_API get_hooked_functions_map() -> HookedUFunctionMap&;
-    auto RC_API unreal_script_function_hook(UObject* context, FFrame& the_stack, void* result_decl) -> void;
+    auto RC_UE_API get_hooked_functions_map() -> HookedUFunctionMap&;
+    auto RC_UE_API unreal_script_function_hook(UObject* context, FFrame& the_stack, void* result_decl) -> void;
 
-    auto RC_API hook_static_construct_object() -> void;
-    auto RC_API hook_process_event() -> void;
+    auto RC_UE_API hook_static_construct_object() -> void;
+    auto RC_UE_API hook_process_event() -> void;
 
 
 }

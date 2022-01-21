@@ -6,7 +6,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XDoubleProperty : public XNumericProperty
+    class RC_UE_API XDoubleProperty : public XNumericProperty
     {
     private:
 

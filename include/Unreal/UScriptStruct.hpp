@@ -9,7 +9,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API UScriptStruct : public UStruct
+    class RC_UE_API UScriptStruct : public UStruct
     {
     private:
         static inline class UClass* m_static_obj{};

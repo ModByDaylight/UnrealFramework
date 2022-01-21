@@ -6,7 +6,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API UActorComponent : public UObject
+    class RC_UE_API UActorComponent : public UObject
     {
     private:
         static inline class UClass* m_static_obj{};
@@ -26,7 +26,7 @@ namespace RC::Unreal
         }
     };
 
-    class RC_API USceneComponent : public UActorComponent
+    class RC_UE_API USceneComponent : public UActorComponent
     {
     private:
         static inline class UClass* m_static_obj{};

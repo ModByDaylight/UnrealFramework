@@ -17,7 +17,7 @@ namespace RC::Unreal
     template<typename SupposedFField>
     concept FFieldDerivative = std::is_convertible_v<SupposedFField, ::RC::Unreal::FField>;
 
-    class RC_API FField
+    class RC_UE_API FField
     {
     public:
         using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
@@ -72,7 +72,7 @@ namespace RC::Unreal
         auto as_object() -> class UField*;
     };
 
-    class RC_API FFieldClass
+    class RC_UE_API FFieldClass
     {
     public:
         FName name;
@@ -89,7 +89,7 @@ namespace RC::Unreal
         auto get_name() -> File::StringType;
     };
 
-    class RC_API FFieldVariant
+    class RC_UE_API FFieldVariant
     {
         union FFieldObjectUnion
         {
@@ -158,7 +158,7 @@ namespace RC::Unreal
         }
     };
 
-    class RC_API FFieldClassVariant
+    class RC_UE_API FFieldClassVariant
     {
     private:
         union FFieldClassObjectUnion

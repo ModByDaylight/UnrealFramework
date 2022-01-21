@@ -63,7 +63,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API StaticOffsetFinder
+    class RC_UE_API StaticOffsetFinder
     {
     public:
         enum class MemberOffsets : int32_t

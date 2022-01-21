@@ -2,12 +2,18 @@
 #define RC_UNREAL_COMMON_HPP
 
 #ifndef RC_EXPORT
-#ifndef RC_API
-#define RC_API
+#ifndef RC_UNREAL_BUILD_STATIC
+#ifndef RC_UE_API
+#define RC_UE_API __declspec(dllimport)
 #endif
 #else
-#ifndef RC_API
-#define RC_API __declspec(dllexport)
+#ifndef RC_UE_API
+#define RC_UE_API
+#endif
+#endif
+#else
+#ifndef RC_UE_API
+#define RC_UE_API __declspec(dllexport)
 #endif
 #endif
 

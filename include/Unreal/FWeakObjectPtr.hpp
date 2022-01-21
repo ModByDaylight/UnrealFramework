@@ -7,7 +7,7 @@
 
 namespace RC::Unreal
 {
-    struct RC_API FWeakObjectPtr
+    struct RC_UE_API FWeakObjectPtr
     {
     private:
         constexpr static int32_t INDEX_NONE = -1;

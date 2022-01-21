@@ -7,7 +7,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XBoolProperty : public XProperty
+    class RC_UE_API XBoolProperty : public XProperty
     {
     private:
 

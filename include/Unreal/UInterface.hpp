@@ -5,7 +5,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API UInterface : public UObject
+    class RC_UE_API UInterface : public UObject
     {
     private:
         static inline class UClass* m_static_obj{};

@@ -5,7 +5,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API UField : public UObject
+    class RC_UE_API UField : public UObject
     {
     public:
         // For non-properties, i.e: functions

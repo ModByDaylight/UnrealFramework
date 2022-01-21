@@ -9,7 +9,7 @@ namespace RC::Unreal
     // Size in UE4.25 according to Rider: 84 (Is this dec or hex ? I'm thinking it's dec, but I'm not 100% sure)
     // Size in UE4.25 according to 'ScriptStruct::get_size()': 0x50
     // 0x4C currently (0x50 if you take into account alignment, sizeof(FAssetData) in UE4SS gives 0x50)
-    struct RC_API FAssetData
+    struct RC_UE_API FAssetData
     {
         static inline class UScriptStruct* m_static_obj{};
         auto static set_static_obj_ptr(class UScriptStruct* ptr)

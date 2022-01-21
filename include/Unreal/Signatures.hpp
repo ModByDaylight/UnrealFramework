@@ -14,7 +14,7 @@ namespace RC::Unreal::Signatures
         Succeeded,
     };
 
-    struct RC_API ScanError
+    struct RC_UE_API ScanError
     {
         std::string message;
         bool is_fatal{true};
@@ -22,18 +22,18 @@ namespace RC::Unreal::Signatures
         ScanError(std::string_view error) : message(error) {}
     };
 
-    struct RC_API ScanResult
+    struct RC_UE_API ScanResult
     {
         std::vector<std::wstring> success_messages{};
         std::vector<ScanError> errors;
         ScanStatus scan_status{ScanStatus::Failed};
     };
 
-    auto RC_API scan_for_game_functions_and_data(const UnrealInitializer::Config&) -> ScanResult;
-    auto RC_API scan_for_guobjectarray(const UnrealInitializer::Config&) -> ScanResult;
+    auto RC_UE_API scan_for_game_functions_and_data(const UnrealInitializer::Config&) -> ScanResult;
+    auto RC_UE_API scan_for_guobjectarray(const UnrealInitializer::Config&) -> ScanResult;
 
-    auto RC_API scan_for_game_functions_and_data_impl(const UnrealInitializer::Config&) -> ScanResult;
-    auto RC_API scan_for_guobjectarray_impl(const UnrealInitializer::Config&) -> ScanResult;
+    auto RC_UE_API scan_for_game_functions_and_data_impl(const UnrealInitializer::Config&) -> ScanResult;
+    auto RC_UE_API scan_for_guobjectarray_impl(const UnrealInitializer::Config&) -> ScanResult;
 }
 
 

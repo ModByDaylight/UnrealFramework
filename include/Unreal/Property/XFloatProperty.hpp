@@ -7,7 +7,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XFloatProperty : public XNumericProperty
+    class RC_UE_API XFloatProperty : public XNumericProperty
     {
     private:
 

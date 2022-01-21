@@ -10,7 +10,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API TMulticastScriptDelegate
+    class RC_UE_API TMulticastScriptDelegate
     {
     private:
         using FInvocationList = TArray<TScriptDelegate>;
@@ -19,7 +19,7 @@ namespace RC::Unreal
         FInvocationList invocation_list;
     };
 
-    class RC_API XMulticastInlineDelegateProperty : public XProperty
+    class RC_UE_API XMulticastInlineDelegateProperty : public XProperty
     {
     private:
 

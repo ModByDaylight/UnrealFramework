@@ -14,7 +14,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XStructData
+    class RC_UE_API XStructData
     {
     private:
         void* m_uobject{};

@@ -8,12 +8,12 @@
 
 namespace RC::Unreal
 {
-    struct RC_API FSparseDelegate
+    struct RC_UE_API FSparseDelegate
     {
         bool b_is_bound;
     };
 
-    class RC_API XMulticastSparseDelegateProperty : public XProperty
+    class RC_UE_API XMulticastSparseDelegateProperty : public XProperty
     {
     private:
 

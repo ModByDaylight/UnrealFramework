@@ -7,7 +7,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API FMemory
+    class RC_UE_API FMemory
     {
     public:
         static inline Function<void(void*)> free{};

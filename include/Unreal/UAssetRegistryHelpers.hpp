@@ -10,7 +10,7 @@ namespace RC::Unreal
 {
     class UAssetRegistry;
 
-    class RC_API UAssetRegistryHelpers : public UObject
+    class RC_UE_API UAssetRegistryHelpers : public UObject
     {
     public:
         using StaticReflectedFunction = StaticReflectedFunctionBase<UAssetRegistryHelpers>;

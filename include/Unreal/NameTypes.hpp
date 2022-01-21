@@ -11,10 +11,10 @@ namespace RC::Unreal
     namespace UnrealInitializer
     {
         struct CacheInfo;
-        RC_API auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
+        RC_UE_API auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
     }
 
-    struct RC_API FName
+    struct RC_UE_API FName
     {
     public:
         enum class EFindName

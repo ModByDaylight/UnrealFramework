@@ -9,7 +9,7 @@ namespace RC::Unreal
 
     // Special struct to be used for creating our own U/FProperty objects with our own custom data
     // Used when creating custom properties
-    class RC_API CustomProperty : public XProperty
+    class RC_UE_API CustomProperty : public XProperty
     {
     protected:
         using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;

@@ -9,7 +9,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API TScriptDelegate
+    class RC_UE_API TScriptDelegate
     {
     private:
         using TWeakPtr = FWeakObjectPtr;
@@ -19,7 +19,7 @@ namespace RC::Unreal
         FName function_name;
     };
 
-    class RC_API XDelegateProperty : public XProperty
+    class RC_UE_API XDelegateProperty : public XProperty
     {
     private:
 

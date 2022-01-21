@@ -5,7 +5,7 @@
 
 namespace RC::Unreal
 {
-    class RC_API XLazyObjectProperty : public XObjectProperty
+    class RC_UE_API XLazyObjectProperty : public XObjectProperty
     {
     private:
 

@@ -18,7 +18,7 @@ namespace RC
 
 namespace RC::Unreal::UnrealInitializer
 {
-    struct RC_API ScanOverrides
+    struct RC_UE_API ScanOverrides
     {
         std::function<void(std::vector<SignatureContainer>&)> guobjectarray;
         std::function<void(std::vector<SignatureContainer>&)> static_find_object;
@@ -32,7 +32,7 @@ namespace RC::Unreal::UnrealInitializer
 
     // Struct to be passed to the 'initialize' function
     // Should always have valid default values
-    struct RC_API Config
+    struct RC_UE_API Config
     {
     public:
         HANDLE process_handle;
@@ -56,24 +56,24 @@ namespace RC::Unreal::UnrealInitializer
         int64_t num_scan_attempts_modular{2000};
     };
 
-    struct RC_API CacheInfo
+    struct RC_UE_API CacheInfo
     {
         File::Handle game_exe_file;
         bool should_use_cache;
         bool should_serialize_cache;
     };
 
-    struct RC_API StaticStorage
+    struct RC_UE_API StaticStorage
     {
         static inline bool is_initialized{false};
     };
 
-    auto RC_API setup_unreal_modules(const Config&) -> void;
-    auto RC_API verify_module_cache(const Config&) -> CacheInfo;
-    auto RC_API create_cache(CacheInfo&) -> void;
-    auto RC_API load_cache(CacheInfo&) -> void;
-    auto RC_API initialize_versioned_container() -> void;
-    auto RC_API initialize(const Config&) -> void;
+    auto RC_UE_API setup_unreal_modules(const Config&) -> void;
+    auto RC_UE_API verify_module_cache(const Config&) -> CacheInfo;
+    auto RC_UE_API create_cache(CacheInfo&) -> void;
+    auto RC_UE_API load_cache(CacheInfo&) -> void;
+    auto RC_UE_API initialize_versioned_container() -> void;
+    auto RC_UE_API initialize(const Config&) -> void;
 }
 
 

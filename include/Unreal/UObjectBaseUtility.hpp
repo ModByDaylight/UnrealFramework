@@ -13,7 +13,7 @@ namespace RC::Unreal
     class UObject;
     class FStringOut;
 
-    class RC_API UObjectBaseUtility
+    class RC_UE_API UObjectBaseUtility
     {
     public:
         auto static get_path_name_recursive(const UObject* object, const void* stop_outer, std::wstring& out_path) -> void;

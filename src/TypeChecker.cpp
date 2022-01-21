@@ -12,6 +12,7 @@
 #include <Unreal/FAssetData.hpp>
 #include <Unreal/UInterface.hpp>
 #include <Unreal/UActorComponent.hpp>
+#include <Unreal/UPackage.hpp>
 #include <Unreal/Property/XNumericProperty.hpp>
 #include <Unreal/Property/XInt8Property.hpp>
 #include <Unreal/Property/XInt16Property.hpp>
@@ -152,6 +153,7 @@ namespace RC::Unreal
         }
         FAssetData::set_static_obj_ptr(asset_data_ptr);
 
+        UPackage::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Package"));
         UInterface::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Interface"));
         UActorComponent::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.ActorComponent"));
         USceneComponent::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.SceneComponent"));

@@ -94,6 +94,16 @@ namespace RC::Unreal
         return std::bit_cast<UField*>(this);
     }
 
+    auto FField::get_outermost_owner() -> UObject*
+    {
+        FFieldVariant current_variant = get_owner_variant();
+
+        while (!current_variant.is_uobject()) {
+            current_variant = current_variant.get_owner_variant();
+        }
+        return current_variant.to_uobject();
+    }
+
     auto FFieldClass::get_fname() -> FName
     {
         return Container::m_unreal_vc_base->FFieldClass_get_fname(this);

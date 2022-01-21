@@ -240,6 +240,11 @@ namespace RC::Unreal
         process_event_internal(this, function, parms);
     }
 
+    auto UObject::is_a(UClass* uclass) -> bool
+    {
+        return get_uclass()->is_child_of(uclass);
+    }
+
     auto UObjectType::as_string() -> std::wstring
     {
         return m_object->get_uclass()->get_fname().to_string();

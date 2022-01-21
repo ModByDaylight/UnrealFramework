@@ -432,14 +432,14 @@ namespace RC::Unreal::UnrealInitializer
         hook_static_construct_object();
         hook_process_event();
 
-        for (int32_t i = 0; i < 1000 && !Hook::StaticStorage::all_required_objects_constructed; ++i)
+        for (int32_t i = 0; i < 2000 && !Hook::StaticStorage::all_required_objects_constructed; ++i)
         {
             // The control variable for this loop is controlled from the game thread in a
             // hook created in the function call right above this loop
 
             // Sleeping here will prevent this loop from getting optimized away
             // It will also prevent unnecessarily high CPU usage
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
 
         Output::send(STR("Constructed {} of {} objects\n"), Hook::StaticStorage::num_required_objects_constructed, Hook::StaticStorage::required_objects_for_init.size());

@@ -402,7 +402,6 @@ namespace RC::Unreal::UnrealInitializer
         // Find offsets that are required for the StaticOffsetInternal implementation
         // These do not require that any objects in GUObjectArray to be initialized
         StaticOffsetFinder::find_independent_offsets(config.process_handle);
-        TypeChecker::store_all_object_names();
 
         // Objects that are required to exist before we can continue
         // Add objects to here before you use them in StaticOffsetFinder
@@ -428,6 +427,7 @@ namespace RC::Unreal::UnrealInitializer
         Hook::add_required_object(STR("/Script/UMG.Widget"));
         Hook::add_required_object(STR("/Script/UMG.ComboBoxString"));
         Hook::add_required_object(STR("/Script/CoreUObject.Interface"));
+        Hook::add_required_object(STR("/Script/CoreUObject.DynamicClass"));
 
         hook_static_construct_object();
         hook_process_event();
@@ -441,6 +441,8 @@ namespace RC::Unreal::UnrealInitializer
             // It will also prevent unnecessarily high CPU usage
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
+
+        TypeChecker::store_all_object_names();
 
         Output::send(STR("Constructed {} of {} objects\n"), Hook::StaticStorage::num_required_objects_constructed, Hook::StaticStorage::required_objects_for_init.size());
         if (!Hook::StaticStorage::all_required_objects_constructed)

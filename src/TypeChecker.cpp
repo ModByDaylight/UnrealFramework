@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <DynamicOutput/DynamicOutput.hpp>
 #include <Unreal/TypeChecker.hpp>
 #include <Unreal/UObject.hpp>
 #include <Unreal/AActor.hpp>
@@ -565,6 +566,7 @@ namespace RC::Unreal
         {
             if (object_fname.get_comparison_index() == 0)
             {
+                Output::send(STR("FName '{}' is zero."), object_string);
                 return false;
             }
         }

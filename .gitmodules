@@ -3,7 +3,7 @@
 	url = https://gitlab.com/__RC/cmake
 [submodule "PolyHook_2_0"]
 	path = vendor/stevemk14ebr/PolyHook_2_0
-	url = https://github.com/stevemk14ebr/PolyHook_2_0
+	url = https://gitlab.com/__RC/polyhook_2_0
 [submodule "helpers"]
 	path = vendor/RC/Helpers
 	url = https://gitlab.com/__RC/helpers

@@ -113,7 +113,8 @@ add_rc_dependency_to_target(${TARGET} ScopedTimer)
 add_rc_dependency_to_target(${TARGET} DynamicOutput)
 
 target_include_directories(${TARGET} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_compile_options(${TARGET} PRIVATE /MP)
+target_compile_options(${TARGET} PRIVATE /MP $<$<CONFIG:RELEASE>:/Zi> /W4)
+target_link_options(${TARGET} PRIVATE /DEBUG:FULL)
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 
 # Third-Party Dependencies

@@ -19,14 +19,14 @@ namespace RC::Unreal
         }
     }
 
-    auto XMapProperty::get_key_property() -> XProperty*
+    auto XMapProperty::get_key_property() -> FProperty*
     {
-        return Helper::Casting::offset_deref<XProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::MapProperty_KeyProp));
+        return Helper::Casting::offset_deref<FProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::MapProperty_KeyProp));
     }
 
-    auto XMapProperty::get_value_property() -> XProperty*
+    auto XMapProperty::get_value_property() -> FProperty*
     {
-        return Helper::Casting::offset_deref<XProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::MapProperty_ValueProp));
+        return Helper::Casting::offset_deref<FProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::MapProperty_ValueProp));
     }
 
     auto XMapProperty::to_string(void* p_this, std::wstring& out_line) -> void
@@ -34,20 +34,20 @@ namespace RC::Unreal
         trivial_dump_to_string(p_this, out_line);
 
         XMapProperty* typed_this = static_cast<XMapProperty*>(p_this);
-        XProperty* key_property = typed_this->get_key_property();
-        XProperty* value_property = typed_this->get_value_property();
+        FProperty* key_property = typed_this->get_key_property();
+        FProperty* value_property = typed_this->get_value_property();
         out_line.append(std::format(L" [kp: {:016X}] [vp: {:016X}]", reinterpret_cast<uintptr_t>(key_property), reinterpret_cast<uintptr_t>(value_property)));
     }
 
     auto XMapProperty::to_string_complex(void* p_this, std::wstring& out_line, const std::function<void(void*)>& callable) -> void
     {
         XMapProperty* typed_this = static_cast<XMapProperty*>(p_this);
-        XProperty* key_property = typed_this->get_key_property();
-        XProperty* value_property = typed_this->get_value_property();
+        FProperty* key_property = typed_this->get_key_property();
+        FProperty* value_property = typed_this->get_value_property();
         auto* key_property_class = key_property->get_ffieldclass();
         auto* value_property_class = value_property->get_ffieldclass();
 
-        auto dump_property = [&](XProperty* property, FFieldClass* property_class) {
+        auto dump_property = [&](FProperty* property, FFieldClass* property_class) {
             if (Unreal::TypeChecker::to_string_exists(property_class))
             {
                 Unreal::TypeChecker::get_to_string(property_class)(property, out_line);

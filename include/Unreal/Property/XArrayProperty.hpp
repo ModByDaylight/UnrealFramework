@@ -2,7 +2,7 @@
 #define RC_UNREAL_XARRAYPROPERTY_HPP
 
 #include <Unreal/StaticOffsetFinder.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 #include <Unreal/TypeChecker.hpp>
 #include <format>
 
@@ -15,7 +15,7 @@ namespace RC::Unreal
         int32_t max_elements;
     };
 
-    class RC_UE_API XArrayProperty : public XProperty
+    class RC_UE_API XArrayProperty : public FProperty
     {
     private:
 
@@ -43,11 +43,11 @@ namespace RC::Unreal
         }
 
     public:
-        auto get_inner() -> XProperty*;
+        auto get_inner() -> FProperty*;
 
     public:
-        auto static get_inner(PropertyDataVC data) -> XProperty*;
-        auto static get_inner(XArrayProperty* p_this) -> XProperty*;
+        auto static get_inner(PropertyDataVC data) -> FProperty*;
+        auto static get_inner(XArrayProperty* p_this) -> FProperty*;
         auto static read_data(PropertyDataVC data) -> InnerType;
 
     public:

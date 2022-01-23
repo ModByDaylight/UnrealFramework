@@ -4,7 +4,7 @@
 #include <Helpers/Format.hpp>
 
 #include <Unreal/FField.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 #include <Unreal/UScriptStruct.hpp>
 #include <Unreal/PropertyReaders.hpp>
 #include <Unreal/Property/XStructProperty.hpp>
@@ -45,8 +45,8 @@ namespace RC::Unreal
             m_data = new_data;
         }
 
-        auto get_struct_child(const wchar_t* struct_prop) -> XProperty*;
-        auto get_struct_child(FName struct_prop_name) -> XProperty*;
+        auto get_struct_child(const wchar_t* struct_prop) -> FProperty*;
+        auto get_struct_child(FName struct_prop_name) -> FProperty*;
 
         template<typename InnerStructPropType>
         // I'd like to use operator[] but there are problems with making it work with a template
@@ -54,7 +54,7 @@ namespace RC::Unreal
         auto get_internal_complex(const wchar_t* struct_prop) -> typename InnerStructPropType::InnerType*
         {
             // Exception thrown inside the call if property was not found
-            XProperty* selected_property = get_struct_child(struct_prop);
+            FProperty* selected_property = get_struct_child(struct_prop);
 
             void* data_ptr = static_cast<void*>(static_cast<char*>(m_data) + selected_property->get_offset_for_internal());
             if (!data_ptr)
@@ -72,7 +72,7 @@ namespace RC::Unreal
         auto get_internal_trivial(const wchar_t* struct_prop) -> InnerStructPropInnerType*
         {
             // Exception thrown inside the call if property was not found
-            XProperty* selected_property = get_struct_child(struct_prop);
+            FProperty* selected_property = get_struct_child(struct_prop);
 
             auto data_ptr = static_cast<InnerStructPropInnerType*>(static_cast<void*>(static_cast<char*>(m_data) + selected_property->get_offset_for_internal()));
             if (!data_ptr)

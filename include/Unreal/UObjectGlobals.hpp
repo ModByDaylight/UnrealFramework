@@ -3,9 +3,8 @@
 
 #include <array>
 #include <vector>
-
 #include <Function/Function.hpp>
-
+#include <Constructs/Loop.hpp>
 #include <Unreal/Common.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/UnrealFlags.hpp>
@@ -91,6 +90,9 @@ namespace RC::Unreal::UObjectGlobals
     // Setup internal game functions
     auto RC_UE_API setup_static_find_object_address(void* function_address) -> void;
     auto RC_UE_API setup_static_construct_object_internal_address(void* function_address) -> void;
+
+    //Iterates object array and calls the provided function for each object
+    auto for_each_object(const std::function<LoopAction(UObject* object)>& callable) -> void;
 
     // Internal work-around for not having access to UnrealVersion due to circ-inclusion
     auto RC_UE_API version_is_atmost(uint32_t major_p, uint32_t minor_p) -> bool;

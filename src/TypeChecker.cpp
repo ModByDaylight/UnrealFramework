@@ -7,7 +7,7 @@
 #include <Unreal/UStruct.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 #include <Unreal/UScriptStruct.hpp>
 #include <Unreal/UEnum.hpp>
 #include <Unreal/FAssetData.hpp>
@@ -186,7 +186,7 @@ namespace RC::Unreal
         m_object_to_string_functions[script_struct_ptr] = &UScriptStruct::to_string;
         m_object_to_string_complex_functions[script_struct_ptr] = &UScriptStruct::to_string_complex;
 
-        XProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Property");
+        FProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Property");
         XNumericProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.NumericProperty");
         XInt8Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Int8Property");
         XInt16Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Int16Property");
@@ -222,7 +222,7 @@ namespace RC::Unreal
                 UClass* actor_obj = static_cast<UClass*>(UObjectGlobals::static_find_object(nullptr, nullptr, obj_string));
                 if (!actor_obj) { return; }
 
-                actor_obj->for_each_property([&](XProperty* child) {
+                actor_obj->for_each_property([&](FProperty* child) {
                     // TODO: This is hard-coded for now... perhaps come up with a solution that isn't hardcoded
                     // This could break in the future if FFieldClass* is no longer at offset 0x8 in the FField struct
                     FFieldClass* ffield_class = Helper::Casting::offset_deref<FFieldClass*>(child, ffield_class_offset);
@@ -433,7 +433,7 @@ namespace RC::Unreal
                                 if (super_type_name == FName(L"Property"))
                                 {
                                     m_core_object_pointers[L"Property"] = ffield_super_class;
-                                    XProperty::m_static_obj_variant = ffield_class;
+                                    FProperty::m_static_obj_variant = ffield_class;
                                     break;
                                 }
 

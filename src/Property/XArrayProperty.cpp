@@ -2,19 +2,19 @@
 
 namespace RC::Unreal
 {
-    auto XArrayProperty::get_inner() -> XProperty*
+    auto XArrayProperty::get_inner() -> FProperty*
     {
-        return Helper::Casting::offset_deref<XProperty*>(this, StaticOffsetFinder::retrieve_static_offset(StaticOffsetFinder::MemberOffsets::ArrayProperty_Inner));
+        return Helper::Casting::offset_deref<FProperty*>(this, StaticOffsetFinder::retrieve_static_offset(StaticOffsetFinder::MemberOffsets::ArrayProperty_Inner));
     }
 
-    auto XArrayProperty::get_inner(PropertyDataVC data) -> XProperty*
+    auto XArrayProperty::get_inner(PropertyDataVC data) -> FProperty*
     {
-        return Helper::Casting::offset_deref<XProperty*>(data.property_ptr, StaticOffsetFinder::retrieve_static_offset(StaticOffsetFinder::MemberOffsets::ArrayProperty_Inner));
+        return Helper::Casting::offset_deref<FProperty*>(data.property_ptr, StaticOffsetFinder::retrieve_static_offset(StaticOffsetFinder::MemberOffsets::ArrayProperty_Inner));
     }
 
-    auto XArrayProperty::get_inner(XArrayProperty* p_this) -> XProperty*
+    auto XArrayProperty::get_inner(XArrayProperty* p_this) -> FProperty*
     {
-        return Helper::Casting::offset_deref<XProperty*>(p_this, StaticOffsetFinder::retrieve_static_offset(StaticOffsetFinder::MemberOffsets::ArrayProperty_Inner));
+        return Helper::Casting::offset_deref<FProperty*>(p_this, StaticOffsetFinder::retrieve_static_offset(StaticOffsetFinder::MemberOffsets::ArrayProperty_Inner));
     }
 
     auto XArrayProperty::read_data(PropertyDataVC data) -> InnerType
@@ -43,7 +43,7 @@ namespace RC::Unreal
 
     auto XArrayProperty::to_string_complex(void* p_this, std::wstring& out_line, const std::function<void(void*)>& callable) -> void
     {
-        XProperty* array_inner = get_inner(static_cast<XArrayProperty*>(p_this));
+        FProperty* array_inner = get_inner(static_cast<XArrayProperty*>(p_this));
         auto* array_inner_class = array_inner->get_ffieldclass();
 
         if (Unreal::TypeChecker::to_string_exists(array_inner_class))

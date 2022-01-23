@@ -9,7 +9,7 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<UScriptStruct*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::StructProperty_Struct));
     }
 
-    auto XStructProperty::construct(PropertyDataVC p_data, XProperty* p_inner_this, void* v_data) -> InnerType*
+    auto XStructProperty::construct(PropertyDataVC p_data, FProperty* p_inner_this, void* v_data) -> InnerType*
     {
         // TODO: Deal with this allocation
         // There really shouldn't need to be an allocation here

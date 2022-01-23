@@ -1,7 +1,7 @@
 #ifndef RC_UNREAL_XENUMPROPERTY_HPP
 #define RC_UNREAL_XENUMPROPERTY_HPP
 
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 #include <format>
 #include <Unreal/UnrealVersion.hpp>
 
@@ -13,7 +13,7 @@ namespace RC::Unreal
     class TUEnum;
 
     template<typename InnerEnumType>
-    class XEnumProperty : public XProperty
+    class XEnumProperty : public FProperty
     {
     private:
 
@@ -41,7 +41,7 @@ namespace RC::Unreal
         }
 
     public:
-        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]XProperty* p_inner_this, void* v_data) -> InnerType*
+        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]FProperty* p_inner_this, void* v_data) -> InnerType*
         {
             return static_cast<InnerType*>(v_data);
         }

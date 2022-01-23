@@ -3,7 +3,7 @@
 #include <Unreal/UStruct.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/FField.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 #include <Unreal/CustomType.hpp>
 
 namespace RC::Unreal
@@ -34,11 +34,11 @@ namespace RC::Unreal
         UStruct* uobject_uclass = exclude_self == ExcludeSelf::Yes ? uobject_typed->get_uclass() : static_cast<UStruct*>(uobject);
         if (!uobject_uclass) { throw std::runtime_error{"[UObjectImpl::read_property] UObject was nullptr"}; }
 
-        XProperty* property{};
+        FProperty* property{};
 
         FName property_name(property_string);
 
-        uobject_uclass->for_each_child_in_chain<XProperty*>([&](auto* child) {
+        uobject_uclass->for_each_child_in_chain<FProperty*>([&](auto* child) {
             if (child->get_fname() == property_name)
             {
                 property = child;
@@ -60,7 +60,7 @@ namespace RC::Unreal
 
     auto Derived412::read_property_vc(void* uobject, const wchar_t* property_string, CustomProperty* custom_property) -> PropertyDataVC
     {
-        XProperty* property{};
+        FProperty* property{};
         int32_t offset_internal;
 
         bool is_custom{false};

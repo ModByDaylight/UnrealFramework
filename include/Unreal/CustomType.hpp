@@ -1,7 +1,7 @@
 #ifndef RC_UNREAL_CUSTOM_TYPE_HPP
 #define RC_UNREAL_CUSTOM_TYPE_HPP
 
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
@@ -9,7 +9,7 @@ namespace RC::Unreal
 
     // Special struct to be used for creating our own U/FProperty objects with our own custom data
     // Used when creating custom properties
-    class RC_UE_API CustomProperty : public XProperty
+    class RC_UE_API CustomProperty : public FProperty
     {
     protected:
         using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
@@ -35,10 +35,10 @@ namespace RC::Unreal
         CustomArrayProperty(int32_t offset_internal);
 
         // Used for the C++ API
-        auto static construct(int32_t offset_internal, XProperty* array_inner) -> std::unique_ptr<CustomProperty>;
+        auto static construct(int32_t offset_internal, FProperty* array_inner) -> std::unique_ptr<CustomProperty>;
 
         // Used for the Lua API
-        auto static construct(int32_t offset_internal, UClass* belongs_to_class, UClass* inner_class, XProperty* array_inner) -> std::unique_ptr<CustomProperty>;
+        auto static construct(int32_t offset_internal, UClass* belongs_to_class, UClass* inner_class, FProperty* array_inner) -> std::unique_ptr<CustomProperty>;
     };
 
     class CustomStructProperty : public CustomProperty

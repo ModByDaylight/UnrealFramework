@@ -3,7 +3,7 @@
 
 #include <Helpers/Format.hpp>
 
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
@@ -13,7 +13,7 @@ namespace RC::Unreal
         char padding[0x50];
     };
 
-    class RC_UE_API XSetProperty : public XProperty
+    class RC_UE_API XSetProperty : public FProperty
     {
     private:
 
@@ -41,11 +41,11 @@ namespace RC::Unreal
         }
 
     public:
-        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]XProperty* p_inner_this, void* v_data) -> InnerType*;
+        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]FProperty* p_inner_this, void* v_data) -> InnerType*;
         auto static read_data(PropertyDataVC data) -> InnerType*;
 
     public:
-        auto get_element_prop() -> XProperty*;
+        auto get_element_prop() -> FProperty*;
 
     public:
         static auto to_string(void* p_this, std::wstring& out_line) -> void;

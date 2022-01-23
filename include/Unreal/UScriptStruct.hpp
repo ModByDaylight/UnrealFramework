@@ -45,7 +45,7 @@ namespace RC::Unreal
         // Intentionally hides a non-virtual function
         // For this variant, there could be properties that belong to this object
         // As opposed to UObject that cannot have any properties itself
-        auto find_property(FName property_name, Base::WithSideEffects with_side_effects = Base::WithSideEffects::No, ExcludeSelf = ExcludeSelf::No) -> XProperty*;
+        auto find_property(FName property_name, Base::WithSideEffects with_side_effects = Base::WithSideEffects::No, ExcludeSelf = ExcludeSelf::No) -> FProperty*;
 
     public:
         static auto to_string_complex(void* p_this, std::wstring& out_line, TypeChecker::ObjectToStringComplexDeclCallable callable) -> void;

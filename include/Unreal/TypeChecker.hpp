@@ -27,7 +27,7 @@ namespace RC::Unreal
         // Be careful with storing pointers, they may be relocated at any given point so make sure before you store them
         static inline std::unordered_map<std::wstring, void*> m_core_object_pointers;
 
-        // Stores function pointers to all 'to_string' functions for UObject and XProperty.
+        // Stores function pointers to all 'to_string' functions for UObject and FProperty.
         // The key is UClass* (or FFieldClass* in 4.25+)
         using ObjectToStringDecl = std::function<void(void*, std::wstring&)>;
         static inline std::unordered_map<void*, ObjectToStringDecl> m_object_to_string_functions;

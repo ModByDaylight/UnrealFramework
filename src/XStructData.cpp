@@ -3,7 +3,7 @@
 
 namespace RC
 {
-    auto Unreal::XStructData::get_struct_child(const wchar_t* struct_prop) -> Unreal::XProperty*
+    auto Unreal::XStructData::get_struct_child(const wchar_t* struct_prop) -> Unreal::FProperty*
     {
         if (!struct_prop) { throw std::runtime_error{"[XStructDataImpl::get_struct_child] Param 'struct_prop' is nullptr"}; }
 
@@ -12,13 +12,13 @@ namespace RC
         return get_struct_child(struct_prop_name);
     }
 
-    auto Unreal::XStructData::get_struct_child(Unreal::FName struct_prop_name) -> Unreal::XProperty*
+    auto Unreal::XStructData::get_struct_child(Unreal::FName struct_prop_name) -> Unreal::FProperty*
     {
         UField* script_struct = m_prop->get_script_struct();
         if (!script_struct) { throw std::runtime_error{"[XStructDataImpl::get_struct_child] Variable 'script_struct' is nullptr"}; }
 
-        XProperty* selected_property{};
-        script_struct->for_each_property([&](XProperty* child) {
+        FProperty* selected_property{};
+        script_struct->for_each_property([&](FProperty* child) {
             if (child->get_fname() == struct_prop_name)
             {
                 selected_property = child;
@@ -45,7 +45,7 @@ namespace RC
     auto Unreal::XStructData::get_internal_complex_value(const wchar_t* struct_prop, Unreal::CustomProperty* custom_property) -> Unreal::PropertyDataVC
     {
         // Exception thrown inside the call if property was not found
-        XProperty* selected_property = custom_property ? custom_property : get_struct_child(struct_prop);
+        FProperty* selected_property = custom_property ? custom_property : get_struct_child(struct_prop);
         int32_t offset_internal = selected_property->get_offset_for_internal();
 
         void* data_ptr = static_cast<void*>(static_cast<char*>(m_data) + offset_internal);

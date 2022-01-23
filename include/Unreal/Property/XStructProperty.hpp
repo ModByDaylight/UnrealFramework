@@ -7,14 +7,14 @@
 #include <Helpers/Format.hpp>
 
 #include <Unreal/VersionedContainer/Base.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
     class UScriptStruct;
     class XStructData;
 
-    class RC_UE_API XStructProperty : public XProperty
+    class RC_UE_API XStructProperty : public FProperty
     {
     private:
 
@@ -44,7 +44,7 @@ namespace RC::Unreal
         auto get_script_struct() -> UScriptStruct*;
 
     public:
-        auto static construct(PropertyDataVC p_data, XProperty* p_inner_this, void* v_data) -> InnerType*;
+        auto static construct(PropertyDataVC p_data, FProperty* p_inner_this, void* v_data) -> InnerType*;
         auto static read_data(PropertyDataVC data) -> InnerType;
 
     public:

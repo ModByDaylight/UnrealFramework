@@ -2,6 +2,7 @@
 #include <Unreal/UObject.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UnrealVersion.hpp>
+#include <Unreal/VersionedContainer/Container.hpp>
 
 namespace RC::Unreal::UObjectGlobals
 {
@@ -175,17 +176,15 @@ namespace RC::Unreal::UObjectGlobals
 
         size_t num_objects_found{};
 
-        UObject::for_each_uobject([&](void* object, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t object_index) {
-            UObject* typed_object = static_cast<UObject*>(object);
-
+        for_each_object([&](UObject* object) {
             bool name_matches{};
-            if (care_about_name && typed_object->get_fname().equals(object_short_name))
+            if (care_about_name && object->get_fname().equals(object_short_name))
             {
                 name_matches = true;
             }
 
             bool class_matches{};
-            if (care_about_class && typed_object->get_uclass()->get_fname().equals(class_name))
+            if (care_about_class && object->get_uclass()->get_fname().equals(class_name))
             {
                 class_matches = true;
             }
@@ -194,12 +193,12 @@ namespace RC::Unreal::UObjectGlobals
                 (!care_about_name && care_about_class && class_matches) ||
                 (!care_about_class && care_about_name && name_matches))
             {
-                bool required_flags_passes = typed_object->has_all_flags(required_flags);
-                bool banned_flags_passes = !typed_object->has_any_flag(banned_flags);
+                bool required_flags_passes = object->has_all_flags(required_flags);
+                bool banned_flags_passes = !object->has_any_flag(banned_flags);
 
                 if (required_flags_passes && banned_flags_passes)
                 {
-                    out_storage.emplace_back(typed_object);
+                    out_storage.emplace_back(object);
                     ++num_objects_found;
                 }
             }
@@ -253,6 +252,14 @@ namespace RC::Unreal::UObjectGlobals
     auto find_object(const wchar_t* class_name, const wchar_t* object_short_name, const FlagsForFindObjects& required_flags, const FlagsForFindObjects& banned_flags) -> UObject*
     {
         return find_object(FName(class_name), FName(object_short_name), required_flags, banned_flags);
+    }
+
+    auto for_each_object(const std::function<LoopAction(UObject *)>& callable) -> void
+    {
+        Container::m_unreal_vc_base->UObjectArray_for_each_uobject([&](void* raw_object, int32_t object_index, int32_t chunk_index)
+        {
+            return callable(reinterpret_cast<UObject*>(raw_object));
+        });
     };
 }
 

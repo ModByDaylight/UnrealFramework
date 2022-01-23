@@ -1,11 +1,11 @@
 #ifndef RC_UNREAL_XNUMERICPROPERTY_HPP
 #define RC_UNREAL_XNUMERICPROPERTY_HPP
 
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
-    class RC_UE_API XNumericProperty : public XProperty
+    class RC_UE_API XNumericProperty : public FProperty
     {
     public:
         // DO NOT USE... MEANT FOR INTERNAL USE ONLY
@@ -30,7 +30,7 @@ namespace RC::Unreal
         // The 'this' ptr is the underlying numeric property
         // The 'object' ptr is the object where the value can be found
         // The 'property' ptr is the property container
-        auto read_as_int64(UObject* object, XProperty* property) -> int64_t;
+        auto read_as_int64(UObject* object, FProperty* property) -> int64_t;
         auto read_as_int64(UObject* object) -> int64_t;
         auto read_as_double(UObject* object) -> double;
     };

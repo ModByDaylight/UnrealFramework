@@ -3,11 +3,11 @@
 
 #include <Helpers/Format.hpp>
 
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
-    class RC_UE_API XBoolProperty : public XProperty
+    class RC_UE_API XBoolProperty : public FProperty
     {
     private:
 

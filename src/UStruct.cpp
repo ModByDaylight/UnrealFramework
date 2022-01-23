@@ -1,9 +1,29 @@
 #include <Unreal/UStruct.hpp>
 #include <Unreal/FField.hpp>
 #include <Unreal/UClass.hpp>
+#include <Unreal/UFunction.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UStruct);
+
+    using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
+
+    auto UStruct::get_children() -> UField*
+    {
+        return Helper::Casting::offset_deref<UField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XField_Children));
+    }
+
+    auto UStruct::get_child_properties() -> FField*
+    {
+        if (Version::is_below(4, 25))
+        {
+            throw std::runtime_error("UStruct::ChildProperties is not available before UE 4.25");
+        }
+        return Helper::Casting::offset_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XField_ChildProperties));
+    }
+
     auto UStruct::get_super_struct() -> UStruct*
     {
         return Helper::Casting::offset_deref<UStruct*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_SuperStruct));
@@ -28,81 +48,30 @@ namespace RC::Unreal
                 return true;
             }
             current_struct = current_struct->get_super_struct();
-
         }
         while (current_struct);
         return false;
     }
 
-    auto UStruct::for_each_super_struct(const ForEachSuperStructCallable& callable) -> LoopAction
+    auto UStruct::for_each_function(const std::function<LoopAction(UFunction*)>& callable) -> void
     {
-        UStruct* super_struct = get_super_struct();
-        LoopAction loop_action{};
+        UField* current_field = get_children();
 
-        while (super_struct)
-        {
-            loop_action = callable(super_struct);
-            if (loop_action == LoopAction::Break) { break; }
+        while (current_field != nullptr) {
+            //Only trigger the callable on UFunction objects
+            if (UFunction* function = cast_uobject<UFunction>(current_field)) {
+                LoopAction loop_action = callable(function);
 
-            super_struct = super_struct->get_super_struct();
+                if (loop_action == LoopAction::Break) {
+                    break;
+                }
+            }
+            current_field = current_field->get_next_ufield();
         }
-
-        return loop_action;
     }
 
-    template<typename ForEachType, typename ForEachCallable, typename Callable>
-    auto static for_each_x_in_chain_internal(UStruct* ustruct, ForEachCallable for_each_x, Callable callable) -> LoopAction
+    auto UStruct::for_each_property(const std::function<LoopAction(FProperty* property)>& callable) -> void
     {
-        LoopAction loop_action{};
-
-        loop_action = (ustruct->*for_each_x)([&](ForEachType* obj) {
-            if (callable(obj) == LoopAction::Break)
-            {
-                loop_action = LoopAction::Break;
-                return loop_action;
-            }
-            else
-            {
-                return LoopAction::Continue;
-            }
-        });
-        if (loop_action == LoopAction::Break) { return loop_action; }
-
-        loop_action = ustruct->for_each_super_struct([&](UStruct* super_struct) {
-            if (!super_struct) { return LoopAction::Continue; }
-
-            loop_action = (super_struct->*for_each_x)([&](ForEachType* obj) {
-                if (callable(obj) == LoopAction::Break)
-                {
-                    loop_action = LoopAction::Break;
-                    return loop_action;
-                }
-                else
-                {
-                    return LoopAction::Continue;
-                }
-            });
-
-            if (loop_action == LoopAction::Break)
-            {
-                return LoopAction::Break;
-            }
-            else
-            {
-                return LoopAction::Continue;
-            }
-        });
-
-        return loop_action;
-    }
-
-    auto UStruct::for_each_function_in_chain(ForEachChildInChainCallable<UFunction*> callable) -> LoopAction
-    {
-        return for_each_x_in_chain_internal<UFunction>(this, &UStruct::for_each_function, callable);
-    }
-
-    auto UStruct::for_each_property_in_chain(ForEachChildInChainCallable<XProperty*> callable) -> LoopAction
-    {
-        return for_each_x_in_chain_internal<XProperty>(this, &UStruct::for_each_property, callable);
+        if ()
     }
 }

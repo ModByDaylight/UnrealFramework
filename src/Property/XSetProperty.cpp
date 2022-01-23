@@ -3,7 +3,7 @@
 
 namespace RC::Unreal
 {
-    auto XSetProperty::construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]XProperty* p_inner_this, void* v_data) -> InnerType*
+    auto XSetProperty::construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]FProperty* p_inner_this, void* v_data) -> InnerType*
     {
         return static_cast<InnerType*>(v_data);
     }
@@ -18,8 +18,8 @@ namespace RC::Unreal
         trivial_dump_to_string(p_this, out_line);
     }
 
-    auto XSetProperty::get_element_prop() -> XProperty*
+    auto XSetProperty::get_element_prop() -> FProperty*
     {
-        return Helper::Casting::offset_deref<XProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::SetProperty_ElementProp));
+        return Helper::Casting::offset_deref<FProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::SetProperty_ElementProp));
     }
 }

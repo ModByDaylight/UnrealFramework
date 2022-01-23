@@ -37,7 +37,7 @@ namespace RC::Unreal
 
     CustomArrayProperty::CustomArrayProperty(int32_t offset_internal) : CustomProperty(offset_internal) {}
 
-    auto CustomArrayProperty::construct(int32_t offset_internal, XProperty* array_inner) -> std::unique_ptr<CustomProperty>
+    auto CustomArrayProperty::construct(int32_t offset_internal, FProperty* array_inner) -> std::unique_ptr<CustomProperty>
     {
         std::unique_ptr<CustomArrayProperty> custom_array_property = std::make_unique<CustomArrayProperty>(offset_internal);
 
@@ -46,7 +46,7 @@ namespace RC::Unreal
         return custom_array_property;
     }
 
-    auto CustomArrayProperty::construct(int32_t offset_internal, UClass* belongs_to_class, UClass* inner_class, XProperty* array_inner) -> std::unique_ptr<CustomProperty>
+    auto CustomArrayProperty::construct(int32_t offset_internal, UClass* belongs_to_class, UClass* inner_class, FProperty* array_inner) -> std::unique_ptr<CustomProperty>
     {
         // Create dummy property to act as the 'Inner' member variable for the ArrayProperty
         // Then we set the inner type for the array property as the 'FFieldClass' of this dummy property

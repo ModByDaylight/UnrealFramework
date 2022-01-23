@@ -27,7 +27,7 @@ namespace RC::Unreal
         }
     }
 
-    auto XNumericProperty::read_as_int64(UObject* object, XProperty* property) -> int64_t
+    auto XNumericProperty::read_as_int64(UObject* object, FProperty* property) -> int64_t
     {
         if (is_child_of<XInt8Property>())
         {

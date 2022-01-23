@@ -3,11 +3,11 @@
 
 #include <Helpers/Format.hpp>
 
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
-    class RC_UE_API XObjectProperty : public XProperty
+    class RC_UE_API XObjectProperty : public FProperty
     {
     private:
 
@@ -35,7 +35,7 @@ namespace RC::Unreal
         }
 
     public:
-        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]XProperty* p_inner_this, void* v_data) -> InnerType*;
+        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]FProperty* p_inner_this, void* v_data) -> InnerType*;
         auto static read_data(PropertyDataVC data) -> InnerType*;
 
     public:

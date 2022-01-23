@@ -34,7 +34,7 @@ namespace RC::Unreal
         auto get_return_value_offset() -> uint16_t;
         auto get_func_ptr() -> void*;
         auto set_func_ptr(UnrealScriptFunction) -> void;
-        auto get_return_property() -> XProperty*;
+        auto get_return_property() -> FProperty*;
 
         template<typename Callback, typename ReturnValueSetterCallback, typename CustomDataType = void>
         auto register_hook(const Callback& callback, const ReturnValueSetterCallback& return_value_setter_callback, CustomDataType* custom_data = nullptr) -> void

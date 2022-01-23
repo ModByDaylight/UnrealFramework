@@ -3,7 +3,7 @@
 
 #include <Helpers/Format.hpp>
 
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 #include <Unreal/FWeakObjectPtr.hpp>
 
 namespace RC::Unreal
@@ -13,7 +13,7 @@ namespace RC::Unreal
         bool b_is_bound;
     };
 
-    class RC_UE_API XMulticastSparseDelegateProperty : public XProperty
+    class RC_UE_API XMulticastSparseDelegateProperty : public FProperty
     {
     private:
 
@@ -41,7 +41,7 @@ namespace RC::Unreal
         }
 
     public:
-        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]XProperty* p_inner_this, void* v_data) -> InnerType*;
+        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]FProperty* p_inner_this, void* v_data) -> InnerType*;
         auto static read_data(PropertyDataVC data) -> InnerType*;
 
     public:

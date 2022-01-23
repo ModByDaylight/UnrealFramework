@@ -9,7 +9,7 @@
 #include <Unreal/UStruct.hpp>
 #include <Unreal/FField.hpp>
 #include <Unreal/UFunction.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 #include <Unreal/UScriptStruct.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/TypeChecker.hpp>
@@ -101,7 +101,7 @@ namespace RC::Unreal
         void* prop{};
         FName prop_name = FName(property_string);
 
-        uclass->for_each_property([&](XProperty* child) {
+        uclass->for_each_property([&](FProperty* child) {
             if (child->get_fname() == prop_name)
             {
                 prop = child;
@@ -802,8 +802,8 @@ namespace RC::Unreal
         UField* hit_result = UObjectGlobals::static_find_object<UField*>(nullptr, nullptr, L"/Script/Engine.HitResult");
 
         FName prop_name_to_test_against = FName(L"bBlockingHit");
-        XProperty* prop_to_test{};
-        hit_result->for_each_property([&](XProperty* child) {
+        FProperty* prop_to_test{};
+        hit_result->for_each_property([&](FProperty* child) {
             if (child->get_fname() == prop_name_to_test_against)
             {
                 prop_to_test = child;
@@ -1586,7 +1586,7 @@ namespace RC::Unreal
                     "[StaticOffsetFinder->find_softclassproperty_meta_class] ChildProperties offset was zero. Please execute find_child_properties()."};
         }
 
-        XProperty* softclassproperty = static_cast<XProperty*>(get_property_from_uobject(L"/Script/Engine.PrimaryAssetTypeInfo", L"AssetBaseClass"));
+        FProperty* softclassproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.PrimaryAssetTypeInfo", L"AssetBaseClass"));
         UClass* meta_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Object");
 
         if (!softclassproperty || !meta_class)
@@ -1700,7 +1700,7 @@ namespace RC::Unreal
 
         for (auto& object_to_test : objects_to_test)
         {
-            XProperty* prop = static_cast<XProperty*>(get_property_from_uobject(object_to_test.object_owner, object_to_test.prop_short_name));
+            FProperty* prop = static_cast<FProperty*>(get_property_from_uobject(object_to_test.object_owner, object_to_test.prop_short_name));
             UObject* known_underlying_type = UObjectGlobals::static_find_object(nullptr, nullptr, object_to_test.object_underlying_type);
             UObject* known_enum = UObjectGlobals::static_find_object(nullptr, nullptr, object_to_test.object_enum);
 
@@ -1848,7 +1848,7 @@ namespace RC::Unreal
         for (const auto& object_to_test : objects_to_test)
         {
             UObject* known_enum = UObjectGlobals::static_find_object(nullptr, nullptr, object_to_test.object_enum);
-            XProperty* prop = static_cast<XProperty*>(get_property_from_uobject(object_to_test.object_name, object_to_test.prop_short_name));
+            FProperty* prop = static_cast<FProperty*>(get_property_from_uobject(object_to_test.object_name, object_to_test.prop_short_name));
 
             for (int32_t i = 0x0; i < 0x130; i += sizeof(void*))
             {
@@ -1883,7 +1883,7 @@ namespace RC::Unreal
             return;
         }
 
-        XProperty* map_property = static_cast<XProperty*>(get_property_from_uobject(STR("/Script/MovieScene.MovieSceneEditorData"), STR("ExpansionStates")));
+        FProperty* map_property = static_cast<FProperty*>(get_property_from_uobject(STR("/Script/MovieScene.MovieSceneEditorData"), STR("ExpansionStates")));
         if (!map_property)
         {
             throw_missed_offset({MemberOffsets::MapProperty_KeyProp, MemberOffsets::MapProperty_ValueProp}, STR("Was unable to find the MapProperty 'ExpansionStates'"));
@@ -1936,7 +1936,7 @@ namespace RC::Unreal
             return;
         }
 
-        XProperty* delegate_property = static_cast<XProperty*>(get_property_from_uobject(STR("/Script/UMG.Widget"), STR("VisibilityDelegate")));
+        FProperty* delegate_property = static_cast<FProperty*>(get_property_from_uobject(STR("/Script/UMG.Widget"), STR("VisibilityDelegate")));
         if (!delegate_property)
         {
             throw_missed_offset(MemberOffsets::DelegateProperty_SignatureFunction, STR("Was unable to find a DelegateProperty in UClass 'Widget'"));
@@ -1984,7 +1984,7 @@ namespace RC::Unreal
                                         MemberOffsets::MulticastSparseDelegateProperty_SignatureFunction}, message);
         };
 
-        XProperty* delegate_property = static_cast<XProperty*>(get_property_from_uobject(STR("/Script/UMG.ComboBoxString"), STR("OnOpening")));
+        FProperty* delegate_property = static_cast<FProperty*>(get_property_from_uobject(STR("/Script/UMG.ComboBoxString"), STR("OnOpening")));
         if (!delegate_property)
         {
             throw_custom_missed_offset(STR("Was unable to find a MulticastDelegateProperty in UClass 'ComboBoxString'"));
@@ -2036,7 +2036,7 @@ namespace RC::Unreal
             return;
         }
 
-        XProperty* interfaceproperty = static_cast<XProperty*>(get_property_from_uobject(L"/Script/Engine.KismetSystemLibrary:Conv_InterfaceToObject", L"Interface"));
+        FProperty* interfaceproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.KismetSystemLibrary:Conv_InterfaceToObject", L"Interface"));
         UClass* interface_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Interface");
 
         if (!interfaceproperty || !interface_class)
@@ -2069,7 +2069,7 @@ namespace RC::Unreal
             return;
         }
 
-        XProperty* fieldpathproperty = static_cast<XProperty*>(get_property_from_uobject(L"/Script/Engine.InterpTrackInstProperty", L"InterpProperty"));
+        FProperty* fieldpathproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.InterpTrackInstProperty", L"InterpProperty"));
         FName property_class_name = FName(STR("Property"));
 
         if (!fieldpathproperty || property_class_name == FName(STR("None")))
@@ -2110,7 +2110,7 @@ namespace RC::Unreal
             return;
         }
 
-        XProperty* setproperty = static_cast<XProperty*>(get_property_from_uobject(L"/Script/Engine.AudioComponent", L"ConcurrencySet"));
+        FProperty* setproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.AudioComponent", L"ConcurrencySet"));
         FName element_property_name = FName(STR("ConcurrencySet"));
 
         if (!setproperty || element_property_name == FName(STR("None")))
@@ -2121,7 +2121,7 @@ namespace RC::Unreal
         bool success{};
         for (int32_t i = 0x40; i < 0x120; i += 0x8)
         {
-            XProperty* maybe_element_prop = Helper::Casting::offset_deref<XProperty*>(setproperty, i);
+            FProperty* maybe_element_prop = Helper::Casting::offset_deref<FProperty*>(setproperty, i);
 
             // Check if 'maybe_element_prop' is a valid pointer
             void* is_pointer = Helper::Casting::offset_deref_safe<void*>(maybe_element_prop, 0, m_process_handle);

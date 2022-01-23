@@ -33,7 +33,7 @@ namespace RC::Unreal
         }
 
     public:
-        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]XProperty* p_inner_this, void* v_data) -> InnerType*;
+        auto static construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]FProperty* p_inner_this, void* v_data) -> InnerType*;
         auto static read_data(PropertyDataVC data) -> InnerType*;
 
     public:

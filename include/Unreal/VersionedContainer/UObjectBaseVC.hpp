@@ -20,10 +20,14 @@ namespace RC::Unreal
         UObjectBaseVC& operator=(UObjectBaseVC&&) = delete;  // Move assignment operator
 
     public:
-        virtual auto UObject_get_flags(const UObject* p_this) const -> int32_t = 0;
-        virtual auto UObject_set_flags(UObject* p_this, const std::array<EObjectFlags, EObjectFlags_Max>& new_flags) -> void = 0;
-        virtual auto UObject_has_any_flag(UObject* p_this, const std::array<EObjectFlags, EObjectFlags_Max>& flags_to_check) -> bool = 0;
-        virtual auto UObject_has_all_flags(UObject* p_this, const std::array<EObjectFlags, EObjectFlags_Max>& flags_to_check) -> bool = 0;
+        virtual auto UObject_get_flags(const UObject* p_this) const -> EObjectFlags = 0;
+        virtual auto UObject_set_flags(UObject* p_this, EObjectFlags new_flags) -> void = 0;
+
+        virtual auto UObject_get_internal_index(const UObject* p_this) const -> int32_t
+        {
+            // TODO: Automate this offset
+            return Helper::Casting::offset_deref<uint32_t>(this, 0xC);
+        }
     };
 }
 

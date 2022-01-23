@@ -47,7 +47,7 @@ namespace RC::Unreal
                 // Doing some cheating here, we're storing an XStructData object here instead of an actual data ptr
                 // The data ptr can be found inside the XStructData object
 
-                XProperty* inner = XArrayProperty::get_inner(data);
+                FProperty* inner = XArrayProperty::get_inner(data);
                 if (!inner)
                 {
                     throw std::runtime_error{"[TArray::read_data] Inner is nullptr"};

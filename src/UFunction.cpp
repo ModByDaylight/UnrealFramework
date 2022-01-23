@@ -1,6 +1,6 @@
 #include <Unreal/UFunction.hpp>
 #include <Unreal/UClass.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
@@ -34,11 +34,11 @@ namespace RC::Unreal
         *func = new_func_ptr;
     }
 
-    auto UFunction::get_return_property() -> XProperty*
+    auto UFunction::get_return_property() -> FProperty*
     {
-        XProperty* return_property{nullptr};
+        FProperty* return_property{nullptr};
 
-        this->for_each_property([&](XProperty* param) {
+        this->for_each_property([&](FProperty* param) {
             if (param->has_any_property_flags(Unreal::CPF_ReturnParm))
             {
                 return_property = param;

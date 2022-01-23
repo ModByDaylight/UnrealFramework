@@ -1,6 +1,6 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/TArray.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {

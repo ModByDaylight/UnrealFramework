@@ -3,7 +3,7 @@
 
 namespace RC::Unreal
 {
-    auto XMulticastInlineDelegateProperty::construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]XProperty* p_inner_this, void* v_data) -> InnerType*
+    auto XMulticastInlineDelegateProperty::construct([[maybe_unused]]PropertyDataVC p_data, [[maybe_unused]]FProperty* p_inner_this, void* v_data) -> InnerType*
     {
         return static_cast<InnerType*>(v_data);
     }

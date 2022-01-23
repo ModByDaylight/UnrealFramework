@@ -3,7 +3,7 @@
 
 #include <Helpers/Format.hpp>
 
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
@@ -14,7 +14,7 @@ namespace RC::Unreal
         int32_t max_elements;
     };
 
-    class RC_UE_API XMapProperty : public XProperty
+    class RC_UE_API XMapProperty : public FProperty
     {
     private:
 
@@ -45,8 +45,8 @@ namespace RC::Unreal
         auto static read_data(PropertyDataVC data) -> InnerType;
 
     public:
-        auto get_key_property() -> XProperty*;
-        auto get_value_property() -> XProperty*;
+        auto get_key_property() -> FProperty*;
+        auto get_value_property() -> FProperty*;
 
     public:
         static auto to_string(void* p_this, std::wstring& out_line) -> void;

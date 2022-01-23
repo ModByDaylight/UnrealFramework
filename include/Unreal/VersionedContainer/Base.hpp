@@ -15,7 +15,7 @@ namespace RC::Unreal
     class CustomProperty;
     class FField;
     class FFieldClass;
-    class XProperty;
+    class FProperty;
 
     struct RC_UE_API PropertyDataVC
     {
@@ -35,7 +35,7 @@ namespace RC::Unreal
     {
     protected:
         using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
-        class XProperty* m_current_property{};
+        class FProperty* m_current_property{};
 
     public:
         virtual ~Base() = default; // Virtual Destructor
@@ -83,7 +83,7 @@ namespace RC::Unreal
         virtual auto FFieldClass_get_fname(const FFieldClass* p_this) -> FName = 0;
         // FFieldClass -> END
 
-        // XProperty -> START
+        // FProperty -> START
 
         enum class WithSideEffects
         {
@@ -94,7 +94,7 @@ namespace RC::Unreal
         // Returns a pointer to data
         virtual auto find_property_vc(void* uobject, const wchar_t* property_string, WithSideEffects, ExcludeSelf = ExcludeSelf::Yes) -> PropertyDataVC = 0;
         virtual auto read_property_vc(void* uobject, const wchar_t* property_string, CustomProperty* custom_property = nullptr) -> PropertyDataVC = 0;
-        // XProperty -> END
+        // FProperty -> END
     };
 
     class Default : public Base

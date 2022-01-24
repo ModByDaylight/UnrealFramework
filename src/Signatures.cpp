@@ -386,7 +386,7 @@ namespace RC::Unreal::Signatures
                         constexpr uint8_t instr_size = 0x7;
                         uint8_t* next_instruction = mov_instruction + instr_size;
                         uint32_t* offset = std::bit_cast<uint32_t*>(next_instruction + 0x3);
-                        gmalloc = *std::bit_cast<FMalloc**>(next_instruction + *offset);
+                        gmalloc = std::bit_cast<FMalloc*>(next_instruction + *offset);
                         FMalloc::malloc.assign_address(gmalloc->get_vtable_entry(3));
                         FMalloc::free.assign_address(gmalloc->get_vtable_entry(5));
 

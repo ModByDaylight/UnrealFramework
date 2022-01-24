@@ -375,6 +375,21 @@ namespace RC::Unreal::Signatures
                         scan_result.success_messages.emplace_back(std::format(STR("FMemory::Free address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
                         FMemory::free.assign_address(self.get_match_address());
                         self.get_did_succeed() = true;
+
+                        // Find the second MOV instruction and resolve it
+                        // Ideally a disassembler is used to guarantee that we are at the second MOV instruction
+                        // But seeing as FMemory::Free has never really changed, we can take a shortcut and just count the bytes to the second MOV instruction
+                        // 14 bytes (0xE)
+                        // This MOV instruction behaves like a LEA instruction
+                        uint8_t* mov_instruction = self.get_match_address() + 0xE;
+                        // Instruction size, including REX and ModR
+                        constexpr uint8_t instr_size = 0x7;
+                        uint8_t* next_instruction = mov_instruction + instr_size;
+                        uint32_t* offset = std::bit_cast<uint32_t*>(next_instruction + 0x3);
+                        gmalloc = *std::bit_cast<FMalloc**>(next_instruction + *offset);
+                        FMalloc::malloc.assign_address(gmalloc->get_vtable_entry(3));
+                        FMalloc::free.assign_address(gmalloc->get_vtable_entry(5));
+
                         return true;
                     },
                     // On Scan Completed

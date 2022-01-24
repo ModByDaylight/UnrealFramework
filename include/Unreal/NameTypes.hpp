@@ -4,7 +4,6 @@
 #include <string>
 
 #include <Unreal/Common.hpp>
-#include <Unreal/UObjectBaseUtility.hpp>
 
 namespace RC::Unreal
 {

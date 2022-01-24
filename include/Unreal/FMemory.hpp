@@ -23,7 +23,7 @@ namespace RC::Unreal
 
     public:
         static Function<void*(size_t count, uint32_t alignment)> malloc;
-        static Function<void*(void* original)> free;
+        static Function<void(void* original)> free;
 
     public:
         auto get_vtable_entry(size_t index) -> void*;

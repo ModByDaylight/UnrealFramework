@@ -22,14 +22,16 @@ namespace RC::Unreal
         void** vtable;
 
     public:
-        static Function<void*(size_t count, uint32_t alignment)> malloc;
-        static Function<void(void* original)> free;
+        static Function<void*(FMalloc* self, size_t count, uint32_t alignment)> malloc_internal;
+        static Function<void(FMalloc* self, void* original)> free_internal;
 
     public:
         auto get_vtable_entry(size_t index) -> void*;
+        auto malloc(size_t count, uint32_t alignment = 0) -> void*;
+        auto free(void* original) -> void;
     };
 
-    static FMalloc* gmalloc;
+    extern FMalloc* gmalloc;
 
     class RC_UE_API FMemory
     {

@@ -55,11 +55,11 @@ namespace RC::Unreal
         if (!m_str_data.get_data_ptr()) { return; }
 
         // If this check fails then we leak the string
-        if (!FMemory::free.is_ready()) { return; }
+        if (!FMalloc::free_internal.is_ready()) { return; }
 
         // Call FString::~FString() inside Unreal Engine
         // This tells UE to free the memory of this FString
-        FMemory::free(m_str_data.get_data_ptr());
+        gmalloc->free(m_str_data.get_data_ptr());
     }
 
     FStringOut::~FStringOut()

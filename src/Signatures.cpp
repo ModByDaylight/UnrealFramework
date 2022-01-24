@@ -357,53 +357,6 @@ namespace RC::Unreal::Signatures
             signature_containers_core.emplace_back(fname_constructor);
         }
 
-        if (config.scan_overrides.fmemory_free)
-        {
-            config.scan_overrides.fmemory_free(signature_containers_core);
-        }
-        else
-        {
-            SignatureContainer fmemory_free{
-                    {
-                            {
-                                    // 4.12, 4.22, 4.25, 4.26
-                                    "4 8/8 5/C 9/7 4/2 E/5 3/4 8/8 3/E C/2 0/4 8/8 B/D 9/4 8/8 B/? ?/? ?/? ?/? ?/? ?/4 8/8 5/C 9",
-                            },
-                    },
-                    // On Match Found
-                    [&](SignatureContainer& self) {
-                        scan_result.success_messages.emplace_back(std::format(STR("FMemory::Free address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
-                        FMemory::free.assign_address(self.get_match_address());
-                        self.get_did_succeed() = true;
-
-                        // Find the second MOV instruction and resolve it
-                        // Ideally a disassembler is used to guarantee that we are at the second MOV instruction
-                        // But seeing as FMemory::Free has never really changed, we can take a shortcut and just count the bytes to the second MOV instruction
-                        // 14 bytes (0xE)
-                        // This MOV instruction behaves like a LEA instruction
-                        uint8_t* mov_instruction = self.get_match_address() + 0xE;
-                        // Instruction size, including REX and ModR
-                        constexpr uint8_t instr_size = 0x7;
-                        uint8_t* next_instruction = mov_instruction + instr_size;
-                        uint32_t* offset = std::bit_cast<uint32_t*>(next_instruction + 0x3);
-                        gmalloc = std::bit_cast<FMalloc*>(next_instruction + *offset);
-                        FMalloc::malloc.assign_address(gmalloc->get_vtable_entry(3));
-                        FMalloc::free.assign_address(gmalloc->get_vtable_entry(5));
-
-                        return true;
-                    },
-                    // On Scan Completed
-                    [&](const SignatureContainer& self) {
-                        if (!self.get_did_succeed())
-                        {
-                            auto& error = scan_result.errors.emplace_back("Was unable to find AOB for 'FMemory::Free'\nYou can supply your own in 'UE4SS_Signatures/FMemory_Free.lua");
-                            error.is_fatal = false;
-                        }
-                    }
-            };
-            signature_containers_core.emplace_back(fmemory_free);
-        }
-
         if (config.scan_overrides.process_event)
         {
             config.scan_overrides.process_event(signature_containers_coreuobject);
@@ -503,11 +456,69 @@ namespace RC::Unreal::Signatures
         ScanResult scan_result;
 
         SinglePassScanner::SignatureContainerMap signature_container_map;
-        std::vector<SignatureContainer> signature_containers;
+        std::vector<SignatureContainer> signature_containers_coreuobject;
+        std::vector<SignatureContainer> signature_containers_core;
+
+        // FMemory stuff needs to be scanned in the second pass
+        // This is because we need access to the engine version which we don't until after the first pass
+        if (config.scan_overrides.fmemory_free)
+        {
+            config.scan_overrides.fmemory_free(signature_containers_core);
+        }
+        else
+        {
+            SignatureContainer fmemory_free{
+                    {
+                            {
+                                    // 4.12, 4.22, 4.25, 4.26
+                                    "4 8/8 5/C 9/7 4/2 E/5 3/4 8/8 3/E C/2 0/4 8/8 B/D 9/4 8/8 B/? ?/? ?/? ?/? ?/? ?/4 8/8 5/C 9",
+                            },
+                    },
+                    // On Match Found
+                    [&](SignatureContainer& self) {
+                        scan_result.success_messages.emplace_back(std::format(STR("FMemory::Free address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
+                        FMemory::free.assign_address(self.get_match_address());
+                        self.get_did_succeed() = true;
+
+                        // Find the second MOV instruction and resolve it
+                        // Ideally a disassembler is used to guarantee that we are at the second MOV instruction
+                        // But seeing as FMemory::Free has never really changed, we can take a shortcut and just count the bytes to the second MOV instruction
+                        // 13 bytes (0xD)
+                        // This MOV instruction behaves like a LEA instruction
+                        uint8_t* mov_instruction = self.get_match_address() + 0xD;
+                        // Instruction size, including REX and ModR
+                        constexpr uint8_t instr_size = 0x7;
+                        uint8_t* next_instruction = mov_instruction + instr_size;
+                        uint32_t* offset = std::bit_cast<uint32_t*>(mov_instruction + 0x3);
+                        gmalloc = *std::bit_cast<FMalloc**>(next_instruction + *offset);
+                        FMalloc::malloc_internal.assign_address(gmalloc->get_vtable_entry(2));
+
+                        if (Version::is_below(4, 25))
+                        {
+                            FMalloc::free_internal.assign_address(gmalloc->get_vtable_entry(4));
+                        }
+                        else
+                        {
+                            FMalloc::free_internal.assign_address(gmalloc->get_vtable_entry(6));
+                        }
+
+                        return true;
+                    },
+                    // On Scan Completed
+                    [&](const SignatureContainer& self) {
+                        if (!self.get_did_succeed())
+                        {
+                            auto& error = scan_result.errors.emplace_back("Was unable to find AOB for 'FMemory::Free'\nYou can supply your own in 'UE4SS_Signatures/FMemory_Free.lua");
+                            error.is_fatal = false;
+                        }
+                    }
+            };
+            signature_containers_core.emplace_back(fmemory_free);
+        }
 
         if (config.scan_overrides.guobjectarray)
         {
-            config.scan_overrides.guobjectarray(signature_containers);
+            config.scan_overrides.guobjectarray(signature_containers_coreuobject);
         }
         else
         {
@@ -603,10 +614,11 @@ namespace RC::Unreal::Signatures
                 }
             }();
 
-            signature_containers.emplace_back(guobjectarray);
+            signature_containers_coreuobject.emplace_back(guobjectarray);
         }
 
-        signature_container_map.emplace(ScanTarget::CoreUObject, signature_containers);
+        signature_container_map.emplace(ScanTarget::Core, signature_containers_core);
+        signature_container_map.emplace(ScanTarget::CoreUObject, signature_containers_coreuobject);
         SinglePassScanner::start_scan(signature_container_map);
 
         if (scan_result.errors.empty())

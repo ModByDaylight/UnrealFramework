@@ -4,7 +4,7 @@
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/UObjectArray.hpp>
 #include <Unreal/FString.hpp>
-#include <Unreal/FMemory.hpp>
+#include "Unreal/Memory/FMemory.hpp"
 #include <SigScanner/SinglePassSigScanner.hpp>
 #include <File/File.hpp>
 #include <Helpers/ASM.hpp>

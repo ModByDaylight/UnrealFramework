@@ -4,6 +4,10 @@
 
 namespace RC::Unreal
 {
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UFunction);
+
+    using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
+
     auto UFunction::get_function_flags() -> EFunctionFlags
     {
         // Works from 4.18 to 4.27 (confirmed)
@@ -12,31 +16,48 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<EFunctionFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UFunction_NumParms) - 4);
     }
 
-    auto UFunction::get_num_parms() -> uint8_t
+    auto UFunction::get_func_ptr() -> UnrealScriptFunction
     {
-        return Helper::Casting::offset_deref<uint8_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UFunction_NumParms));
-    }
-
-    auto UFunction::get_return_value_offset() -> uint16_t
-    {
-        return Helper::Casting::offset_deref<uint16_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UFunction_ReturnValueOffset));
-    }
-
-    auto UFunction::get_func_ptr() -> void*
-    {
-        return Helper::Casting::offset_deref<void*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UFunction_Func));
+        return Helper::Casting::offset_deref<UnrealScriptFunction>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UFunction_Func));
     }
 
     auto UFunction::set_func_ptr(UnrealScriptFunction new_func_ptr) -> void
     {
         UnrealScriptFunction* func = static_cast<UnrealScriptFunction*>(static_cast<void*>(this + StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UFunction_Func)));
-
         *func = new_func_ptr;
+    }
+
+    auto UFunction::get_num_parms() -> uint8_t
+    {
+        uint8_t num_parameters = 0;
+
+        this->for_each_property([&](FProperty* param) {
+            if (param->has_any_property_flags(Unreal::CPF_Parm))
+            {
+                num_parameters++;
+            }
+            return LoopAction::Continue;
+        });
+        return num_parameters;
+    }
+
+    auto UFunction::get_parms_size() -> int32_t
+    {
+        int32_t params_size = 0;
+
+        this->for_each_property([&](FProperty* param) {
+            if (param->has_any_property_flags(Unreal::CPF_Parm))
+            {
+                params_size = param->get_offset_for_internal() + param->get_size();
+            }
+            return LoopAction::Continue;
+        });
+        return params_size;
     }
 
     auto UFunction::get_return_property() -> FProperty*
     {
-        FProperty* return_property{nullptr};
+        FProperty* return_property = nullptr;
 
         this->for_each_property([&](FProperty* param) {
             if (param->has_any_property_flags(Unreal::CPF_ReturnParm))
@@ -44,27 +65,52 @@ namespace RC::Unreal
                 return_property = param;
                 return LoopAction::Break;
             }
-            else
-            {
-                return LoopAction::Continue;
-            }
+            return LoopAction::Continue;
         });
-
         return return_property;
     }
 
-    auto UFunction::unhook_all() -> void
+    auto UFunction::get_function_hook_data() -> UnrealScriptFunctionData&
     {
-        HookedUFunctionMap& hooked_functions = get_hooked_functions_map();
-        if (hooked_functions.contains(this))
+        Internal::HookedUFunctionMap& hooked_functions = Internal::get_hooked_functions_map();
+        auto iterator = hooked_functions.find(this);
+
+        if (iterator == hooked_functions.end())
         {
-            set_func_ptr(hooked_functions[this].original_func);
+            iterator = hooked_functions.insert({this, UnrealScriptFunctionData(get_func_ptr())}).first;
+            set_func_ptr(&Internal::unreal_script_function_hook);
+        }
+        return iterator->second;
+    }
 
-            erase_if(hooked_functions, [&](const auto& map_item) -> bool {
-                auto const& [script_function, script_struct] = map_item;
+    auto UFunction::register_pre_hook(const UnrealScriptFunctionCallable& pre_callback) -> CallbackId
+    {
+        UnrealScriptFunctionData& function_data = get_function_hook_data();
+        return function_data.add_pre_callback(pre_callback);
+    }
 
-                return script_function == this;
-            });
+    auto UFunction::register_post_hook(const UnrealScriptFunctionCallable& pre_callback) -> CallbackId
+    {
+        UnrealScriptFunctionData& function_data = get_function_hook_data();
+        return function_data.add_pre_callback(pre_callback);
+    }
+
+    auto UFunction::unregister_hook(CallbackId callback_id) -> bool
+    {
+        UnrealScriptFunctionData& function_data = get_function_hook_data();
+        return function_data.remove_callback(callback_id);
+    }
+
+    auto UFunction::unregister_all_hooks() -> void
+    {
+        Internal::HookedUFunctionMap& hooked_functions = Internal::get_hooked_functions_map();
+        auto iterator = hooked_functions.find(this);
+
+        if (iterator != hooked_functions.end())
+        {
+            iterator->second.remove_all_callbacks();
+            set_func_ptr(iterator->second.get_original_func_ptr());
+            hooked_functions.erase(this);
         }
     }
 }

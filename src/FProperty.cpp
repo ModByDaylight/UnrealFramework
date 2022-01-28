@@ -15,25 +15,13 @@
 #include <Unreal/UFunction.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Helpers/Format.hpp>
+#include "Unreal/Memory/FMemory.hpp"
 
 namespace RC::Unreal
 {
-    FFieldClassVariant FProperty::m_static_obj{(FFieldClass*) nullptr};
+    IMPLEMENT_PROPERTY_CLASS(FProperty);
 
-    auto FProperty::static_class() -> FFieldClassVariant {
-        if (!m_static_obj.is_valid())
-        {
-            throw std::runtime_error{"[FProperty::static_class] m_static_obj_variant is not valid"};
-        }
-        if (m_static_obj.is_uobject())
-        {
-            return m_static_obj.to_uobject();
-        }
-        else
-        {
-            return m_static_obj.to_field();
-        }
-    }
+    using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
     auto FProperty::get_offset_for_internal() -> int32_t
     {
@@ -60,33 +48,48 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<EPropertyFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::Property_PropertyFlags));
     }
 
-    auto FProperty::get_path_name(const void* stop_outer) -> std::wstring
+    auto FProperty::initialize_value_implementation(void* dest) -> void { throw std::runtime_error("initialize_value not implemented, and the property is not CPF_ZeroConstructor"); }
+    auto FProperty::destroy_value_implementation(void *value) -> void { throw std::runtime_error("destroy_value not implemented"); }
+    auto FProperty::copy_value_implementation(void *dest, const void *src) -> void { throw std::runtime_error("copy_value not implemented"); }
+    auto FProperty::clear_value_implementation(void *value) -> void { throw std::runtime_error("clear_value not implemented"); }
+    auto FProperty::identical_implementation(const void *A, const void *B, uint32_t port_flags) -> bool { throw std::runtime_error("identical not implemented"); }
+    auto FProperty::export_text_implementation(std::wstring &value_string, const void *property_value, const void *default_value, UObject *parent, int32_t port_flags) -> void { throw std::runtime_error("export_text not implemented"); }
+    auto FProperty::import_text_implementation(const wchar_t *buffer, void *data, int32_t port_flags, UObject *owner_object) -> const wchar_t * { throw std::runtime_error("import_text not implemented"); }
+
+    auto FProperty::get_property_value_int64_implementation(void *value) -> int64_t { throw std::runtime_error("is_floating_point can only be used on FNumericProperty"); }
+    auto FProperty::get_property_value_double_implementation(void *value) -> double { throw std::runtime_error("is_floating_point can only be used on FNumericProperty"); }
+    auto FProperty::is_floating_point_implementation() -> bool { throw std::runtime_error("is_floating_point can only be used on FNumericProperty"); }
+    auto FProperty::get_property_value_object_implementation(void *value) -> UObject * { throw std::runtime_error("is_floating_point can only be used on FObjectPropertyBase"); }
+
+    auto FProperty::initialize_value(void* dest) -> void
     {
-        std::wstring out_path;
-        size_t next_field{0};
-        std::array<FName, 16> fields;
-
-        for (FFieldVariant owner_variant = get_owner_variant(); owner_variant.is_valid(); owner_variant = owner_variant.get_owner_variant())
+        if (get_property_flags() & CPF_ZeroConstructor)
         {
-            if (!owner_variant.is_uobject())
-            {
-                FField* owner = owner_variant.to_field();
-                fields[next_field] = owner->get_fname();
-            }
-            else
-            {
-                UObject* owner = owner_variant.to_uobject();
-                UObjectBaseUtility::get_path_name_recursive(owner, stop_outer, out_path);
-                out_path.append(STR(":"));
-                break;
-            }
+            FMemory::memzero(dest, get_size());
         }
-
-        for (size_t field_index{0}; field_index < next_field; ++field_index)
+        else
         {
-            out_path.append(fields[field_index].to_string() + L".");
+            get_dispatch_table().initialize_value(this, dest);
         }
-        out_path.append(get_fname().to_string());
-        return out_path;
+    }
+
+    auto FProperty::destroy_value(void* value) -> void
+    {
+        if (!(get_property_flags() & CPF_NoDestructor))
+        {
+            get_dispatch_table().destroy_value(this, value);
+        }
+    }
+
+    auto FProperty::clear_value(void* value) -> void
+    {
+        if (has_all_property_flags(CPF_ZeroConstructor | CPF_NoDestructor))
+        {
+            FMemory::memzero(value, get_element_size());
+        }
+        else
+        {
+            get_dispatch_table().clear_value(this, value);
+        }
     }
 }

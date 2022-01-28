@@ -130,7 +130,7 @@ namespace RC::Unreal
     };
 
     template<UObjectGlobals::UObjectDerivative CastResultType>
-    auto cast_uobject(UObject* object) -> CastResultType*
+    auto cast_object(UObject* object) -> CastResultType*
     {
         return object != nullptr && object->is_a<CastResultType>() ? static_cast<CastResultType*>(object) : nullptr;
     }

@@ -1,7 +1,7 @@
 #define NOMINMAX
 
 #include <Unreal/FString.hpp>
-#include <Unreal/FMemory.hpp>
+#include "Unreal/Memory/FMemory.hpp"
 
 namespace RC::Unreal
 {

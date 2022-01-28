@@ -8,7 +8,7 @@
 #include <Unreal/Signatures.hpp>
 #include <Unreal/Hooks.hpp>
 #include <Unreal/FString.hpp>
-#include <Unreal/FMemory.hpp>
+#include "Unreal/Memory/FMemory.hpp"
 
 
 namespace RC::Unreal::UnrealInitializer

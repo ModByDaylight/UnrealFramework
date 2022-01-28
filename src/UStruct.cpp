@@ -59,7 +59,7 @@ namespace RC::Unreal
 
         while (current_field != nullptr) {
             //Only trigger the callable on UFunction objects
-            if (UFunction* function = cast_uobject<UFunction>(current_field)) {
+            if (UFunction* function = cast_object<UFunction>(current_field)) {
                 LoopAction loop_action = callable(function);
 
                 if (loop_action == LoopAction::Break) {
@@ -72,6 +72,39 @@ namespace RC::Unreal
 
     auto UStruct::for_each_property(const std::function<LoopAction(FProperty* property)>& callable) -> void
     {
-        if ()
+        if (Version::is_below(4, 25))
+        {
+            UField* current_field = get_children();
+
+            while (current_field != nullptr) {
+                FField* current_field_as_ffield = current_field->as_ffield_unsafe();
+
+                //Only trigger the callable on UProperty objects
+                if (FProperty* property = cast_field<FProperty>(current_field_as_ffield)) {
+                    LoopAction loop_action = callable(property);
+
+                    if (loop_action == LoopAction::Break) {
+                        break;
+                    }
+                }
+                current_field = current_field->get_next_ufield();
+            }
+        }
+        else
+        {
+            FField* current_field = get_child_properties();
+
+            while (current_field != nullptr) {
+                //Only trigger the callable on FProperty objects
+                if (FProperty* property = cast_field<FProperty>(current_field)) {
+                    LoopAction loop_action = callable(property);
+
+                    if (loop_action == LoopAction::Break) {
+                        break;
+                    }
+                }
+                current_field = current_field->get_next_ffield_unsafe();
+            }
+        }
     }
 }

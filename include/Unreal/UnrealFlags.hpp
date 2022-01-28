@@ -112,6 +112,7 @@ namespace RC::Unreal
         CPF_NativeAccessSpecifierPrivate    = 0x0040000000000000,    ///< Private native access specifier
         CPF_SkipSerialization               = 0x0080000000000000,    ///< Property shouldn't be serialized, can still be exported to text
     };
+    ENUM_CLASS_FLAGS(EPropertyFlags);
 
     enum class EInternalObjectFlags : int32_t
     {
@@ -141,6 +142,7 @@ namespace RC::Unreal
         //~ Make sure this is up to date!
         AllFlags = ReachableInCluster | ClusterRoot | Native | Async | AsyncLoading | Unreachable | PendingKill | RootSet
     };
+    ENUM_CLASS_FLAGS(EInternalObjectFlags);
 
 /** Mask of all property flags */
 #define CPF_AllFlags                ((EPropertyFlags)0xFFFFFFFFFFFFFFFF)
@@ -193,6 +195,7 @@ namespace RC::Unreal
         CLASS_ConfigDoNotCheckDefaults = 0x40000000u,
         CLASS_NewerVersionExists  = 0x80000000u,
     };
+    ENUM_CLASS_FLAGS(EClassFlags);
 
     enum EFunctionFlags : uint32_t
     {
@@ -234,6 +237,7 @@ namespace RC::Unreal
 
         FUNC_AllFlags        = 0xFFFFFFFF,
     };
+    ENUM_CLASS_FLAGS(EFunctionFlags);
 
     enum EStructFlags
     {
@@ -261,6 +265,7 @@ namespace RC::Unreal
         STRUCT_NetSharedSerialization = 0x00400000,
         STRUCT_Trashed = 0x00800000,
     };
+    ENUM_CLASS_FLAGS(EStructFlags);
 }
 
 #endif //RC_UNREAL_UNREALFLAGS_HPP

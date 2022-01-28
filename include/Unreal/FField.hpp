@@ -28,15 +28,8 @@ namespace RC::Unreal
      */
     class RC_UE_API FField
     {
-    protected:
-        using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
-        static FFieldClassVariant m_static_class;
+        DECLARE_FIELD_CLASS(FField);
     public:
-        /**
-         * Returns the FFieldClassVariant representing FField
-         */
-        auto static static_class() -> FFieldClassVariant;
-
         /**
          * Returns the class of the field, depending on the UE version it would
          * be either FFieldClass* (on UE4.25+), or UClass* object
@@ -84,6 +77,8 @@ namespace RC::Unreal
         auto get_outermost_owner() -> UObject*;
 
     private:
+        friend class UStruct;
+
         /**
          * Returns the next FField object in the linked list of class
          * properties defined by the UClass::ChildrenProperties
@@ -249,7 +244,7 @@ namespace RC::Unreal
             }
             else
             {
-                return nullptr;
+                throw std::runtime_error("FFieldClassVariant does not represent a FFieldClass");
             }
         }
 
@@ -261,7 +256,7 @@ namespace RC::Unreal
             }
             else
             {
-                return nullptr;
+                throw std::runtime_error("FFieldClassVariant does not represent a UClass");
             }
         }
 
@@ -322,6 +317,12 @@ namespace RC::Unreal
             return get_fname().to_string();
         }
     };
+
+    /** Casts the field to the specified type after performing the type checking */
+    template<FFieldDerivative T>
+    inline auto cast_field(FField* field) -> T* {
+        return field != nullptr && field->is_a<T>() ? static_cast<T*>(field) : nullptr;
+    }
 }
 
 #endif //RC_UNREAL_FFIELD_HPP

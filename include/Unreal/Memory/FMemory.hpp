@@ -1,9 +1,9 @@
 #ifndef RC_UNREAL_FMEMORY_HPP
 #define RC_UNREAL_FMEMORY_HPP
 
-#include <Function/Function.hpp>
+#include "Function/Function.hpp"
 
-#include <Unreal/Common.hpp>
+#include "Unreal/Common.hpp"
 
 /*
  * How GMalloc gets created:
@@ -36,7 +36,14 @@ namespace RC::Unreal
     class RC_UE_API FMemory
     {
     public:
-        static Function<void(void*)> free;
+        auto static free(void* ptr) -> void;
+        auto static malloc(size_t size) -> void*;
+        auto static realloc(void* ptr, size_t new_size) -> void*;
+        auto static memzero(void* ptr, size_t size) -> void;
+        auto static memmove(void* dest, void* src, size_t size) -> void;
+        auto static memset(void* src, char value, size_t size) -> void;
+        auto static memcpy(void* dest, void* src, size_t size) -> void;
+        auto static memcmp(void* first, void* second, size_t size) -> int;
     };
 }
 

@@ -1,16 +1,12 @@
 #include <Unreal/FField.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
-#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
-    FFieldClassVariant FField::m_static_class{(FFieldClass*) nullptr};
+    IMPLEMENT_FIELD_CLASS(FField);
 
-    auto FField::static_class() -> FFieldClassVariant
-    {
-
-    }
+    using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
     auto FField::get_class() -> FFieldClassVariant
     {
@@ -63,7 +59,7 @@ namespace RC::Unreal
         return current_variant.to_uobject();
     }
 
-    auto FField::as_uobject_unsafe() -> UField*
+    auto FField::as_ufield_unsafe() -> UField*
     {
         if (!Version::is_below(4, 25))
         {
@@ -169,7 +165,7 @@ namespace RC::Unreal
             }
             current_class = field_class->get_super_class();
         }
-        while (field_class);
+        while (current_class);
         return false;
     }
 }

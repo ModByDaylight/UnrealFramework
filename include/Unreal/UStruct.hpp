@@ -13,6 +13,8 @@
 
 namespace RC::Unreal
 {
+    class FProperty;
+
     class RC_UE_API UStruct : public UField
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UStruct, CoreUObject)

@@ -2,13 +2,13 @@
 #define RC_UNREAL_XPROPERTY_HPP
 
 #include <Unreal/FField.hpp>
-#include <Unreal/PropertyMacros.h>
 
 namespace RC::Unreal
 {
     class RC_UE_API FProperty : public FField
     {
-        DECLARE_PROPERTY_CLASS(FProperty);
+        DECLARE_FIELD_CLASS(FProperty);
+        DECLARE_VIRTUAL_TYPE(FProperty);
     public:
         /**
          * Returns the array dimensions of the property
@@ -61,6 +61,12 @@ namespace RC::Unreal
             return ((get_property_flags() & flags_to_check) == flags_to_check);
         }
 
+        /** See if the offset of this property is below the supplied container size */
+        inline bool is_in_container(UStruct* container_class)
+        {
+            return get_offset_for_internal() + get_size() <= (container_class ? container_class->get_properties_size() : INT32_MAX);
+        }
+
         template<typename T>
         auto container_ptr_to_value_ptr(void* container, int32_t array_index = 0) -> T*
         {
@@ -74,30 +80,201 @@ namespace RC::Unreal
         }
 
         /**
-         * Initializes the memory with the default value of the property of this type
-         * The pointed memory should be large enough to hold a complete property value of that type
-         * @param dest pointer to the memory to store property's value at
+         * Determines whether the property values are identical.
+         *
+         * @param A	property data to be compared, already offset
+         * @param B	property data to be compared, already offset
+         * @param port_flags allows caller more control over how the property values are compared
+         * @return true if the property values are identical
          */
-        auto initialize_value(void* dest) -> void;
+        auto identical(const void* A, const void* B, uint32_t port_flags = 0) -> bool;
 
         /**
-         * Initializes property value inside of it's container
-         * @param dest pointer to the property's container (UObject, struct or other property's value)
+         * Determines whether the property values are identical.
+         *
+         * @param A property container of data to be compared, NOT offset
+         * @param B property container of data to be compared, NOT offset
+         * @param port_flags allows caller more control over how the property values are compared
+         * @return true if the property values are identical
          */
-        inline auto initialize_value_in_container(void* dest) -> void
+        inline auto identical_in_container(const void* A, const void* B, int32_t array_index = 0, uint32_t port_flags = 0) -> bool
         {
-            initialize_value(container_ptr_to_value_ptr<void>(dest));
+            return identical(container_ptr_to_value_ptr<void>(A, array_index), B ? container_ptr_to_value_ptr<void>(B, array_index) : nullptr, port_flags);
         }
 
         /**
-         * Destroys the value of the property located at the provided memory pointer
-         * The memory at the location should be initialized and contain a valid value of matching type
+         * Exports the property value into the text string provided
+         *
+         * @param value_str string to serialize the property value into
+         * @param property_value property value to serialize
+         * @param default_value the default value of the property, or nullptr to serialize everything
+         * @param parent parent object on which the property is set
+         * @param port_flags the additional flags for property serialization
+         * @param export_root_scope the scope to create relative paths from, if the PPF_ExportsNotFullyQualified flag is passed in. If nullptr, the package containing the object will be used instead.
+         */
+        auto export_text_item(std::wstring& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope = nullptr) -> void;
+
+        /**
+         * Exports the property value to the string if it differs from the delta value specified
+         *
+         * @param value_str string to append the property value to
+         * @param data property value to serialize
+         * @param delta default property value, serialization is skipped if it is identical to the data
+         * @param parent parent object on which property is being serialized
+         * @param port_flags the additional flags for property serialization
+         * @param export_root_scope the scope to create relative paths from, if the PPF_ExportsNotFullyQualified flag is passed in
+         * @return true if the value was different from delta and was actually serialized to string
+         */
+        inline auto export_text_direct(std::wstring& value_str, const void* data, const void* delta, UObject* parent, int32_t port_flags, UObject* export_root_scope = nullptr) -> bool
+        {
+            if (data == delta || !identical(data, delta, port_flags))
+            {
+                export_text_item(value_str, data, delta, parent, port_flags, export_root_scope);
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Exports the property value to the string if it is different from the default value specified, in the container
+         *
+         * @param index index of the value if the property represents the statically sized array
+         * @param value_str string to serialize the value into
+         * @param data the pointer to the container with the property value
+         * @param delta the pointer to the container with the default property value
+         * @param parent the pointer to the UObject which property is being exported
+         * @param port_flags the additional flags for property serialization
+         * @param export_root_scope the scope to create relative paths from, if the PPF_ExportsNotFullyQualified flag is passed in
+         * @return true if the value was different from delta and was actually serialized to string
+         */
+        inline auto export_text_in_container(int32_t index, std::wstring& value_str, const void* data, const void* delta, UObject* parent, int32_t port_flags, UObject* export_root_scope = NULL) -> bool
+        {
+            return export_text_direct(value_str, container_ptr_to_value_ptr<void>(data, index),
+                                      container_ptr_to_value_ptr<void>(delta, index),
+                                      parent, port_flags, export_root_scope);
+        }
+
+        /**
+         * Imports the property value from the provided text string
+         *
+         * @param buffer the text to read the value from
+         * @param data the property value to serialize the data into
+         * @param port_flags the extra flags for parsing the value
+         * @param owner_object the object owning this property's value
+         * @return the remaining string after the value has been read, or nullptr if the value has not been read
+         */
+        auto import_text(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> wchar_t*;
+
+        /**
+         * Copy the value for a single element of this property.
+         * Behaves exactly the same as copy_complete_value for non-static sized array properties
+         *
+         * @param dest the address where the value should be copied to
+         * @param src the address of the value to copy from
+         */
+        inline auto copy_single_value(void* dest, void const* src) -> void
+        {
+            copy_values_internal(dest, src, 1);
+        }
+
+        /**
+         * Copy the value for all elements of this property.
+         *
+         * @param dest the address where the value should be copied to
+         * @param src the address of the value to copy from
+         */
+        inline auto copy_complete_value(void* dest, const void* src) -> void
+        {
+            copy_values_internal(dest, src, get_array_dim());
+        }
+
+        inline auto copy_complete_value_in_container(void* dest, const void* src) -> void
+        {
+            return copy_complete_value(container_ptr_to_value_ptr<void>(dest), container_ptr_to_value_ptr<void>(src));
+        }
+
+        /**
+         * Returns the hash value for an element of this property.
+         * Will throw the exception if the property value is not hashable.
+         */
+        uint32_t get_value_type_hash(const void* src);
+
+        /**
+         * Copy the value for a single element of this property. To the script VM.
+         *
+         * @param dest the address where the value should be copied to
+         * @param src the address of the value to copy from. should be evaluated the same way as Dest
+         */
+        inline auto copy_single_value_to_script_vm(void* dest, const void* src) -> void
+        {
+            copy_values_to_script_vm_internal(dest, src, 1);
+        }
+
+        /**
+         * Copy the value for all elements of this property. To the script VM.
+         *
+         * @param dest the address where the value should be copied to
+         * @param src the address of the value to copy from. should be evaluated the same way as Dest
+         */
+        inline auto copy_complete_value_to_script_vm(void* dest, void const* src) -> void
+        {
+            copy_values_to_script_vm_internal(dest, src, get_array_dim());
+        }
+
+        /**
+         * Copy the value for a single element of this property. From the script VM.
+         *
+         * @param dest the address where the value should be copied to
+         * @param src the address of the value to copy from. should be evaluated the same way as Dest
+         */
+        inline auto copy_single_value_from_script_vm(void* dest, void const* src) -> void
+        {
+            copy_values_from_script_vm_internal(dest, src, 1);
+        }
+
+        /**
+         * Copy the value for all elements of this property. From the script VM.
+         *
+         * @param dest the address where the value should be copied to
+         * @param src the address of the value to copy from. should be evaluated the same way as Dest
+         */
+        inline auto copy_complete_value_from_script_vm(void* dest, const void* src) -> void
+        {
+            copy_values_from_script_vm_internal(dest, src, get_array_dim());
+        }
+
+        /**
+         * Zeros the value for this property. The existing data is assumed valid (so for example this calls FString::Empty)
+         * This only does one item and not the entire fixed size array.
+         *
+         * @param data the address of the value for this property that should be cleared.
+         */
+        auto clear_value(void* data) -> void;
+
+        /**
+         * Zeros the value for this property. The existing data is assumed valid (so for example this calls FString::Empty)
+         * This only does one item and not the entire fixed size array.
+         *
+         * @param Data the address of the container of the value for this property that should be cleared.
+         */
+        inline auto clear_value_in_container(void* data, int32_t array_index = 0) -> void
+        {
+            clear_value(container_ptr_to_value_ptr<void>(data, array_index));
+        }
+
+        /**
+         * Destroys the value for this property. The existing data is assumed valid (so for example this calls FString::Empty)
+         * This does the entire fixed size array.
+         *
+         * @param dest the address of the value for this property that should be destroyed.
          */
         auto destroy_value(void* dest) -> void;
 
         /**
-         * Destroys property value in the property's container object
-         * @param dest pointer to the property's container object instance
+         * Destroys the value for this property. The existing data is assumed valid (so for example this calls FString::Empty)
+         * This does the entire fixed size array.
+         *
+         * @param dest the address of the container containing the value that should be destroyed.
          */
         inline auto destroy_value_in_container(void* dest) -> void
         {
@@ -105,152 +282,56 @@ namespace RC::Unreal
         }
 
         /**
-         * Resets value of the property inside of the container
-         * This function will only clear ONE value of the statically sized array properties
-         * @property dest pointer to the property's container object instance
-         */
-        inline auto clear_single_value_in_container(void* dest, int32_t array_index = 0) -> void
-        {
-            clear_single_value(container_ptr_to_value_ptr<void>(dest, array_index));
-        }
-
-        /**
-        * Resets value of the property inside of the container
-        * This function will clear the value of all elements for the statically sized array properties
-        * @property dest pointer to the property's container object instance
-        */
-        inline auto clear_complete_value_in_container(void* dest) -> void
-        {
-            for (int32_t i = 0; i < get_array_dim(); i++)
-            {
-                clear_single_value_in_container(dest, i);
-            }
-        }
-
-        /**
-         * Resets the provided value of the property to the default one
+         * Zeros, copies from the default, or calls the constructor for on the value for this property.
+         * The existing data is assumed invalid (so for example this might indirectly call FString::FString,
+         * This will do the entire fixed size array.
          *
-         * This function will only clear ONE value of the statically sized array properties
-         * @param value pointer to the property's value
+         * @param dest the address of the value for this property that should be cleared.
          */
-        auto clear_single_value(void* value) -> void;
+        auto initialize_value(void* dest) -> void;
 
         /**
-         * Clears the property value for all elements of the statically sized array properties
-         * @param value pointer to the property's value
+         * Zeros, copies from the default, or calls the constructor for on the value for this property.
+         * The existing data is assumed invalid (so for example this might indirectly call FString::FString,
+         * This will do the entire fixed size array.
+         *
+         * @param dest the address of the container of value for this property that should be cleared.
          */
-        auto clear_complete_value(void* value) -> void
+        inline auto initialize_value_in_container(void* dest) -> void
         {
-            const int32_t element_size = get_element_size();
-            for (int32_t i = 0; i < get_array_dim(); i++)
-            {
-                clear_single_value((uint8_t*) value + i * element_size);
-            }
+            initialize_value(container_ptr_to_value_ptr<void>(dest));
         }
+    //protected:
+        /**
+         * Copies specified number of property values from src address to dest
+         * Internal function, do not call directly!
+         */
+        auto copy_values_internal(void* dest, const void* src, int32_t count) -> void;
 
         /**
-         * Copies a single property value from one memory location to another
-         *
-         * This function will only copy ONE value of the statically sized array properties
-         * @param dest the location to copy value into
-         * @param src the location to copy value from
+         * Copies specified number of property values into the kismet VM
+         * Internal function, do not call directly!
          */
-        auto copy_single_value(void* dest, const void* src) -> void;
+        auto copy_values_to_script_vm_internal(void* dest, const void* src, int32_t count) -> void;
 
         /**
-         * Copies a complete property value from one memory location to another
-         * That would copy all of the array elements of the statically sized array properties
-         * @param dest the location to copy value into
-         * @param src the location to copy value from
+         * Copies specified number of property values from the kismet VM
+         * Internal function, do not call directly!
          */
-        inline auto copy_complete_value(void* dest, const void* src) -> void
-        {
-            const int32_t element_size = get_element_size();
-            for (int32_t i = 0; i < get_array_dim(); i++)
-            {
-                copy_single_value((uint8_t*) dest + i * element_size, (uint8_t*) src + i * element_size);
-            }
-        }
-
-        /**
-         * Copies a single property value from one container instance to another
-         * When dealing with statically sized arrays that would only copy the element at the provided index
-         * @param dest destination container to copy values into
-         * @param src source container to copy values from
-         */
-        inline auto copy_single_value_in_container(void* dest, void* src, int32_t array_index = 0) -> void
-        {
-            copy_single_value(container_ptr_to_value_ptr<void>(dest, array_index), container_ptr_to_value_ptr<void>(dest, array_index));
-        }
-
-        /**
-         * Copies a complete property value from one container instance to another, including all elements
-         * of the statically sized array properties
-         * @param dest destination container to copy values into
-         * @param src source container to copy values from
-         */
-        inline auto copy_complete_value_in_container(void* dest, void* src) -> void
-        {
-            for (int32_t i = 0; i < get_array_dim(); i++)
-            {
-                copy_single_value_in_container(dest, src, i);
-            }
-        }
-
-        /**
-         * Copies a single property value from the container into the KismetVM controlled external
-         * memory location, such as return value space or context object pointer
-         * This function will only copy a single property value for statically sized array properties
-         *
-         * Used primarily because almost all UObject-based properties are represented as raw UObject* values
-         * and not like their internal property representation
-         * For example, that would copy the UObject* into the VM for FWeakObjectProperty, even though
-         * property's internal representation in memory would be FWeakObjectPtr
-         *
-         * @param dest the VM controlled memory location to copy value into
-         * @param src the normal property value to make a copy of
-         */
-        auto copy_single_value_into_script_vm(void* dest, const void* src) -> void;
-
-        /**
-         * Copies a single property value from the KismetVM controlled external
-         * memory location, such as return value space or context object pointer, into the normal property container
-         * This function will only copy a single property value for statically sized array properties
-         *
-         * Used primarily because almost all UObject-based properties are represented as raw UObject* values
-         * and not like their internal property representation
-         * For example, that would set FWeakObjectPtr value for FWeakObjectProperty, even though
-         * the internal object representation in the VM is just a raw UObject pointer
-         *
-         * @param dest the normal property value dest location to copy into
-         * @param src the VM controlled memory location to copy value from
-         */
-        auto copy_single_value_from_script_vm(void* dest, const void* src) -> void;
-
-
-        auto identical(const void* A, const void* B, uint32_t port_flags) -> bool;
-        auto export_text(std::wstring& value_string, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags) -> void;
-        auto import_text(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> const wchar_t*;
+        auto copy_values_from_script_vm_internal(void* dest, const void* src, int32_t count) -> void;
     protected:
-        auto get_dispatch_table() -> const Internal::PropertyDispatchTable&;
+        auto copy_values_from_script_vm_internal_impl(void* dest, const void* src, int32_t count) -> void;
+        auto copy_values_to_script_vm_internal_impl(void* dest, const void* src, int32_t count) -> void;
 
-        //INTERNAL IMPLEMENTATION FUNCTIONS
-        //DECLARE FUNCTIONS WITH THE MATCHING SIGNATURE IN CHILD CLASSES TO OVERRIDE
-        auto initialize_value_implementation(void* dest) -> void;
-        auto destroy_value_implementation(void* value) -> void;
-        auto copy_value_implementation(void* dest, const void* src) -> void;
-        auto clear_value_implementation(void* value) -> void;
-        auto identical_implementation(const void* A, const void* B, uint32_t port_flags) -> bool;
-        auto export_text_implementation(std::wstring& value_string, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags) -> void;
-        auto import_text_implementation(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> const wchar_t*;
+        //auto identical_impl(const void* A, const void* B, uint32_t port_flags) -> void;
+        //auto export_text_item_impl(std::wstring& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope) -> void;
+        //auto import_text_impl(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> wchar_t*;
+        //uint32_t get_value_type_hash_impl(const void* src);
 
-        //FUNCTIONS SPECIFIC TO FNumericProperty
-        auto get_property_value_int64_implementation(void* value) -> int64_t;
-        auto get_property_value_double_implementation(void* value) -> double;
-        auto is_floating_point_implementation() -> bool;
-
-        //FUNCTIONS SPECIFIC TO FObjectPropertyBase
-        auto get_property_value_object_implementation(void* value) -> UObject*;
+        //auto clear_value_impl(void* data) -> void;
+        //auto destroy_value_impl(void* dest) -> void;
+        //auto initialize_value_impl(void* dest) -> void;
+        //auto copy_values_internal_impl(void* dest, void const* src, int32_t count);
     };
 }
 

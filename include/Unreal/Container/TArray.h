@@ -2,7 +2,7 @@
 #define UE4SS_TARRAY_H
 
 #include <Unreal/Container/ContainerAllocationPolicies.h>
-#include "Unreal/Memory/MemoryOps.h"
+#include "MemoryOps.h"
 
 #define INDEX_NONE -1
 
@@ -253,11 +253,6 @@ namespace RC::Unreal {
             MoveOrCopyWithSlack(*this, Other, 0, ExtraSlack);
         }
 
-        /**
-         * Move assignment operator.
-         *
-         * @param Other Array to assign and move from.
-         */
         TArray& operator=(TArray&& Other)
         {
             if (this != &Other)
@@ -373,13 +368,6 @@ namespace RC::Unreal {
             return Index != INDEX_NONE;
         }
 
-        /**
-         * Finds element within the array.
-         *
-         * @param Item Item to look for.
-         * @returns Index of the found element. INDEX_NONE otherwise.
-         * @see FindLast, FindLastByPredicate
-         */
         SizeType Find(const ElementType& Item) const
         {
             const ElementType* RESTRICT Start = GetData();
@@ -447,12 +435,6 @@ namespace RC::Unreal {
             return INDEX_NONE;
         }
 
-        /**
-         * Finds an item by predicate.
-         *
-         * @param Pred The predicate to match.
-         * @returns Index to the first matching element, or INDEX_NONE if none is found.
-         */
         template <typename Predicate>
         SizeType IndexOfByPredicate(Predicate Pred) const
         {
@@ -1097,11 +1079,6 @@ namespace RC::Unreal {
         typedef       ElementType* RangedForIteratorType;
         typedef const ElementType* RangedForConstIteratorType;
     public:
-
-        /**
-         * DO NOT USE DIRECTLY
-         * STL-like iterators to enable range-based for loop support.
-         */
         FORCEINLINE RangedForIteratorType      begin()       { return GetData(); }
         FORCEINLINE RangedForConstIteratorType begin() const { return GetData(); }
         FORCEINLINE RangedForIteratorType      end()         { return GetData() + Num(); }

@@ -25,13 +25,13 @@ namespace RC::Unreal
         auto static static_class() -> FFieldClassVariant
         {
             if (!m_static_obj_variant.is_valid()) { throw std::runtime_error{"[XWeakObjectProperty::static_class] m_static_obj_variant is not valid"}; }
-            if (m_static_obj_variant.is_uobject())
+            if (m_static_obj_variant.is_uclass())
             {
-                return m_static_obj_variant.to_uobject();
+                return m_static_obj_variant.to_uclass();
             }
             else
             {
-                return m_static_obj_variant.to_field();
+                return m_static_obj_variant.to_field_class();
             }
         }
 

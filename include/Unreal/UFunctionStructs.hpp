@@ -14,6 +14,7 @@ namespace RC::Unreal
 
     class RC_UE_API UnrealScriptFunctionCallableContext
     {
+    public:
         UObject* context;
         FFrame& the_stack;
         void* result_decl;

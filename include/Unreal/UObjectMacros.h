@@ -42,7 +42,7 @@ private: \
     inline static RC::Unreal::FFieldClassVariant* static_class_ptr() { return &ClassName::m_static_class; } \
     inline static const wchar_t* static_class_name() { return (STR(#ClassName) + 1); } \
 public: \
-    auto static static_class() -> RC::Unreal::FFieldClassVariant; \
+    auto static static_class() -> RC::Unreal::FFieldClassVariant;    \
 
 #define IMPLEMENT_FIELD_CLASS(ClassName) \
 RC::Unreal::FFieldClassVariant ClassName::m_static_class{(RC::Unreal::FFieldClass*) nullptr}; \
@@ -86,8 +86,6 @@ namespace RC::Unreal::Internal
         inline FFieldClassRegistrarTemplate() : FFieldClassRegistrar(T::static_class_ptr(), T::static_class_name()) {
         }
     };
-
-
 }
 
 #endif //UE4SS_UOBJECTMACROS_H

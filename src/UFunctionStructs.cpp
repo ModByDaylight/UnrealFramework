@@ -78,11 +78,11 @@ namespace RC::Unreal
                 throw std::runtime_error("Failed to find the function map entry for hooked function");
             }
 
-            const UnrealScriptFunctionCallableContext context(context, the_stack, result_decl);
+            UnrealScriptFunctionCallableContext func_context(context, the_stack, result_decl);
 
-            iterator->second.fire_pre_callbacks(context);
+            iterator->second.fire_pre_callbacks(func_context);
             iterator->second.get_original_func_ptr()(context, the_stack, result_decl);
-            iterator->second.fire_post_callbacks(context);
+            iterator->second.fire_post_callbacks(func_context);
         }
         catch (std::exception& e)
         {

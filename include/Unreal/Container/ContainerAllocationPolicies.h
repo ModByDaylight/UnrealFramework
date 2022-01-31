@@ -2,7 +2,7 @@
 #define UE4SS_CONTAINERALLOCATIONPOLICIES_H
 
 #include <type_traits>
-#include "Unreal/Memory/FMemory.hpp"
+#include "Unreal/FMemory.hpp"
 #include <Unreal/Common.hpp>
 
 namespace RC::Unreal {

@@ -9,6 +9,20 @@
 
 namespace RC::Unreal
 {
+    class UObject;
+
+    /** Concept describing the type of the pointer pointing to the UObject-derived object */
+    template<typename SupposedUObject>
+    concept UObjectPointerDerivative = std::is_convertible_v<SupposedUObject, UObject*>;
+
+    /** Concept describing the type derived from the UObject */
+    template<typename SupposedUObject>
+    concept UObjectDerivative = std::is_convertible_v<SupposedUObject, UObject>;
+
+    /** Casts the object to the provided type if possible, returns nullptr otherwise */
+    template<UObjectDerivative CastResultType>
+    auto cast_object(UObject* object) -> CastResultType*;
+
     class RC_UE_API UObject
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UObject, CoreUObject);
@@ -96,10 +110,10 @@ namespace RC::Unreal
         /**
          * Templated version of the is_a(UClass*) function
          */
-        template<UObjectGlobals::UObjectDerivative UObjectDerivedType>
+        template<UObjectDerivative T>
         inline auto is_a() -> bool
         {
-            return is_a(UObjectDerivedType::static_class());
+            return is_a(T::static_class());
         }
 
         /**
@@ -107,6 +121,21 @@ namespace RC::Unreal
          * object will always represent the UPackage instance
          */
         auto get_outermost() -> UObject*;
+
+        /**
+         * Returns the first outer of the object that is a subclass of the provided type
+         */
+        auto get_typed_outer(UClass* outer_type) -> UObject*;
+
+         /**
+          * Templated version of the get_typed_outer function above,
+          * returns the object already casted to the provided type too
+          */
+         template<UObjectDerivative T>
+         auto get_typed_outer() -> T*
+         {
+              return cast_object<T>(get_typed_outer(T::static_class()));
+         }
 
         /**
          * Executes the ProcessEvent on this object with the provided function,
@@ -129,7 +158,7 @@ namespace RC::Unreal
         auto get_path_name(UObject* stop_outer, std::wstring& result_name) -> void;
     };
 
-    template<UObjectGlobals::UObjectDerivative CastResultType>
+    template<UObjectDerivative CastResultType>
     auto cast_object(UObject* object) -> CastResultType*
     {
         return object != nullptr && object->is_a<CastResultType>() ? static_cast<CastResultType*>(object) : nullptr;

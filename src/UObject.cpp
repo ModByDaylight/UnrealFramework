@@ -51,13 +51,28 @@ namespace RC::Unreal
         process_event_internal(this, function, params);
     }
 
-    auto UObject::get_outermost() -> UObject* {
+    auto UObject::get_outermost() -> UObject*
+    {
         UObject* current_object = this;
         while (current_object->get_outer())
         {
             current_object = current_object->get_outer();
         }
         return current_object;
+    }
+
+    auto UObject::get_typed_outer(UClass* outer_type) -> UObject*
+    {
+        UObject* current_outer = get_outer();
+        while (current_outer != nullptr)
+        {
+            if (current_outer->is_a(outer_type))
+            {
+                return current_outer;
+            }
+            current_outer = current_outer->get_outer();
+        }
+        return nullptr;
     }
 
     auto UObject::is_a(UClass* uclass) -> bool {

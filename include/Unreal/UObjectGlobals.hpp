@@ -71,11 +71,6 @@ namespace RC::Unreal
 
 namespace RC::Unreal::UObjectGlobals
 {
-    template<typename SupposedUObject>
-    concept UObjectPointerDerivative = std::is_convertible_v<SupposedUObject, ::RC::Unreal::UObject*>;
-
-    template<typename SupposedUObject>
-    concept UObjectDerivative = std::is_convertible_v<SupposedUObject, ::RC::Unreal::UObject>;
 
     static inline void* ANY_PACKAGE{reinterpret_cast<void*>(-1)};
 

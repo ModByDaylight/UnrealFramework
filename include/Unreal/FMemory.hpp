@@ -42,8 +42,8 @@ namespace RC::Unreal
         auto static memzero(void* ptr, size_t size) -> void;
         auto static memmove(void* dest, void* src, size_t size) -> void;
         auto static memset(void* src, char value, size_t size) -> void;
-        auto static memcpy(void* dest, void* src, size_t size) -> void;
-        auto static memcmp(void* first, void* second, size_t size) -> int;
+        auto static memcpy(void* dest, const void* src, size_t size) -> void;
+        auto static memcmp(const void* first, const void* second, size_t size) -> int;
     };
 }
 

@@ -2,10 +2,10 @@
 #define RC_UNREAL_FFIELD_HPP
 
 #include <Constructs/Loop.hpp>
-
 #include <Unreal/Common.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/UnrealVersion.hpp>
+#include <Unreal/VirtualFunctionHelper.h>
 
 namespace RC::Unreal
 {
@@ -19,6 +19,10 @@ namespace RC::Unreal
     template<typename SupposedFField>
     concept FFieldDerivative = std::is_convertible_v<SupposedFField, ::RC::Unreal::FField>;
 
+    namespace Internal {
+        class FFieldTypeAccessor;
+    }
+
     /**
      * Represents an FField object on the UE versions above UE4.25
      * On the earlier versions it will be falling back to the UField behavior, allowing the version
@@ -29,6 +33,7 @@ namespace RC::Unreal
     class RC_UE_API FField
     {
         DECLARE_FIELD_CLASS(FField);
+        DECLARE_VIRTUAL_TYPE_BASE(FField, Internal::FFieldTypeAccessor);
     public:
         /**
          * Returns the class of the field, depending on the UE version it would
@@ -57,7 +62,7 @@ namespace RC::Unreal
         auto is_a(const FFieldClassVariant& uclass) -> bool;
 
         template<FFieldDerivative FFieldDerivedType>
-        auto is_a() -> bool
+        inline auto is_a() -> bool
         {
             return is_a(FFieldDerivedType::static_class());
         }
@@ -69,13 +74,19 @@ namespace RC::Unreal
         auto get_owner_variant() -> FFieldVariant;
 
         /**
-         * Returns the first UObject owner of this field
-         *
-         * In UE4.25+, it would be the first owner that is UObject
-         * In earlier version it would be field's outer
+         * Returns the first UObject owner of this field of the provided type
          */
-        auto get_outermost_owner() -> UObject*;
+        auto get_typed_owner(UClass* owner_type) -> UObject*;
 
+        /**
+         * Templated version of the get_typed_owner, will also cast the
+         * returned object pointer automatically
+         */
+        template<UObjectDerivative T>
+        inline auto get_typed_owner() -> T*
+        {
+            return cast_object<T>(get_typed_owner(T::static_class()));
+        }
     private:
         friend class UStruct;
 
@@ -113,7 +124,8 @@ namespace RC::Unreal
     };
 
     /**
-     * A union representing a FField* object or an UObject*
+     * A union representing a FField object or an UObject
+     * Used primarily to represent a FField object hierarchy, since FField owner can represent both
      */
     class RC_UE_API FFieldVariant
     {
@@ -122,9 +134,7 @@ namespace RC::Unreal
             FField* field;
             UObject* object;
         } container;
-
         bool is_object;
-
     public:
         FFieldVariant(FField* field) : is_object(false)
         {
@@ -135,7 +145,6 @@ namespace RC::Unreal
         {
             container.object = object;
         }
-
     public:
         auto is_valid() -> bool
         {
@@ -189,7 +198,7 @@ namespace RC::Unreal
      * In the UE versions above 4.25 this would be a FFieldClass object,
      * but on earlier version it would be represented by the UClass
      *
-     * Methods here allow working with FField classes in underlying type indepedent matter
+     * Methods here allow working with FField classes in underlying type independent matter
      */
     class RC_UE_API FFieldClassVariant
     {
@@ -199,95 +208,70 @@ namespace RC::Unreal
             FFieldClass* field;
             UClass* object;
         } container;
-
         bool is_object;
-
     public:
-        FFieldClassVariant(FFieldClass* field) : is_object(false)
-        {
-            container.field = field;
-        }
+        /**
+         * Constructs the FFieldClassVariant from the provided FFieldClass object
+         * @param field a valid FFieldClass object
+         */
+        FFieldClassVariant(FFieldClass* field);
 
-        FFieldClassVariant(UClass* object) : is_object(true)
-        {
-            container.object = object;
-        }
+        /**
+         * Constructs the FFieldClassVariant from the provided UClass object
+         * @param object a valid UClass object
+         */
+        FFieldClassVariant(UClass* object);
 
-        auto operator=(FFieldClass* new_field) -> void
-        {
-            is_object = false;
-            container.field = new_field;
-        }
-
-        auto operator=(UClass* new_object) -> void
-        {
-            is_object = true;
-            container.object = new_object;
-        }
-
+        /**
+         * Constructs an invalid instance of the FFieldClassVariant representing a nullptr
+         * The resulting instance cannot be de-referenced into neither of the types
+         */
+        FFieldClassVariant();
     public:
-        auto is_valid() -> bool
-        {
-            return container.object;
-        }
-
-        auto is_uobject() -> bool
-        {
-            return Version::is_below(4, 25) || is_object;
-        }
-
-        auto to_field() -> FFieldClass*
-        {
-            if (!is_uobject())
-            {
-                return container.field;
-            }
-            else
-            {
-                throw std::runtime_error("FFieldClassVariant does not represent a FFieldClass");
-            }
-        }
-
-        auto to_uobject() -> UClass*
-        {
-            if (is_uobject())
-            {
-                return container.object;
-            }
-            else
-            {
-                throw std::runtime_error("FFieldClassVariant does not represent a UClass");
-            }
-        }
-
-        auto to_flat() -> uintptr_t
-        {
-            return reinterpret_cast<uintptr_t>(container.object);
-        }
+        /**
+         * Checks whenever this variant represents a valid class and not a nullptr
+         * @return true if this is a valid class
+         */
+        auto is_valid() const -> bool;
 
         /**
          * Retrieves the class name, independently of the underlying type
          */
-        auto get_fname() -> FName;
-
-        /**
-         * Retrieves the class name, independently of the underlying type
-         */
-        inline auto get_name() -> std::wstring
-        {
-            return get_fname().to_string();
-        }
+        auto get_fname() const -> FName;
 
         /**
          * Retrieves the superclass of the class, independently of the underlying type
          */
-        auto get_super_class() -> FFieldClassVariant;
+        auto get_super_class() const -> FFieldClassVariant;
 
         /**
          * Determines whenever the property class is a children of the provided class
          * This will always return false when used to compare uclasses and field classes
          */
-        auto is_child_of(FFieldClassVariant uclass) -> bool;
+        auto is_child_of(FFieldClassVariant uclass) const -> bool;
+
+        /**
+         * Retrieves the class name, independently of the underlying type
+         */
+        inline auto get_name() const -> std::wstring
+        {
+            return get_fname().to_string();
+        }
+
+        /** Equality operator for FFieldClassVariant, they are equal if they both point to the same class */
+        auto operator==(const RC::Unreal::FFieldClassVariant& rhs) const -> bool;
+
+        /** Computes the hash of the object */
+        auto hash_object() const -> size_t;
+    private:
+        friend class UStruct;
+        friend class FField;
+
+        auto is_uclass() const -> bool;
+        auto is_field_class() const -> bool;
+
+        auto to_field_class() const -> FFieldClass*;
+        auto to_uclass() const -> UClass*;
     };
 
     /**
@@ -306,13 +290,13 @@ namespace RC::Unreal
         FField* construct_fn;
         //FThreadSafeCounter unique_name_index_counter;
     public:
-        auto get_fname() -> FName;
+        auto get_fname() const -> FName;
 
-        auto get_super_class() -> FFieldClass*;
+        auto get_super_class() const -> FFieldClass*;
 
-        auto is_child_of(FFieldClass* field_class) -> bool;
+        auto is_child_of(FFieldClass* field_class) const -> bool;
 
-        inline auto get_name() -> std::wstring
+        inline auto get_name() const -> std::wstring
         {
             return get_fname().to_string();
         }
@@ -323,6 +307,39 @@ namespace RC::Unreal
     inline auto cast_field(FField* field) -> T* {
         return field != nullptr && field->is_a<T>() ? static_cast<T*>(field) : nullptr;
     }
+
+    namespace Internal
+    {
+        /** Virtual function type accessor for FField objects */
+        class FFieldTypeAccessor : public BaseTypeAccessor
+        {
+        private:
+            static std::vector<void(*)()> late_bind_callbacks;
+            static bool type_system_initialized;
+        public:
+            using ClassType = FFieldClassVariant;
+
+            template<typename T>
+            inline static auto static_class() -> FFieldClassVariant
+            {
+                return T::static_class();
+            }
+            static auto get_object_class(FField* field) -> FFieldClassVariant;
+            static auto get_class_super_class(FFieldClassVariant field_class) -> FFieldClassVariant;
+            static auto is_class_valid(FFieldClassVariant field_class) -> bool;
+            static auto register_late_bind_callback(void(*callback)()) -> void;
+            static auto on_type_system_initialized() -> void;
+        };
+    }
 }
+
+template<>
+struct std::hash<RC::Unreal::FFieldClassVariant>
+{
+    std::size_t operator()(const RC::Unreal::FFieldClassVariant& s) const noexcept
+    {
+        return s.hash_object();
+    }
+};
 
 #endif //RC_UNREAL_FFIELD_HPP

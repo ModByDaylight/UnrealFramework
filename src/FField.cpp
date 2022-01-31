@@ -8,6 +8,50 @@ namespace RC::Unreal
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
+    bool Internal::FFieldTypeAccessor::type_system_initialized = false;
+    std::vector<void(*)()> Internal::FFieldTypeAccessor::late_bind_callbacks{};
+
+    auto Internal::FFieldTypeAccessor::get_object_class(FField* field) -> FFieldClassVariant
+    {
+        return field->get_class();
+    }
+
+    auto Internal::FFieldTypeAccessor::get_class_super_class(FFieldClassVariant field_class) -> FFieldClassVariant
+    {
+        return field_class.get_super_class();
+    }
+
+    auto Internal::FFieldTypeAccessor::is_class_valid(FFieldClassVariant field_class) -> bool
+    {
+        return field_class.is_valid();
+    }
+
+    auto Internal::FFieldTypeAccessor::register_late_bind_callback(void (*callback)()) -> void
+    {
+        if (!type_system_initialized)
+        {
+            late_bind_callbacks.push_back(callback);
+        }
+        else
+        {
+            callback();
+        }
+    }
+
+    auto Internal::FFieldTypeAccessor::on_type_system_initialized() -> void
+    {
+        if (type_system_initialized)
+        {
+            return;
+        }
+        type_system_initialized = true;
+
+        for (void (*callback)() : late_bind_callbacks)
+        {
+            callback();
+        }
+    }
+
     auto FField::get_class() -> FFieldClassVariant
     {
         if (Version::is_below(4, 25))
@@ -49,14 +93,18 @@ namespace RC::Unreal
         }
     }
 
-    auto FField::get_outermost_owner() -> UObject*
+    auto FField::get_typed_owner(UClass* owner_type) -> UObject*
     {
         FFieldVariant current_variant = get_owner_variant();
 
-        while (!current_variant.is_uobject()) {
+        while (current_variant.is_valid()) {
+            if (current_variant.is_uobject())
+            {
+                return current_variant.to_uobject()->get_typed_outer(owner_type);
+            }
             current_variant = current_variant.get_owner_variant();
         }
-        return current_variant.to_uobject();
+        return nullptr;
     }
 
     auto FField::as_ufield_unsafe() -> UField*
@@ -104,60 +152,149 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Next));
     }
 
-    auto FFieldClassVariant::get_fname() -> FName {
-        if (is_uobject())
-        {
-            return to_uobject()->get_fname();
-        }
-        else
-        {
-            return to_field()->get_fname();
-        }
-    }
-
-    auto FFieldClassVariant::get_super_class() -> FFieldClassVariant
+    FFieldClassVariant::FFieldClassVariant(FFieldClass* field) : is_object(false)
     {
-        if (is_uobject())
+        container.field = field;
+    }
+
+    FFieldClassVariant::FFieldClassVariant(UClass* object) : is_object(true)
+    {
+        container.object = object;
+    }
+
+    FFieldClassVariant::FFieldClassVariant() : is_object(false)
+    {
+        container.field = nullptr;
+    }
+
+    auto FFieldClassVariant::is_valid() const -> bool
+    {
+        return container.object;
+    }
+
+    auto FFieldClassVariant::is_uclass() const -> bool
+    {
+        return is_valid() && is_object;
+    }
+
+    auto FFieldClassVariant::is_field_class() const -> bool
+    {
+        return is_valid() && !is_object;
+    }
+
+    auto FFieldClassVariant::to_field_class() const -> FFieldClass*
+    {
+        if (is_field_class())
         {
-            return to_uobject()->get_super_class();
+            return container.field;
         }
         else
         {
-            return to_field()->get_super_class();
+            throw std::runtime_error("FFieldClassVariant does not represent a FFieldClass");
         }
     }
 
-    auto FFieldClassVariant::is_child_of(FFieldClassVariant uclass) -> bool
+    auto FFieldClassVariant::to_uclass() const -> UClass*
+    {
+        if (is_uclass())
+        {
+            return container.object;
+        }
+        else
+        {
+            throw std::runtime_error("FFieldClassVariant does not represent a UClass");
+        }
+    }
+
+    auto FFieldClassVariant::get_fname() const -> FName {
+        if (is_uclass())
+        {
+            return to_uclass()->get_fname();
+        }
+        else
+        {
+            return to_field_class()->get_fname();
+        }
+    }
+
+    auto FFieldClassVariant::get_super_class() const -> FFieldClassVariant
+    {
+        if (is_uclass())
+        {
+            return to_uclass()->get_super_class();
+        }
+        else
+        {
+            return to_field_class()->get_super_class();
+        }
+    }
+
+    auto FFieldClassVariant::is_child_of(FFieldClassVariant uclass) const -> bool
     {
         //Comparisons between UClass and FFieldClass never return true
-        if (is_uobject() != uclass.is_uobject())
+        if (is_uclass() != uclass.is_uclass())
         {
             return false;
         }
 
-        if (is_uobject())
+        if (is_uclass())
         {
-            return to_uobject()->is_child_of(uclass.to_uobject());
+            return to_uclass()->is_child_of(uclass.to_uclass());
         }
         else
         {
-            return to_field()->is_child_of(uclass.to_field());
+            return to_field_class()->is_child_of(uclass.to_field_class());
         }
     }
 
-    auto FFieldClass::get_fname() -> FName
+    auto FFieldClassVariant::operator==(const RC::Unreal::FFieldClassVariant& rhs) const -> bool {
+        if (!is_valid() || !rhs.is_valid())
+        {
+            return false;
+        }
+        if (is_uclass() != rhs.is_uclass())
+        {
+            return false;
+        }
+        if (is_uclass())
+        {
+            return to_uclass() == rhs.to_uclass();
+        }
+        else
+        {
+            return to_field_class() == rhs.to_field_class();
+        }
+    }
+
+    auto FFieldClassVariant::hash_object() const -> size_t
+    {
+        if (!is_valid())
+        {
+            return 0;
+        }
+        if (is_uclass())
+        {
+            return reinterpret_cast<size_t>(to_uclass());
+        }
+        else
+        {
+            return reinterpret_cast<size_t>(to_field_class());
+        }
+    }
+
+    auto FFieldClass::get_fname() const -> FName
     {
         return name;
     }
 
-    auto FFieldClass::get_super_class() -> FFieldClass*
+    auto FFieldClass::get_super_class() const -> FFieldClass*
     {
         return super_class;
     }
 
-    auto FFieldClass::is_child_of(FFieldClass* field_class) -> bool
+    auto FFieldClass::is_child_of(FFieldClass* field_class) const -> bool
     {
-        FFieldClass* current_class = this;
+        const FFieldClass* current_class = this;
         do {
             if (current_class == field_class)
             {

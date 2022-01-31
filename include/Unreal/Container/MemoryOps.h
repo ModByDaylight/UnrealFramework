@@ -2,7 +2,7 @@
 #define UE4SS_MEMORYOPS_H
 
 #include <type_traits>
-#include "Unreal/Memory/FMemory.hpp"
+#include "Unreal/FMemory.hpp"
 
 namespace RC::Unreal
 {

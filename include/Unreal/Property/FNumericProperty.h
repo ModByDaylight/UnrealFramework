@@ -3,6 +3,22 @@
 
 #include <Unreal/Property/TProperty.h>
 #include <File/File.hpp>
+#include "Unreal/UnrealStringConversions.h"
+
+#define IMPLEMENT_TPROPERTY_NUMERIC_VIRTUAL_FUNCTIONS(ClassName) \
+    IMPLEMENT_TPROPERTY_WITH_EQUALITY_AND_SERIALIZER_VIRTUAL_FUNCTIONS(ClassName); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, is_floating_point); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, is_integer); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, is_unsigned_integer); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_int_property_enum); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_unsigned_int_property_value); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_signed_int_property_value); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_floating_point_property_value); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_numeric_property_value_from_string); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_signed_int_property_value); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_unsigned_int_property_value); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_floating_point_property_value); \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_numeric_property_value_to_string);
 
 namespace RC::Unreal
 {
@@ -20,10 +36,10 @@ namespace RC::Unreal
         auto is_integer() -> bool;
 
         /** Returns true if this property is for a unsigned integral type */
-        auto is_unsigned_integer();
+        auto is_unsigned_integer() -> bool;
 
         /** Return the UEnum if this property is a FByteProperty with a non-null Enum **/
-       auto get_int_property_enum() -> UEnum*;
+        auto get_int_property_enum() -> UEnum*;
 
         /** Return true if this property is a FByteProperty with a non-null Enum **/
         inline auto is_enum() -> bool
@@ -36,14 +52,14 @@ namespace RC::Unreal
          * @param data - pointer to property data to set
          * @param value - Value to set data to
         **/
-        auto set_int_property_value(void* data, uint64_t value) -> void;
+        auto set_unsigned_int_property_value(void* data, uint64_t value) -> void;
 
         /**
          * Set the value of a signed integral property type
          * @param data - pointer to property data to set
          * @param value - Value to set data to
         **/
-        auto set_int_property_value(void* data, int64_t value) -> void;
+        auto set_signed_int_property_value(void* data, int64_t value) -> void;
 
         /**
          * Set the value of a floating point property type
@@ -90,7 +106,7 @@ namespace RC::Unreal
         auto get_numeric_property_value_to_string(const void* data) -> std::wstring;
     protected:
         auto export_text_item_impl(std::wstring& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope) -> void;
-        auto import_text_impl(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> wchar_t*;
+        auto import_text_impl(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> const wchar_t*;
     };
 
     template<typename InTCppType>
@@ -116,7 +132,12 @@ namespace RC::Unreal
             return std::is_unsigned_v<TCppType>;
         }
 
-        auto set_int_property_value_impl(void* data, uint64_t value) -> void
+        auto get_int_property_enum_impl() -> UEnum*
+        {
+            return nullptr;
+        }
+
+        auto set_unsigned_int_property_value_impl(void* data, uint64_t value) -> void
         {
             if (!std::is_integral_v<TCppType>)
             {
@@ -125,7 +146,7 @@ namespace RC::Unreal
             TTypeFundamentals::set_property_value(data, (TCppType) value);
         }
 
-        auto set_int_property_value_impl(void* data, int64_t value) -> void
+        auto set_signed_int_property_value_impl(void* data, int64_t value) -> void
         {
             if (!std::is_integral_v<TCppType>)
             {
@@ -170,14 +191,14 @@ namespace RC::Unreal
             return (double) TTypeFundamentals::get_property_value(data);
         }
 
-        virtual void SetNumericPropertyValueFromString(void* Data, TCHAR const* Value) const override
+        auto set_numeric_property_value_from_string_impl(void* data, const wchar_t* value) -> void
         {
-            LexFromString(*TTypeFundamentals::GetPropertyValuePtr(Data), Value);
+            lex_from_string(*TTypeFundamentals::get_property_value_ptr(data), value);
         }
 
-        virtual FString GetNumericPropertyValueToString(void const* Data) const override
+        auto get_numeric_property_value_to_string_impl(const void* data) -> std::wstring
         {
-            return LexToString(TTypeFundamentals::GetPropertyValue(Data));
+            return lex_to_string(TTypeFundamentals::get_property_value(data));
         }
     };
 }

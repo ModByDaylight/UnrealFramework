@@ -163,7 +163,7 @@ namespace RC::Unreal
          * @param owner_object the object owning this property's value
          * @return the remaining string after the value has been read, or nullptr if the value has not been read
          */
-        auto import_text(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> wchar_t*;
+        auto import_text(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> const wchar_t*;
 
         /**
          * Copy the value for a single element of this property.

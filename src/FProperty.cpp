@@ -1,10 +1,8 @@
 #include <Unreal/FProperty.hpp>
 #include <Unreal/UClass.hpp>
-#include <Unreal/Property/XArrayProperty.hpp>
-#include <Unreal/UEnum.hpp>
 #include <Unreal/UFunction.hpp>
-#include <Unreal/UnrealVersion.hpp>
-#include "Unreal/FMemory.hpp"
+#include <Unreal/FMemory.hpp>
+#include <Unreal/UnrealStringConversions.h>
 
 namespace RC::Unreal
 {

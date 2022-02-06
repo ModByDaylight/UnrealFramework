@@ -68,6 +68,14 @@ namespace RC::Unreal
          * Will return EEnumFlags::None on older UE versions
          */
         auto get_enum_flags() -> EEnumFlags;
+
+        /**
+         * Retrieves the enumeration index associated with the provided enum name
+         * Returns INDEX_NONE if there is no enumeration constant with the provided name
+         */
+        auto get_index_by_name(const std::wstring& name) -> int32_t;
+
+        auto get_value_by_name(const std::wstring& name) -> int64_t;
     };
 
     class RC_UE_API UUserDefinedEnum : public UEnum

@@ -3,6 +3,8 @@
 
 #include "Unreal/EnumHelper.h"
 
+#define INDEX_NONE -1
+
 namespace RC::Unreal
 {
     // Enum used for converting to the real enum

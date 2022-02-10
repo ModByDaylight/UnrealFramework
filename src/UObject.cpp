@@ -11,6 +11,41 @@ namespace RC::Unreal
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
+    auto UObjectBase::register_dependencies() -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBase, RegisterDependencies, void)
+    }
+
+    auto UObjectBase::deferred_register(class UClass* UClassStaticClass, const File::CharType* PackageName, const File::CharType* Name) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObjectBase, DeferredRegister, void, PARAMS(const UClass*, const File::CharType*, const File::CharType*), ARGS(UClassStaticClass, PackageName, Name))
+    }
+
+    auto UObjectBaseUtility::can_be_cluster_root() const -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, CanBeClusterRoot, bool)
+    }
+
+    auto UObjectBaseUtility::can_be_in_cluster() const -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, CanBeInCluster, bool)
+    }
+
+    auto UObject::is_safe_for_root_set() const -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsSafeForRootSet, bool)
+    }
+
+    auto UObject::pre_save_root(const File::CharType* Filename) -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PreSaveRoot, bool, PARAMS(const File::CharType*), ARGS(Filename))
+    }
+
+    auto UObject::serialize(FArchive& Ar) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, Serialize, void, PARAMS(FArchive&), ARGS(Ar))
+    }
+
     auto UObject::get_uclass() const -> UClass*
     {
         return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_ClassPrivate));

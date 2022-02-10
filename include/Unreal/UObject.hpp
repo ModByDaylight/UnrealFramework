@@ -2,6 +2,8 @@
 #define RC_UNREAL_UOBJECT_HPP
 
 #include <stdexcept>
+#include <File/File.hpp>
+#include <Function/Function.hpp>
 #include <Unreal/Common.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/UnrealFlags.hpp>
@@ -25,6 +27,28 @@ namespace RC::Unreal
     template<UObjectDerivative CastResultType>
     auto cast_object(UObject* object) -> CastResultType*;
 
+    class RC_UE_API UObjectBase
+    {
+    public:
+#include <VTableOffsets_UObjectBase.hpp>
+
+    public:
+        // Wrappers for virtual engine functions
+        auto register_dependencies() -> void;
+        auto deferred_register(class UClass* UClassStaticClass, const File::CharType* PackageName, const File::CharType* Name) -> void;
+    };
+
+    class RC_UE_API UObjectBaseUtility : public UObjectBase
+    {
+    public:
+#include <VTableOffsets_UObjectBaseUtility.hpp>
+
+    public:
+        // Wrappers for virtual engine functions
+        auto can_be_cluster_root() const -> bool;
+        auto can_be_in_cluster() const -> bool;
+    };
+
     class RC_UE_API UObject
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UObject, CoreUObject);
@@ -34,6 +58,16 @@ namespace RC::Unreal
 
         auto get_internal_index() -> uint32_t;
         auto get_object_item() -> struct FUObjectItem*;
+
+    public:
+#include <VTableOffsets_UObject.hpp>
+
+        // Wrappers for virtual engine functions
+        auto is_safe_for_root_set() const -> bool;
+        auto pre_save_root(const File::CharType* Filename) -> bool;
+        using FArchive = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
+        auto serialize(FArchive& Ar) -> void;
+
     public:
         /**
          * Returns the Class of the object

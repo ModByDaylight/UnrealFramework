@@ -250,47 +250,7 @@ namespace RC::Unreal::UnrealInitializer
 
     auto initialize_versioned_container() -> void
     {
-        // Even though this is the dynamic version that uses offsets it's still necessary to use a VersionedContainer sometimes.
-        // The reason is because it's supposed to be faster and more convenient.
-        // When there are differences in the implementation between different UE versions we use a VersionedContainer.
-        // That way we can simply call 'our_object->get_<whatever>()'.
-        // It'll automatically apply the correct offset for the detected version of Unreal Engine.
-
-        if (Version::major < 4)
-        {
-            throw std::runtime_error{"UnrealInitializerImpl: Unreal Engine version of <4.0 is not supported"};
-        }
-
-        if (Version::is_atmost(4, 12))
-        {
-            Container::set_to_derived<EngineVersion::UE4_12>();
-        }
-        else if (Version::is_atmost(4, 15))
-        {
-            Container::set_to_derived<EngineVersion::UE4_15>();
-        }
-        else if (Version::is_atmost(4, 18))
-        {
-            // TODO: Add support for 4.18
-            // Using 4.22 for now but that will break a soon as GUObjectArray is used
-            //Container::set_to_derived<Derived417>();
-            // Using 4.12 since it seems to have the correct GUObjectArray definition
-            Container::set_to_derived<EngineVersion::UE4_12>();
-        }
-        else if (Version::is_atmost(4, 24))
-        {
-            Container::set_to_derived<EngineVersion::UE4_22>();
-        }
-        else if (Version::is_atmost(4, 25))
-        {
-            Container::set_to_derived<EngineVersion::UE4_25>();
-        }
-        else
-        {
-            // If this code is ever reached then the version isn't explicitly supported
-            // Using 4.25 as a long-shot, sometimes this will work but in the future it's likely that this will break
-            Container::set_to_derived<EngineVersion::UE4_25>();
-        }
+        Container::set_derived_base_objects();
     }
 
     auto initialize(const Config& config) -> void
@@ -458,6 +418,7 @@ namespace RC::Unreal::UnrealInitializer
 
         StaticOffsetFinder::find_offsets(config.process_handle);
         StaticOffsetFinder::output_all_member_offsets();
+        Container::m_unreal_virtual_base->set_virtual_offsets();
 
         StaticStorage::is_initialized = true;
 

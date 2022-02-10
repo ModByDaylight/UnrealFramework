@@ -12,6 +12,13 @@ namespace RC::Unreal
     class RC_UE_API UScriptStruct : public UStruct
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UScriptStruct, CoreUObject);
+
+    public:
+        struct RC_UE_API ICppStructOps
+        {
+#include <VTableOffsets_UScriptStruct__ICppStructOps.hpp>
+        };
+
     public:
         /**
          * Returns the struct acting as a parent to this struct

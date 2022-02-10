@@ -40,16 +40,6 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<EPropertyFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::Property_PropertyFlags));
     }
 
-    auto FProperty::serialize(FArchive& ar) -> void
-    {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, Serialize, void, PARAMS(FArchive&), ARGS(ar))
-    }
-
-    auto FProperty::post_duplicate(const FField& in_field) -> void
-    {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, PostDuplicate, void, PARAMS(const FField&), ARGS(in_field))
-    }
-
     auto FProperty::get_cpp_macro_type(FString& extended_type_text) const -> FString
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, GetCPPMacroType, FString, PARAMS(FString&), ARGS(extended_type_text))

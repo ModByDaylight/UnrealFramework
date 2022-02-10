@@ -93,11 +93,6 @@ namespace RC::Unreal
             return reinterpret_cast<const T*>(reinterpret_cast<uintptr_t>(container) + get_offset_for_internal() + get_element_size() * array_index);
         }
 
-        using FArchive = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
-        auto serialize(FArchive& ar) -> void;
-
-        auto post_duplicate(const FField& in_field) -> void;
-
         auto get_cpp_macro_type(FString& extended_type_text) const -> FString;
 
         auto get_cpp_type(FString* extended_type_text = nullptr, uint32 cpp_export_flags = 0) const -> FString;

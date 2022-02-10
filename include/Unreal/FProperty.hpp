@@ -332,7 +332,8 @@ namespace RC::Unreal
 
         auto get_min_alignment() const -> int32;
 
-        auto contains_object_reference(TArray<const class FStructProperty*>& encountered_struct_props, EPropertyObjectReferenceType in_reference_type = EPropertyObjectReferenceType::Strong) const -> bool;
+        auto contains_object_reference(TArray<const class FStructProperty*>& encountered_struct_props, EPropertyObjectReferenceType in_reference_type) const -> bool;
+        auto contains_object_reference(TArray<const class FStructProperty*>& encountered_struct_props) const -> bool;
 
         auto emit_reference_info(UClass& owner_class, int32 base_offset, TArray<const FStructProperty*>& encountered_struct_props) -> void;
 

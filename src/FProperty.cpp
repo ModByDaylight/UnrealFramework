@@ -252,13 +252,44 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FProperty, GetMinAlignment, int32)
     }
 
-    auto FProperty::contains_object_reference(TArray<const class FStructProperty*>& encountered_struct_props, EPropertyObjectReferenceType in_reference_type = EPropertyObjectReferenceType::Strong) const -> bool
+    auto FProperty::contains_object_reference(TArray<const FStructProperty*>& encountered_struct_props, EPropertyObjectReferenceType in_reference_type) const -> bool
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
-                                         ContainsObjectReference,
-                                         bool,
-                                         PARAMS(TArray<const class FStructProperty*> &, EPropertyObjectReferenceType),
-                                         ARGS(encountered_struct_props, in_reference_type))
+        if (Version::is_atleast(4, 26))
+        {
+            // In 4.26, the second param was added
+            // This branch uses the 4.26 function signature that includes this param
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
+                                             ContainsObjectReference,
+                                             bool,
+                                             PARAMS(TArray<const class FStructProperty*> & , EPropertyObjectReferenceType),
+                                             ARGS(encountered_struct_props, in_reference_type))
+        }
+        else
+        {
+            // Before 4.26, the second param didn't exist
+            // This branch uses the <4.26 function signature that only has one param
+            // All params that don't exist get ignored
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>), ARGS(encountered_struct_props))
+        }
+    }
+
+    auto FProperty::contains_object_reference(TArray<const FStructProperty*>& encountered_struct_props) const -> bool
+    {
+        if (Version::is_atleast(4, 26))
+        {
+            // In 4.26, the second param was added
+            // This branch uses the 4.26 function signature that includes this param
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
+                                             ContainsObjectReference,
+                                             bool, PARAMS(TArray<const FStructProperty*>, EPropertyObjectReferenceType),
+                                             ARGS(encountered_struct_props, EPropertyObjectReferenceType::Strong))
+        }
+        else
+        {
+            // Before 4.26, the second param didn't exist
+            // This branch uses the <4.26 function signature that only has one param
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>), ARGS(encountered_struct_props))
+        }
     }
 
     auto FProperty::emit_reference_info(UClass& owner_class, int32 base_offset, TArray<const FStructProperty*>& encountered_struct_props) -> void

@@ -4,6 +4,7 @@
 #include <Constructs/Loop.hpp>
 #include <Unreal/Common.hpp>
 #include <Unreal/NameTypes.hpp>
+#include <Unreal/TArray.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/VirtualFunctionHelper.h>
 
@@ -34,6 +35,10 @@ namespace RC::Unreal
     {
         DECLARE_FIELD_CLASS(FField);
         DECLARE_VIRTUAL_TYPE_BASE(FField, Internal::FFieldTypeAccessor);
+
+    public:
+#include <VTableOffsets_FField.hpp>
+
     public:
         /**
          * Returns the class of the field, depending on the UE version it would
@@ -121,6 +126,28 @@ namespace RC::Unreal
         * Will throw the exception if UE version is below 4.25
         */
         auto get_ffield_fname_unsafe() -> FName;
+
+        using FArchive = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
+        auto serialize(FArchive& ar) -> void;
+
+        auto post_load() -> void;
+
+        auto get_preload_dependencies(TArray<UObject*>& out_deps) -> void;
+
+        auto begin_destroy() -> void;
+
+        using FReferenceCollector = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
+        auto add_referenced_objects(FReferenceCollector& collector) -> void;
+
+        auto add_cpp_property(class FProperty* property) -> void;
+
+        auto bind() -> void;
+
+        auto post_duplicate(const FField& in_field) -> void;
+
+        auto get_inner_field_by_name(const FName& in_name) -> FField*;
+
+        auto get_inner_fields(TArray<FField*>& out_fields) -> void;
     };
 
     /**

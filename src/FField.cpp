@@ -1,6 +1,7 @@
 #include <Unreal/FField.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
+#include <Unreal/VersionedContainer/Container.hpp>
 
 namespace RC::Unreal
 {
@@ -141,6 +142,57 @@ namespace RC::Unreal
             throw std::runtime_error("FField::Owner is not available in UE versions below 4.25");
         }
         return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_NamePrivate));
+    }
+
+    auto FField::serialize(FArchive& ar) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, Serialize, void, PARAMS(FArchive&), ARGS(ar))
+    }
+
+    auto FField::post_load() -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, PostLoad, void)
+    }
+
+    auto FField::get_preload_dependencies(TArray<UObject*>& out_deps) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetPreloadDependencies, void, PARAMS(TArray<UObject*>&), ARGS(out_deps))
+    }
+
+    auto FField::begin_destroy() -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, BeginDestroy, void)
+    }
+
+    using FReferenceCollector = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
+    auto FField::add_referenced_objects(FReferenceCollector& collector) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddReferencedObjects, void, PARAMS(FReferenceCollector&), ARGS(collector))
+    }
+
+    auto FField::add_cpp_property(FProperty* property) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddCppProperty, void, PARAMS(FProperty*), ARGS(property))
+    }
+
+    auto FField::bind() -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, Bind, void)
+    }
+
+    auto FField::post_duplicate(const FField& in_field) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, PostDuplicate, void, PARAMS(const FField&), ARGS(in_field))
+    }
+
+    auto FField::get_inner_field_by_name(const FName& in_name) -> FField*
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetInnerFieldByName, FField*, PARAMS(const FName&), ARGS(in_name))
+    }
+
+    auto FField::get_inner_fields(TArray<FField*>& out_fields) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetInnerFields, void, PARAMS(TArray<FField*>&), ARGS(out_fields))
     }
 
     auto FField::get_next_ffield_unsafe() -> FField*

@@ -2,13 +2,27 @@
 #define RC_UNREAL_XPROPERTY_HPP
 
 #include <Unreal/FField.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
 
 namespace RC::Unreal
 {
+    class FString;
+
+    enum class EPropertyObjectReferenceType
+    {
+        None = 0,
+        Strong = 1 << 0,
+        Weak = 1 << 1,
+    }
+
     class RC_UE_API FProperty : public FField
     {
         DECLARE_FIELD_CLASS(FProperty);
         DECLARE_VIRTUAL_TYPE(FProperty);
+
+    public:
+#include <VTableOffsets_FProperty.hpp>
+
     public:
         /**
          * Returns the array dimensions of the property
@@ -79,6 +93,26 @@ namespace RC::Unreal
             return reinterpret_cast<const T*>(reinterpret_cast<uintptr_t>(container) + get_offset_for_internal() + get_element_size() * array_index);
         }
 
+        using FArchive = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
+        auto serialize(FArchive& ar) -> void;
+
+        auto post_duplicate(const FField& in_field) -> void;
+
+        auto get_cpp_macro_type(FString& extended_type_text) const -> FString;
+
+        auto get_cpp_type(FString* extended_type_text = nullptr, uint32 cpp_export_flags = 0) const -> FString;
+
+        auto pass_cpp_args_by_ref() const -> bool;
+
+        auto get_cpp_type_forward_declaration() const -> FString;
+
+        auto link_internal(FArchive& ar) -> void;
+
+        using EConvertFromTypeResult = int32; // Remove if/when we have an EConvertFromTypeResult implementation, safe to use if you know the underlying enum numbers
+        using FPropertyTag = void*; // Remove if/when we have a FPropertyTag implementation, for now, probably a bad idea to call
+        struct FStructuredArchive { enum class FSlot {}; }; // Remove if/when we have a FStructuredArchive implementation, for now, probably a bad idea to call
+        auto convert_from_type(const FPropertyTag& tag, FStructuredArchive::FSlot slot, uint8* data, UStruct* defaults_struct) -> EConvertFromTypeResult;
+
         /**
          * Determines whether the property values are identical.
          *
@@ -88,6 +122,13 @@ namespace RC::Unreal
          * @return true if the property values are identical
          */
         auto identical(const void* A, const void* B, uint32_t port_flags = 0) -> bool;
+
+        auto serialize_item(FStructuredArchive::FSlot slot, void* value, void const* defaults = nullptr) const -> void;
+
+        using UPackageMap = void*; // Remove if/when we have a UPackageMap implementation, for now, probably a bad idea to call
+        auto net_serialize_item(FArchive& ar, UPackageMap* map, void* data, TArray<uint8>* meta_data = nullptr) const -> bool;
+
+        auto supports_met_shared_serialization() const -> bool;
 
         /**
          * Determines whether the property values are identical.
@@ -112,7 +153,7 @@ namespace RC::Unreal
          * @param port_flags the additional flags for property serialization
          * @param export_root_scope the scope to create relative paths from, if the PPF_ExportsNotFullyQualified flag is passed in. If nullptr, the package containing the object will be used instead.
          */
-        auto export_text_item(std::wstring& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope = nullptr) -> void;
+        auto export_text_item(FString& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope = nullptr) -> void;
 
         /**
          * Exports the property value to the string if it differs from the delta value specified
@@ -163,7 +204,10 @@ namespace RC::Unreal
          * @param owner_object the object owning this property's value
          * @return the remaining string after the value has been read, or nullptr if the value has not been read
          */
-        auto import_text(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> const wchar_t*;
+        auto import_text(const TCHAR* buffer, void* data, int32_t port_flags, UObject* owner_object, class FOutputDevice* error_text) -> const TCHAR*;
+        auto import_text_internal(const TCHAR* buffer, void* data, int32 port_flags, UObject* owner_object, class FOutputDevice* error_text) -> const TCHAR*;
+
+    public:
 
         /**
          * Copy the value for a single element of this property.
@@ -198,6 +242,7 @@ namespace RC::Unreal
          * Will throw the exception if the property value is not hashable.
          */
         uint32_t get_value_type_hash(const void* src);
+        auto get_value_type_hash_internal(const void* src) const -> uint32;
 
         /**
          * Copy the value for a single element of this property. To the script VM.
@@ -205,10 +250,7 @@ namespace RC::Unreal
          * @param dest the address where the value should be copied to
          * @param src the address of the value to copy from. should be evaluated the same way as Dest
          */
-        inline auto copy_single_value_to_script_vm(void* dest, const void* src) -> void
-        {
-            copy_values_to_script_vm_internal(dest, src, 1);
-        }
+        auto copy_single_value_to_script_vm(void* dest, void const* src) const -> void;
 
         /**
          * Copy the value for all elements of this property. To the script VM.
@@ -216,10 +258,7 @@ namespace RC::Unreal
          * @param dest the address where the value should be copied to
          * @param src the address of the value to copy from. should be evaluated the same way as Dest
          */
-        inline auto copy_complete_value_to_script_vm(void* dest, void const* src) -> void
-        {
-            copy_values_to_script_vm_internal(dest, src, get_array_dim());
-        }
+        auto copy_complete_value_to_script_vm(void* dest, void const* src) const -> void;
 
         /**
          * Copy the value for a single element of this property. From the script VM.
@@ -227,10 +266,7 @@ namespace RC::Unreal
          * @param dest the address where the value should be copied to
          * @param src the address of the value to copy from. should be evaluated the same way as Dest
          */
-        inline auto copy_single_value_from_script_vm(void* dest, void const* src) -> void
-        {
-            copy_values_from_script_vm_internal(dest, src, 1);
-        }
+        auto copy_single_value_from_script_vm(void* dest, void const* src) const -> void;
 
         /**
          * Copy the value for all elements of this property. From the script VM.
@@ -238,10 +274,7 @@ namespace RC::Unreal
          * @param dest the address where the value should be copied to
          * @param src the address of the value to copy from. should be evaluated the same way as Dest
          */
-        inline auto copy_complete_value_from_script_vm(void* dest, const void* src) -> void
-        {
-            copy_values_from_script_vm_internal(dest, src, get_array_dim());
-        }
+        auto copy_complete_value_from_script_vm(void* dest, void const* src) const -> void;
 
         /**
          * Zeros the value for this property. The existing data is assumed valid (so for example this calls FString::Empty)
@@ -250,6 +283,7 @@ namespace RC::Unreal
          * @param data the address of the value for this property that should be cleared.
          */
         auto clear_value(void* data) -> void;
+        auto clear_value_internal(void* data) const -> void;
 
         /**
          * Zeros the value for this property. The existing data is assumed valid (so for example this calls FString::Empty)
@@ -269,6 +303,7 @@ namespace RC::Unreal
          * @param dest the address of the value for this property that should be destroyed.
          */
         auto destroy_value(void* dest) -> void;
+        auto destroy_value_internal(void* dest) const -> void;
 
         /**
          * Destroys the value for this property. The existing data is assumed valid (so for example this calls FString::Empty)
@@ -289,6 +324,19 @@ namespace RC::Unreal
          * @param dest the address of the value for this property that should be cleared.
          */
         auto initialize_value(void* dest) -> void;
+        auto initialize_value_internal(void* dest) const -> void;
+
+        auto get_id() const -> FName;
+
+        auto instance_subobjects(void* data, void const* default_data, UObject* owner, struct FObjectInstancingGraph* instance_graph) -> void;
+
+        auto get_min_alignment() const -> int32;
+
+        auto contains_object_reference(TArray<const class FStructProperty*>& encountered_struct_props, EPropertyObjectReferenceType in_reference_type = EPropertyObjectReferenceType::Strong) const -> bool;
+
+        auto emit_reference_info(UClass& owner_class, int32 base_offset, TArray<const FStructProperty*>& encountered_struct_props) -> void;
+
+        auto same_type(const FProperty* other) const -> bool;
 
         /**
          * Zeros, copies from the default, or calls the constructor for on the value for this property.

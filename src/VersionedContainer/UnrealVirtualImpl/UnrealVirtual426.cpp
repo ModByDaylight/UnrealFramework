@@ -12,5 +12,8 @@ namespace RC::Unreal
 #include <FunctionBodies/4_26_VTableOffsets_UObjectBase_FunctionBody.cpp>
 #include <FunctionBodies/4_26_VTableOffsets_UObjectBaseUtility_FunctionBody.cpp>
 #include <FunctionBodies/4_26_VTableOffsets_UScriptStruct__ICppStructOps_FunctionBody.cpp>
+#include <FunctionBodies/4_26_VTableOffsets_UField_FunctionBody.cpp>
+#include <FunctionBodies/4_26_VTableOffsets_FField_FunctionBody.cpp>
+#include <FunctionBodies/4_26_VTableOffsets_FProperty_FunctionBody.cpp>
     }
 }

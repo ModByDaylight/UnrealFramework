@@ -1,0 +1,14 @@
+UNumericProperty::VTableOffsets::ImportText_Internal = 0x0;
+UNumericProperty::VTableOffsets::IsInteger = 0x2C8;
+UNumericProperty::VTableOffsets::ExportTextItem = 0x0;
+UNumericProperty::VTableOffsets::GetFloatingPointPropertyValue = 0x308;
+UNumericProperty::VTableOffsets::SetNumericPropertyValueFromString = 0x2F0;
+UNumericProperty::VTableOffsets::IsFloatingPoint = 0x2C0;
+UNumericProperty::VTableOffsets::GetIntPropertyEnum = 0x2D0;
+UNumericProperty::VTableOffsets::SetIntPropertyValue = 0x2E0;
+UNumericProperty::VTableOffsets::SetFloatingPointPropertyValue = 0x2E8;
+UNumericProperty::VTableOffsets::GetSignedIntPropertyValue = 0x2F8;
+UNumericProperty::VTableOffsets::GetUnsignedIntPropertyValue = 0x300;
+UNumericProperty::VTableOffsets::GetNumericPropertyValueToString = 0x310;
+UNumericProperty::VTableOffsets::UNumericProperty_Destructor = 0x0;
+UNumericProperty::VTableOffsets::__vecDelDtor = 0x0;

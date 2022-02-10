@@ -1,5 +1,7 @@
 #include "Unreal/Property/FNumericProperty.h"
 #include "Unreal/UEnum.hpp"
+#include <Unreal/FString.hpp>
+#include <Unreal/VersionedContainer/Container.hpp>
 
 namespace RC::Unreal
 {
@@ -7,14 +9,74 @@ namespace RC::Unreal
     IMPLEMENT_VIRTUAL_FUNCTION(FNumericProperty, import_text);
     IMPLEMENT_VIRTUAL_FUNCTION(FNumericProperty, export_text_item);
 
-    auto FNumericProperty::is_integer() -> bool
+    auto FNumericProperty::IsFloatingPoint() const -> bool
     {
-        return CALL_VIRTUAL_FUNCTION(this, is_integer);
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FNumericProperty, IsFloatingPoint, bool)
     }
 
-    auto FNumericProperty::is_floating_point() -> bool
+    auto FNumericProperty::IsInteger() const -> bool
     {
-        return CALL_VIRTUAL_FUNCTION(this, is_floating_point);
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FNumericProperty, IsInteger, bool)
+    }
+
+    auto FNumericProperty::GetIntPropertyEnum() const -> UEnum*
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FNumericProperty, GetIntPropertyEnum, UEnum*)
+    }
+
+    auto FNumericProperty::SetIntPropertyValue(void* Data, uint64 Value) const -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, SetIntPropertyValue, void, PARAMS(void*, uint64), ARGS(Data, Value))
+    }
+
+    auto FNumericProperty::SetIntPropertyValue(void* Data, int64 Value) const -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, SetIntPropertyValue, void, PARAMS(void*, int64), ARGS(Data, Value))
+    }
+
+    auto FNumericProperty::SetFloatingPointPropertyValue(void* Data, double Value) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, SetFloatingPointPropertyValue, void, PARAMS(void*, double), ARGS(Data, Value))
+    }
+
+    auto FNumericProperty::SetNumericPropertyValueFromString(void* Data, TCHAR const* Value) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, SetNumericPropertyValueFromString, void, PARAMS(void*, TCHAR const*), ARGS(Data, Value))
+    }
+
+    auto FNumericProperty::GetSignedIntPropertyValue(void* Data, int64 Value) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, GetSignedIntPropertyValue, void, PARAMS(void*, int64), ARGS(Data, Value))
+    }
+
+    auto FNumericProperty::GetUnsignedIntPropertyValue(void const* Data) -> uint64
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, GetUnsignedIntPropertyValue, uint64, PARAMS(void const*), ARGS(Data))
+    }
+
+    auto FNumericProperty::GetFloatingPointPropertyValue(void const* Data) -> double
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, GetFloatingPointPropertyValue, double, PARAMS(void const*), ARGS(Data))
+    }
+
+    auto FNumericProperty::GetNumericPropertyValueToString(void const* Data) -> FString
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, GetNumericPropertyValueToString, FString, PARAMS(void const*), ARGS(Data))
+    }
+
+    auto FNumericProperty::CanHoldDoubleValueInternal(double Value) const -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, CanHoldDoubleValueInternal, bool, PARAMS(double), ARGS(Value))
+    }
+
+    auto FNumericProperty::CanHoldSignedValueInternal(int64 Value) const -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, CanHoldSignedValueInternal, bool, PARAMS(int64), ARGS(Value))
+    }
+
+    auto FNumericProperty::CanHoldUnsignedValueInternal(uint64 Value) const -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, CanHoldUnsignedValueInternal, bool, PARAMS(uint64), ARGS(Value))
     }
 
     auto FNumericProperty::is_unsigned_integer() -> bool
@@ -22,123 +84,8 @@ namespace RC::Unreal
         return CALL_VIRTUAL_FUNCTION(this, is_unsigned_integer);
     }
 
-    auto FNumericProperty::get_int_property_enum() -> UEnum*
-    {
-        return CALL_VIRTUAL_FUNCTION(this, get_int_property_enum);
-    }
-
     auto FNumericProperty::set_unsigned_int_property_value(void* data, uint64_t value) -> void
     {
         CALL_VIRTUAL_FUNCTION(this, set_unsigned_int_property_value, data, value);
-    }
-
-    auto FNumericProperty::set_signed_int_property_value(void* data, int64_t value) -> void
-    {
-        CALL_VIRTUAL_FUNCTION(this, set_signed_int_property_value, data, value);
-    }
-
-    auto FNumericProperty::set_floating_point_property_value(void* data, double value) -> void
-    {
-        CALL_VIRTUAL_FUNCTION(this, set_floating_point_property_value, data, value);
-    }
-
-    auto FNumericProperty::set_numeric_property_value_from_string(void* data, const wchar_t* value) -> void
-    {
-        CALL_VIRTUAL_FUNCTION(this, set_numeric_property_value_from_string, data, value);
-    }
-
-    auto FNumericProperty::get_signed_int_property_value(const void *data) -> int64_t
-    {
-        return CALL_VIRTUAL_FUNCTION(this, get_signed_int_property_value, data);
-    }
-
-    auto FNumericProperty::get_unsigned_int_property_value(const void *data) -> uint64_t
-    {
-        return CALL_VIRTUAL_FUNCTION(this, get_unsigned_int_property_value, data);
-    }
-
-    auto FNumericProperty::get_floating_point_property_value(const void *data) -> double
-    {
-        return CALL_VIRTUAL_FUNCTION(this, get_floating_point_property_value, data);
-    }
-
-    auto FNumericProperty::get_numeric_property_value_to_string(const void *data) -> std::wstring
-    {
-        return CALL_VIRTUAL_FUNCTION(this, get_numeric_property_value_to_string, data);
-    }
-
-    auto FNumericProperty::export_text_item_impl(std::wstring& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope) -> void
-    {
-        value_str += get_numeric_property_value_to_string(property_value);
-    }
-
-    auto FNumericProperty::import_text_impl(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> const wchar_t*
-    {
-        if (buffer != nullptr)
-        {
-            const wchar_t* start = buffer;
-
-            if (is_integer())
-            {
-                if (isalpha(*buffer))
-                {
-                    UEnum* property_enum = get_int_property_enum();
-                    if (property_enum == nullptr)
-                    {
-                        return nullptr;
-                    }
-
-                    int64_t enum_value = property_enum->get_value_by_name(buffer);
-                    if (enum_value != INDEX_NONE)
-                    {
-                        set_signed_int_property_value(data, enum_value);
-                    }
-                    else
-                    {
-                        return nullptr;
-                    }
-                }
-                else
-                {
-                    if (!_wcsnicmp(start, STR("0x"), 2))
-                    {
-                        buffer += 2;
-                        while (buffer && (hex_digit(*buffer) != 0 || *buffer == '0'))
-                        {
-                            buffer++;
-                        }
-                    }
-                    else
-                    {
-                        while (buffer && (*buffer == '-' || *buffer == '+'))
-                        {
-                            buffer++;
-                        }
-                        while (buffer && iswdigit(*buffer))
-                        {
-                            buffer++;
-                        }
-                    }
-                    if (start == buffer)
-                    {
-                        return nullptr;
-                    }
-                }
-            }
-            else
-            {
-                while (*buffer == '+' || *buffer == '-' || *buffer == '.' || (*buffer >= '0' && *buffer <= '9'))
-                {
-                    buffer++;
-                }
-                if (*buffer == 'f' || *buffer == 'F')
-                {
-                    buffer++;
-                }
-            }
-
-            set_numeric_property_value_from_string(data, start);
-        }
-        return buffer;
     }
 }

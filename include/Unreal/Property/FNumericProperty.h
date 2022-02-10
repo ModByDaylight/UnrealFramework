@@ -7,18 +7,9 @@
 
 #define IMPLEMENT_TPROPERTY_NUMERIC_VIRTUAL_FUNCTIONS(ClassName) \
     IMPLEMENT_TPROPERTY_WITH_EQUALITY_AND_SERIALIZER_VIRTUAL_FUNCTIONS(ClassName); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, is_floating_point); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, is_integer); \
     IMPLEMENT_VIRTUAL_FUNCTION(ClassName, is_unsigned_integer); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_int_property_enum); \
     IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_unsigned_int_property_value); \
     IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_signed_int_property_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_floating_point_property_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_numeric_property_value_from_string); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_signed_int_property_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_unsigned_int_property_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_floating_point_property_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_numeric_property_value_to_string);   \
     IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_value_type_hash);
 
 namespace RC::Unreal
@@ -29,23 +20,87 @@ namespace RC::Unreal
     {
         DECLARE_FIELD_CLASS(FNumericProperty);
         DECLARE_VIRTUAL_TYPE(FNumericProperty);
+
+    public:
+#include <VTableOffsets_FNumericProperty.hpp>
+
     public:
         /** Return true if this property is for a floating point number **/
-        auto is_floating_point() -> bool;
+        auto IsFloatingPoint() const -> bool;
 
         /** Return true if this property is for a integral or enum type **/
-        auto is_integer() -> bool;
+        auto IsInteger() const -> bool;
+
+        /** Return the UEnum if this property is a FByteProperty with a non-null Enum **/
+        auto GetIntPropertyEnum() const -> UEnum*;
+
+        // TODO: The vtable offset generator isn't currently capable of handling multiple functions with the same name
+        //       As a result, these two functions map to the same offset
+        auto SetIntPropertyValue(void* Data, uint64 Value) const -> void;
+        auto SetIntPropertyValue(void* Data, int64 Value) const -> void;
+
+        /**
+         * Set the value of a floating point property type
+         * @param data - pointer to property data to set
+         * @param value - Value to set data to
+        **/
+        auto SetFloatingPointPropertyValue(void* Data, double Value) -> void;
+
+        /**
+         * Set the value of any numeric type from a string point
+         * @param data - pointer to property data to set
+         * @param value - Value (as a string) to set
+         * CAUTION: This routine does not do enum name conversion
+        **/
+        auto SetNumericPropertyValueFromString(void* Data, TCHAR const* Value) -> void;
+
+        /**
+         * Set the value of a signed integral property type
+         * @param data - pointer to property data to set
+         * @param value - Value to set data to
+        **/
+        /**
+         * Gets the value of a signed integral property type
+         * @param data - pointer to property data to get
+         * @return Data as a signed int
+        **/
+        auto GetSignedIntPropertyValue(void* Data, int64 Value) -> void;
+
+        /**
+         * Gets the value of an unsigned integral property type
+         * @param data - pointer to property data to get
+         * @return Data as an unsigned int
+        **/
+        auto GetUnsignedIntPropertyValue(void const* Data) -> uint64;
+
+        /**
+         * Gets the value of an floating point property type
+         * @param data - pointer to property data to get
+         * @return Data as a double
+        **/
+        auto GetFloatingPointPropertyValue(void const* Data) -> double;
+
+        /**
+         * Get the value of any numeric type and return it as a string
+         * @param data - pointer to property data to get
+         * @return Data as a string
+         * CAUTION: This routine does not do enum name conversion
+        **/
+        auto GetNumericPropertyValueToString(void const* Data) -> FString;
+
+        auto CanHoldDoubleValueInternal(double Value) const -> bool;
+
+        auto CanHoldSignedValueInternal(int64 Value) const -> bool;
+
+        auto CanHoldUnsignedValueInternal(uint64 Value) const -> bool;
 
         /** Returns true if this property is for a unsigned integral type */
         auto is_unsigned_integer() -> bool;
 
-        /** Return the UEnum if this property is a FByteProperty with a non-null Enum **/
-        auto get_int_property_enum() -> UEnum*;
-
         /** Return true if this property is a FByteProperty with a non-null Enum **/
         inline auto is_enum() -> bool
         {
-            return !!get_int_property_enum();
+            return !!GetIntPropertyEnum();
         }
 
         /**
@@ -54,60 +109,6 @@ namespace RC::Unreal
          * @param value - Value to set data to
         **/
         auto set_unsigned_int_property_value(void* data, uint64_t value) -> void;
-
-        /**
-         * Set the value of a signed integral property type
-         * @param data - pointer to property data to set
-         * @param value - Value to set data to
-        **/
-        auto set_signed_int_property_value(void* data, int64_t value) -> void;
-
-        /**
-         * Set the value of a floating point property type
-         * @param data - pointer to property data to set
-         * @param value - Value to set data to
-        **/
-        auto set_floating_point_property_value(void* data, double value) -> void;
-
-        /**
-         * Set the value of any numeric type from a string point
-         * @param data - pointer to property data to set
-         * @param value - Value (as a string) to set
-         * CAUTION: This routine does not do enum name conversion
-        **/
-        auto set_numeric_property_value_from_string(void* data, const wchar_t* value) -> void;
-
-        /**
-         * Gets the value of a signed integral property type
-         * @param data - pointer to property data to get
-         * @return Data as a signed int
-        **/
-        auto get_signed_int_property_value(const void* data) -> int64_t;
-
-        /**
-         * Gets the value of an unsigned integral property type
-         * @param data - pointer to property data to get
-         * @return Data as an unsigned int
-        **/
-        auto get_unsigned_int_property_value(const void* data) -> uint64_t;
-
-        /**
-         * Gets the value of an floating point property type
-         * @param data - pointer to property data to get
-         * @return Data as a double
-        **/
-        auto get_floating_point_property_value(const void* data) -> double;
-
-        /**
-         * Get the value of any numeric type and return it as a string
-         * @param data - pointer to property data to get
-         * @return Data as a string
-         * CAUTION: This routine does not do enum name conversion
-        **/
-        auto get_numeric_property_value_to_string(const void* data) -> std::wstring;
-    protected:
-        auto export_text_item_impl(std::wstring& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope) -> void;
-        auto import_text_impl(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> const wchar_t*;
     };
 
     template<typename InTCppType>

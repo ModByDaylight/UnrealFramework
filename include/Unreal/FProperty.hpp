@@ -333,6 +333,12 @@ namespace RC::Unreal
         //auto initialize_value_impl(void* dest) -> void;
         //auto copy_values_internal_impl(void* dest, void const* src, int32_t count);
     };
+
+    class RC_UE_API FPropertyHelpers
+    {
+    public:
+        static const wchar_t* read_token(const wchar_t* buffer, std::wstring& out, bool dotted_names = false);
+    };
 }
 
 

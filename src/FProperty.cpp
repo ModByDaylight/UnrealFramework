@@ -3,6 +3,7 @@
 #include <Unreal/UFunction.hpp>
 #include <Unreal/FMemory.hpp>
 #include <Unreal/UnrealStringConversions.h>
+#include <Unreal/UnrealParsing.h>
 
 namespace RC::Unreal
 {
@@ -42,7 +43,7 @@ namespace RC::Unreal
         return CALL_VIRTUAL_FUNCTION(this, identical, A, B, port_flags);
     }
 
-    auto FProperty::import_text(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> wchar_t* {
+    auto FProperty::import_text(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> const wchar_t* {
         //Do not allow property import on Config properties when it's restricted
         if ((port_flags & EPropertyPortFlags::PPF_RestrictImportTypes) && (get_property_flags() & CPF_Config))
         {
@@ -138,5 +139,58 @@ namespace RC::Unreal
     auto FProperty::copy_values_from_script_vm_internal_impl(void *dest, const void *src, int32_t count) -> void
     {
         copy_values_internal(dest, src, count);
+    }
+
+    /*-----------------------------------------------------------------------------
+	Helpers.
+-----------------------------------------------------------------------------*/
+
+    static std::wstring alpha_numeric_chars = STR("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+
+    FORCEINLINE bool is_valid_token_start(wchar_t first_char, bool dotted_names)
+    {
+        return alpha_numeric_chars.find(first_char) != std::wstring::npos || (dotted_names && first_char == '/') || first_char > 255;
+    }
+
+    FORCEINLINE std::wstring parse_property_token(const wchar_t* str, bool dotted_names)
+    {
+        std::wstring result_string;
+        while (*str)
+        {
+            const wchar_t character = *str++;
+            if (alpha_numeric_chars.find(character) != std::wstring::npos ||
+                    (character == '_' || character == '-' || character == '+') ||
+                    dotted_names && (character == '.' || character == '/' || character == SUBOBJECT_DELIMITER_CHAR)) {
+                result_string.push_back(character);
+                continue;
+            }
+            break;
+        }
+        return result_string;
+    }
+
+    const TCHAR* FPropertyHelpers::read_token(const TCHAR* buffer, std::wstring& string, bool dotted_names)
+    {
+        if(*buffer == wchar_t('"'))
+        {
+            int32_t num_chars_read = 0;
+            if (!FParse::quoted_string(buffer, string, &num_chars_read))
+            {
+                return nullptr;
+            }
+            buffer += num_chars_read;
+        }
+        else if (is_valid_token_start(*buffer, dotted_names))
+        {
+            std::wstring token = parse_property_token(buffer, dotted_names);
+            string += token;
+            buffer += token.size();
+        }
+        else
+        {
+            // Get just one.
+            string += *buffer;
+        }
+        return buffer;
     }
 }

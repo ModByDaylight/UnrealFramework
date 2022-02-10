@@ -100,7 +100,7 @@ namespace RC::Unreal
                 if (outer->get_uclass() != UPackage::static_class()
                     && outer->get_outer()->get_uclass() == UPackage::static_class())
                 {
-                    result_string.append(STR(":"));
+                    result_string.push_back(SUBOBJECT_DELIMITER_CHAR);
                 }
                 else
                 {

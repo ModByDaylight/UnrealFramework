@@ -7,6 +7,8 @@
 #include <Unreal/UnrealFlags.hpp>
 #include <Unreal/UObjectMacros.h>
 
+#define SUBOBJECT_DELIMITER_CHAR ':'
+
 namespace RC::Unreal
 {
     class UObject;

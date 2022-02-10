@@ -18,13 +18,14 @@
     IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_signed_int_property_value); \
     IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_unsigned_int_property_value); \
     IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_floating_point_property_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_numeric_property_value_to_string);
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_numeric_property_value_to_string);   \
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_value_type_hash);
 
 namespace RC::Unreal
 {
     class UEnum;
 
-    class FNumericProperty : public FProperty
+    class RC_UE_API FNumericProperty : public FProperty
     {
         DECLARE_FIELD_CLASS(FNumericProperty);
         DECLARE_VIRTUAL_TYPE(FNumericProperty);
@@ -110,7 +111,7 @@ namespace RC::Unreal
     };
 
     template<typename InTCppType>
-    class TProperty_Numeric : public TProperty_WithEqualityAndSerializer<InTCppType, FNumericProperty>
+    class RC_UE_API TProperty_Numeric : public TProperty_WithEqualityAndSerializer<InTCppType, FNumericProperty>
     {
     public:
         typedef TProperty_WithEqualityAndSerializer<InTCppType, FNumericProperty> Super;
@@ -199,6 +200,11 @@ namespace RC::Unreal
         auto get_numeric_property_value_to_string_impl(const void* data) -> std::wstring
         {
             return lex_to_string(TTypeFundamentals::get_property_value(data));
+        }
+
+        auto get_value_type_hash_impl(const void* src) -> uint32_t
+        {
+            return GetTypeHash(*(const TCppType*)src);
         }
     };
 }

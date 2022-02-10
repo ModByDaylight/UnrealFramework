@@ -74,13 +74,7 @@ namespace RC::Unreal
             return get_field_mask() == 0xff;
         }
     protected:
-        auto identical_impl(const void* A, const void* B, uint32_t port_flags) -> bool;
-        auto export_text_item_impl(std::wstring& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope) -> void;
-        auto import_text_impl(const wchar_t* buffer, void* data, int32_t port_flags, UObject* owner_object) -> const wchar_t*;
         uint32_t get_value_type_hash_impl(const void* src);
-        auto clear_value_impl(void* data) -> void;
-        auto initialize_value_impl(void* dest) -> void;
-        auto copy_values_internal_impl(void* dest, void const* src, int32_t count) -> void;
     };
 }
 

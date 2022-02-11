@@ -21,14 +21,24 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObjectBase, DeferredRegister, void, PARAMS(const UClass*, const File::CharType*, const File::CharType*), ARGS(UClassStaticClass, PackageName, Name))
     }
 
-    auto UObjectBaseUtility::can_be_cluster_root() const -> bool
+    auto UObjectBaseUtility::CanBeClusterRoot() const -> bool
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, CanBeClusterRoot, bool)
     }
 
-    auto UObjectBaseUtility::can_be_in_cluster() const -> bool
+    auto UObjectBaseUtility::CanBeInCluster() const -> bool
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, CanBeInCluster, bool)
+    }
+
+    auto UObjectBaseUtility::CreateCluster() -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, CreateCluster, void)
+    }
+
+    auto UObjectBaseUtility::OnClusterMarkedAsPendingKill() -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, OnClusterMarkedAsPendingKill, void)
     }
 
     auto UObject::is_safe_for_root_set() const -> bool

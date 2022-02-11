@@ -45,8 +45,10 @@ namespace RC::Unreal
 
     public:
         // Wrappers for virtual engine functions
-        auto can_be_cluster_root() const -> bool;
-        auto can_be_in_cluster() const -> bool;
+        auto CanBeClusterRoot() const -> bool;
+        auto CanBeInCluster() const -> bool;
+        auto CreateCluster() -> void;
+        auto OnClusterMarkedAsPendingKill() -> void;
     };
 
     class RC_UE_API UObject

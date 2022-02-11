@@ -6,7 +6,27 @@
 namespace RC::Unreal {
     class UClass;
     class FFieldClassVariant;
+
+    using ERenameFlags = uint32;
 }
+
+/** Default rename behavior */
+#define REN_None				(0x0000)
+/** Rename won't call ResetLoaders or flush async loading. You should pass this if you are renaming a deep subobject and do not need to reset loading for the outer package */
+#define REN_ForceNoResetLoaders		(0x0001)
+/** Just test to make sure that the rename is guaranteed to succeed if an non test rename immediately follows */
+#define REN_Test					(0x0002)
+/** Indicates that the object (and new outer) should not be dirtied */
+#define REN_DoNotDirty				(0x0004)
+/** Don't create an object redirector, even if the class is marked RF_Public */
+#define REN_DontCreateRedirectors	(0x0010)
+/** Don't call Modify() on the objects, so they won't be stored in the transaction buffer */
+#define REN_NonTransactional		(0x0020)
+/** Force unique names across all packages not just within the scope of the new outer */
+#define REN_ForceGlobalUnique		(0x0040)
+/** Prevent renaming of any child generated classes and CDO's in blueprints */
+#define REN_SkipGeneratedClasses	(0x0080)
+
 
 #define DECLARE_EXTERNAL_OBJECT_CLASS(ClassName, ModuleName) \
 private: \

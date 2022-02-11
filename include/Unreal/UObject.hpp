@@ -6,7 +6,9 @@
 #include <Function/Function.hpp>
 #include <Unreal/Common.hpp>
 #include <Unreal/NameTypes.hpp>
+#include <Unreal/FString.hpp>
 #include <Unreal/UnrealFlags.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
 #include <Unreal/UObjectMacros.h>
 
 #define SUBOBJECT_DELIMITER_CHAR ':'
@@ -14,6 +16,10 @@
 namespace RC::Unreal
 {
     class UObject;
+    struct FFrame;
+
+    template<typename Key, typename Value>
+    class TMap;
 
     /** Concept describing the type of the pointer pointing to the UObject-derived object */
     template<typename SupposedUObject>
@@ -65,10 +71,87 @@ namespace RC::Unreal
 #include <VTableOffsets_UObject.hpp>
 
         // Wrappers for virtual engine functions
-        auto is_safe_for_root_set() const -> bool;
-        auto pre_save_root(const File::CharType* Filename) -> bool;
-        using FArchive = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
-        auto serialize(FArchive& Ar) -> void;
+        FString GetDetailedInfoInternal() const;
+        void PostInitProperties();
+        void PostCDOContruct();
+        bool PreSaveRoot(const TCHAR* Filename);
+        void PostSaveRoot(bool bCleanupIsRequired);
+        void PreSave(const class ITargetPlatform* TargetPlatform);
+        bool IsReadyForAsyncPostLoad() const;
+        void PostLoad();
+        using FObjectInstancingGraph = void*; // Remove if/when we have an implementation for FObjectInstancingGraph
+        void PostLoadSubobjects(FObjectInstancingGraph* OuterInstanceGraph);
+        void BeginDestroy();
+        bool IsReadyForFinishDestroy();
+        void FinishDestroy();
+        using FArchive = void*; // Remove if/when we have an implementation for FArchive
+        void Serialize(FArchive& Ar);
+        // Implement this when the vtable offset generator supports multiple functions with the same name
+        //void Serialize(FStructuredArchive::FRecord Record);
+        void ShutdownAfterError();
+        void PostInterpChange(class FProperty* PropertyThatChanged);
+        void PostRename(UObject* OldOuter, const FName OldName);
+        using FObjectDuplicationParameters = void*; // Remove if/when we have an implementation for FObjectDuplicationParameters
+        void PreDuplicate(FObjectDuplicationParameters& DupParams);
+        void PostDuplicate(bool bDuplicateForPIE);
+        // Implement this when the vtable offset generator supports multiple functions with the same name
+        //void PostDuplicate(EDuplicateMode::Type DuplicateMode);
+        bool NeedsLoadForClient() const;
+        bool NeedsLoadForServer() const;
+        bool NeedsLoadForTargetPlatform(const class ITargetPlatform* TargetPlatform) const;
+        bool NeedsLoadForEditorGame() const;
+        bool IsEditorOnly() const;
+        bool IsPostLoadThreadSafe() const;
+        bool IsDestructionThreadSafe() const;
+        void GetPreloadDependencies(TArray<UObject*>& OutDeps);
+        void GetPrestreamPackages(TArray<UObject*>& OutPrestream);
+        using FOutputDevice = void*; // Remove if/when we have an implementation for FOutputDevice
+        void ExportCustomProperties(FOutputDevice& Out, uint32 Indent);
+        using FFeedbackContext = void*; // Remove if/when we have an implementation for FFeedbackContext
+        void ImportCustomProperties(const TCHAR* SourceText, FFeedbackContext* Warn);
+        void PostEditImport();
+        void PostReloadConfig(class FProperty* PropertyThatWasLoaded);
+        bool Rename(const TCHAR* NewName=nullptr, UObject* NewOuter=nullptr, ERenameFlags Flags=REN_None);
+        FString GetDesc();
+        class UScriptStruct* GetSparseClassDataStruct() const;
+        class UWorld* GetWorld() const;
+        bool GetNativePropertyValues(TMap<FString, FString>& out_PropertyValues, uint32 ExportFlags=0) const;
+        using FResourceSizeEx = void*; // Remove if/when we have an implementation for FResourceSizeEx
+        void GetResourceSizeEx(FResourceSizeEx& CumulativeResourceSize);
+        FName GetExporterName();
+        using FRestoreForUObjectOverwrite = void*; // Remove if/when we have an implementation for FRestoreForUObjectOverwrite
+        FRestoreForUObjectOverwrite* GetRestoreForUObjectOverwrite();
+        bool AreNativePropertiesIdenticalTo(UObject* Other) const;
+        using FAssetRegistryTag = void*; // Remove if/when we have an implementation for FAssetRegistryTag
+        void GetAssetRegistryTags(TArray<FAssetRegistryTag>& OutTags) const;
+        bool IsAsset() const;
+        using FPrimaryAssetId = void*; // Remove if/when we have an implementation for FPrimaryAssetId
+        FPrimaryAssetId GetPrimaryAssetId() const;
+        bool IsLocalizedResource() const;
+        bool IsSafeForRootSet() const;
+        void TagSubobjects(EObjectFlags NewFlags);
+        void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const;
+        bool IsNameStableForNetworking() const;
+        bool IsFullNameStableForNetworking() const;
+        bool IsSupportedForNetworking() const;
+        void GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList);
+        void PreNetReceive();
+        void PostNetReceive();
+        void PostRepNotifies();
+        void PreDestroyFromReplication();
+        void BuildSubobjectMapping(UObject* OtherObject, TMap<UObject*, UObject*>& ObjectMapping) const;
+        const TCHAR* GetConfigOverridePlatform() const;
+        void OverridePerObjectConfigSection(FString& SectionName);
+        void ProcessEvent(UFunction* Function, void* Parms);
+        int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack);
+        bool CallRemoteFunction(UFunction* Function, void* Parms, struct FOutParmRec* OutParms, FFrame* Stack);
+        bool ProcessConsoleExec(const TCHAR* Cmd, FOutputDevice& Ar, UObject* Executor);
+        UClass* RegenerateClass(UClass* ClassToRegenerate, UObject* PreviousCDO);
+        void MarkAsEditorOnlySubobject();
+        bool CheckDefaultSubobjectsInternal() const;
+        void ValidateGeneratedRepEnums(const TArray<struct FRepRecord>& ClassReps) const;
+        void SetNetPushIdDynamic(const int32 NewNetPushId);
+        int32 GetNetPushIdDynamic() const;
 
     public:
         /**

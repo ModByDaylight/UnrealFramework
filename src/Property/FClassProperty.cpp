@@ -3,7 +3,6 @@
 namespace RC::Unreal
 {
     IMPLEMENT_FIELD_CLASS(FClassProperty);
-    IMPLEMENT_VIRTUAL_FUNCTION(FClassProperty, get_value_type_hash);
 
     auto FClassProperty::GetMetaClass() -> UClass*
     {

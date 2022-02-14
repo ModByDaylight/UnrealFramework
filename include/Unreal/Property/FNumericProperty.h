@@ -9,8 +9,7 @@
     IMPLEMENT_TPROPERTY_WITH_EQUALITY_AND_SERIALIZER_VIRTUAL_FUNCTIONS(ClassName); \
     IMPLEMENT_VIRTUAL_FUNCTION(ClassName, is_unsigned_integer); \
     IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_unsigned_int_property_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_signed_int_property_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, get_value_type_hash);
+    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, set_signed_int_property_value);
 
 namespace RC::Unreal
 {
@@ -201,11 +200,6 @@ namespace RC::Unreal
         auto get_numeric_property_value_to_string_impl(const void* data) -> std::wstring
         {
             return lex_to_string(TTypeFundamentals::get_property_value(data));
-        }
-
-        auto get_value_type_hash_impl(const void* src) -> uint32_t
-        {
-            return GetTypeHash(*(const TCppType*)src);
         }
     };
 }

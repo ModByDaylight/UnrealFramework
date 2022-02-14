@@ -73,8 +73,6 @@ namespace RC::Unreal
         {
             return get_field_mask() == 0xff;
         }
-    protected:
-        uint32_t get_value_type_hash_impl(const void* src);
     };
 }
 

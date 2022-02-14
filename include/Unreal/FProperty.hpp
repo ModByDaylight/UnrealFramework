@@ -369,8 +369,7 @@ namespace RC::Unreal
     protected:
         auto copy_values_from_script_vm_internal_impl(void* dest, const void* src, int32_t count) -> void;
         auto copy_values_to_script_vm_internal_impl(void* dest, const void* src, int32_t count) -> void;
-
-        //uint32_t get_value_type_hash_impl(const void* src);
+        
 
         //auto copy_values_internal_impl(void* dest, void const* src, int32_t count);
     };

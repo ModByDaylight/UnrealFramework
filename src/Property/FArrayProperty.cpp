@@ -3,7 +3,6 @@
 namespace RC::Unreal
 {
     IMPLEMENT_FIELD_CLASS(FArrayProperty);
-    IMPLEMENT_VIRTUAL_FUNCTION(FArrayProperty, get_value_type_hash);
 
     auto FArrayProperty::GetInner() -> FProperty*
     {

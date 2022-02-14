@@ -3,17 +3,20 @@
 
 #include <Unreal/FField.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
+#include <Unreal/StaticOffsetFinder.hpp>
 
 namespace RC::Unreal
 {
     class FString;
+
+    using MemberOffsets = StaticOffsetFinder::MemberOffsets;
 
     enum class EPropertyObjectReferenceType
     {
         None = 0,
         Strong = 1 << 0,
         Weak = 1 << 1,
-    }
+    };
 
     class RC_UE_API FProperty : public FField
     {

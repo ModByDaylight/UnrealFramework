@@ -29,9 +29,9 @@
 #include <Unreal/Property/XWeakObjectProperty.hpp>
 #include <Unreal/Property/XLazyObjectProperty.hpp>
 #include <Unreal/Property/XSoftObjectProperty.hpp>
-#include <Unreal/Property/XClassProperty.hpp>
+#include <Unreal/Property/FClassProperty.hpp>
 #include <Unreal/Property/XSoftClassProperty.hpp>
-#include <Unreal/Property/XArrayProperty.hpp>
+#include <Unreal/Property/FArrayProperty.hpp>
 #include <Unreal/Property/XMapProperty.hpp>
 #include <Unreal/Property/XBoolProperty.hpp>
 #include <Unreal/Property/XNameProperty.hpp>
@@ -199,10 +199,10 @@ namespace RC::Unreal
         XUInt32Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.UInt32Property");
         XUInt64Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.UInt64Property");
         XObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ObjectProperty");
-        XClassProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ClassProperty");
+        FClassProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ClassProperty");
         XSoftClassProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.SoftClassProperty");
         XEnumProperty<uint8_t>::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.EnumProperty");
-        XArrayProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ArrayProperty");
+        FArrayProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ArrayProperty");
         XStructProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StructProperty");
         XNameProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.NameProperty");
         XBoolProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.BoolProperty");
@@ -319,9 +319,9 @@ namespace RC::Unreal
                         // Using XIntProperty for testing but it's possible we can use it this way because
                         // to_string is going to need to dynamically (at runtime) figure out what the derived type is regardless
                         // The templated type would be effectively be useless here but is required since the whole class is templated
-                        m_object_to_string_functions[ffield_class] = &XArrayProperty::to_string;
-                        m_object_to_string_complex_functions[ffield_class] = &XArrayProperty::to_string_complex;
-                        XArrayProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FArrayProperty::to_string;
+                        m_object_to_string_complex_functions[ffield_class] = &FArrayProperty::to_string_complex;
+                        FArrayProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"MapProperty"))
                     {
@@ -339,13 +339,13 @@ namespace RC::Unreal
                     if (type_name == FName(L"ClassProperty"))
                     {
                         m_core_object_pointers[L"ClassProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XClassProperty::to_string;
-                        XClassProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FClassProperty::to_string;
+                        FClassProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"SoftClassProperty"))
                     {
                         m_core_object_pointers[L"SoftClassProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XClassProperty::to_string;
+                        m_object_to_string_functions[ffield_class] = &FClassProperty::to_string;
                         XSoftClassProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"WeakObjectProperty"))
@@ -534,11 +534,11 @@ namespace RC::Unreal
             add_property(L"/Script/CoreUObject.UInt32Property", L"UInt32Property", {&XUInt32Property::to_string}, XUInt32Property{});
             add_property(L"/Script/CoreUObject.UInt64Property", L"UInt64Property", {&XUInt64Property::to_string}, XUInt64Property{});
             add_property(L"/Script/CoreUObject.BoolProperty", L"BoolProperty", {&XBoolProperty::to_string}, XBoolProperty{});
-            add_property(L"/Script/CoreUObject.ArrayProperty", L"ArrayProperty", {&XArrayProperty::to_string, &XArrayProperty::to_string_complex}, XArrayProperty{});
+            add_property(L"/Script/CoreUObject.ArrayProperty", L"ArrayProperty", {&FArrayProperty::to_string, &FArrayProperty::to_string_complex}, FArrayProperty{});
             add_property(L"/Script/CoreUObject.MapProperty", L"MapProperty", {&XMapProperty::to_string, &XMapProperty::to_string_complex}, XMapProperty{});
             add_property(L"/Script/CoreUObject.StructProperty", L"StructProperty", {&XStructProperty::to_string}, XStructProperty{});
-            add_property(L"/Script/CoreUObject.ClassProperty", L"ClassProperty", {&XClassProperty::to_string}, XClassProperty{});
-            add_property(L"/Script/CoreUObject.SoftClassProperty", L"SoftClassProperty", {&XClassProperty::to_string}, XSoftClassProperty{});
+            add_property(L"/Script/CoreUObject.ClassProperty", L"ClassProperty", {&FClassProperty::to_string}, FClassProperty{});
+            add_property(L"/Script/CoreUObject.SoftClassProperty", L"SoftClassProperty", {&FClassProperty::to_string}, XSoftClassProperty{});
             add_property(L"/Script/CoreUObject.WeakObjectProperty", L"WeakObjectProperty", {&XWeakObjectProperty::to_string}, XWeakObjectProperty{});
             add_property(L"/Script/CoreUObject.LazyObjectProperty", L"LazyObjectProperty", {&XObjectProperty::to_string}, XLazyObjectProperty{});
             add_property(L"/Script/CoreUObject.SoftObjectProperty", L"SoftObjectProperty", {&XObjectProperty::to_string}, XSoftObjectProperty{});

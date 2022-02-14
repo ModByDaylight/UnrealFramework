@@ -10,125 +10,108 @@
 namespace RC::Unreal
 {
     IMPLEMENT_FIELD_CLASS(FProperty);
-    IMPLEMENT_VIRTUAL_FUNCTION(FProperty, copy_values_to_script_vm_internal);
-    IMPLEMENT_VIRTUAL_FUNCTION(FProperty, copy_values_from_script_vm_internal);
+    IMPLEMENT_VIRTUAL_FUNCTION(FProperty, CopyValuesToScriptVMInternal);
+    IMPLEMENT_VIRTUAL_FUNCTION(FProperty, CopyValuesFromScriptVMInternal);
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
-    auto FProperty::get_offset_for_internal() -> int32_t
-    {
-        return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XProperty_Offset_Internal));
-    }
-
-    auto FProperty::get_rep_notify_func() -> FName
-    {
-        return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XProperty_Offset_Internal) + 4);
-    }
-
-    auto FProperty::get_array_dim() -> int32_t
+    auto FProperty::GetArrayDim() -> int32_t
     {
         return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::Property_PropertyFlags) - 8);
     }
 
-    auto FProperty::get_element_size() -> int32_t
+    auto FProperty::GetElementSize() -> int32_t
     {
         return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::Property_PropertyFlags) - 4);
     }
 
-    auto FProperty::get_property_flags() -> EPropertyFlags
+    auto FProperty::GetPropertyFlags() -> EPropertyFlags
     {
         return Helper::Casting::offset_deref<EPropertyFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::Property_PropertyFlags));
     }
 
-    auto FProperty::get_cpp_macro_type(FString& extended_type_text) const -> FString
+    auto FProperty::GetOffset_ForInternal() -> int32_t
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, GetCPPMacroType, FString, PARAMS(FString&), ARGS(extended_type_text))
+        return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XProperty_Offset_Internal));
     }
 
-    auto FProperty::pass_cpp_args_by_ref() const -> bool
+    auto FProperty::GetRepNofifyFunc() -> FName
+    {
+        return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XProperty_Offset_Internal) + 4);
+    }
+
+    auto FProperty::IsInContainer(UStruct* ContainerClass) -> bool
+    {
+        return GetOffset_ForInternal() + GetSize() <= (ContainerClass ? ContainerClass->get_properties_size() : INT32_MAX);
+    }
+
+    auto FProperty::GetCPPMacroType(FString& ExtendedTypeText) const -> FString
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, GetCPPMacroType, FString, PARAMS(FString&), ARGS(ExtendedTypeText))
+    }
+
+    auto FProperty::PassCPPArgsByRef() const -> bool
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FProperty, PassCPPArgsByRef, bool)
     }
 
-    auto FProperty::get_cpp_type(FString* extended_type_text, uint32 cpp_export_flags) const -> FString
+    auto FProperty::GetCPPType(FString* ExtendedTypeText, uint32 CPPExportFlags) const -> FString
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, GetCPPType, FString, PARAMS(FString*, uint32), ARGS(extended_type_text, cpp_export_flags))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, GetCPPType, FString, PARAMS(FString*, uint32), ARGS(ExtendedTypeText, CPPExportFlags))
     }
 
-    auto FProperty::identical(const void* A, const void* B, uint32_t port_flags) -> bool
-    {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, Identical, bool, PARAMS(const void*, const void*, uint32_t), ARGS(A, B, port_flags))
-    }
-
-    auto FProperty::get_cpp_type_forward_declaration() const -> FString
+    auto FProperty::GetCPPTypeForwardDeclaration() const -> FString
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FProperty, GetCPPTypeForwardDeclaration, FString)
     }
 
-    auto FProperty::convert_from_type(const FPropertyTag& tag, FStructuredArchive::FSlot slot, uint8* data, UStruct* defaults_struct) -> EConvertFromTypeResult
+    auto FProperty::LinkInternal(FArchive& Ar) -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, LinkInternal, void, PARAMS(FArchive&), ARGS(Ar))
+    }
+
+    auto FProperty::ConvertFromType(const FPropertyTag& Tag, FStructuredArchive::FSlot Slot, uint8* Data, UStruct* DefaultsStruct) -> EConvertFromTypeResult
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
                                          ConvertFromType,
                                          EConvertFromTypeResult,
                                          PARAMS(const FPropertyTag&, FStructuredArchive::FSlot, uint8*, UStruct*),
-                                         ARGS(tag, slot, data, defaults_struct))
+                                         ARGS(Tag, Slot, Data, DefaultsStruct))
     }
 
-    auto FProperty::serialize_item(FStructuredArchive::FSlot slot, void* value, void const* defaults) const -> void
+    auto FProperty::Identical(const void* A, const void* B, uint32_t PortFlags) -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, Identical, bool, PARAMS(const void*, const void*, uint32_t), ARGS(A, B, PortFlags))
+    }
+
+    auto FProperty::Identical_InContainer(const void* A, const void* B, int32_t ArrayIndex, uint32_t PortFlags) -> bool
+    {
+        return Identical(ContainerPtrToValuePtr<void>(A, ArrayIndex), B ? ContainerPtrToValuePtr<void>(B, ArrayIndex) : nullptr, PortFlags);
+    }
+
+    auto FProperty::SerializeItem(FStructuredArchive::FSlot Slot, void* Value, void const* Defaults) const -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
                                          SerializeItem,
                                          void,
                                          PARAMS(FStructuredArchive::FSlot, void*, void const*),
-                                         ARGS(slot, value, defaults))
+                                         ARGS(Slot, Value, Defaults))
     }
 
-    auto FProperty::net_serialize_item(FArchive& ar, UPackageMap* map, void* data, TArray<uint8>* meta_data = nullptr) const -> bool
+    auto FProperty::NetSerializeItem(FArchive& Ar, UPackageMap* Map, void* Data, TArray<uint8>* MetaData = nullptr) const -> bool
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
                                          NetSerializeItem,
                                          bool,
                                          PARAMS(FArchive&, UPackageMap*, void*, TArray<uint8>*),
-                                         ARGS(ar, map, data, meta_data))
+                                         ARGS(Ar, Map, Data, MetaData))
     }
 
-    auto FProperty::supports_met_shared_serialization() const -> bool
+    auto FProperty::SupportsNetSharedSerialization() const -> bool
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FProperty, SupportsNetSharedSerialization, bool)
     }
-
-    auto FProperty::link_internal(FArchive& ar) -> void
-    {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, LinkInternal, void, PARAMS(FArchive&), ARGS(ar))
-    }
-
-    auto FProperty::import_text(const TCHAR* buffer, void* data, int32_t port_flags, UObject* owner_object, FOutputDevice* error_text) -> const TCHAR* {
-        //Do not allow property import on Config properties when it's restricted
-        if ((port_flags & EPropertyPortFlags::PPF_RestrictImportTypes) && (get_property_flags() & CPF_Config))
-        {
-            return nullptr;
-        }
-        if (buffer == nullptr)
-        {
-            return nullptr;
-        }
-
-        //Imports should always process deprecated properties
-        port_flags |= EPropertyPortFlags::PPF_UseDeprecatedProperties;
-
-        return import_text_internal(buffer, data, port_flags, owner_object, error_text);
-    }
-
-    auto FProperty::import_text_internal(const TCHAR* buffer, void* data, int32 port_flags, UObject* owner_object, FOutputDevice* error_text) -> const TCHAR*
-    {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
-                                         ImportText_Internal,
-                                         const TCHAR*,
-                                         PARAMS(const TCHAR*, void*, int32, UObject*, FOutputDevice*),
-                                         ARGS(buffer, data, port_flags, owner_object, error_text))
-    }
-
-    auto FProperty::export_text_item(FString& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope) -> void
+    auto FProperty::ExportTextItem(FString& value_str, const void* property_value, const void* default_value, UObject* parent, int32_t port_flags, UObject* export_root_scope) -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
                                          ExportTextItem,
@@ -137,112 +120,185 @@ namespace RC::Unreal
                                          ARGS(value_str, property_value, default_value, parent, port_flags, export_root_scope))
     }
 
-    auto FProperty::get_value_type_hash(const void* src) -> uint32_t
+    auto FProperty::ImportText(const TCHAR* Buffer, void* Data, int32_t PortFlags, UObject* OwnerObject, FOutputDevice* ErrorText) -> const TCHAR* {
+        //Do not allow property import on Config properties when it's restricted
+        if ((PortFlags & EPropertyPortFlags::PPF_RestrictImportTypes) && (GetPropertyFlags() & CPF_Config))
+        {
+            return nullptr;
+        }
+        if (Buffer == nullptr)
+        {
+            return nullptr;
+        }
+
+        //Imports should always process deprecated properties
+        PortFlags |= EPropertyPortFlags::PPF_UseDeprecatedProperties;
+
+        return ImportText_Internal(Buffer, Data, PortFlags, OwnerObject, ErrorText);
+    }
+
+    auto FProperty::ImportText_Internal(const TCHAR* Buffer, void* Data, int32 PortFlags, UObject* OwnerObject, FOutputDevice* ErrorText) -> const TCHAR*
     {
-        if ((get_property_flags() & CPF_HasGetValueTypeHash) == 0)
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
+                                         ImportText_Internal,
+                                         const TCHAR*,
+                                         PARAMS(const TCHAR*, void*, int32, UObject*, FOutputDevice*),
+                                         ARGS(Buffer, Data, PortFlags, OwnerObject, ErrorText))
+    }
+
+    auto FProperty::ExportText_Direct(FString& ValueStr, const void* Data, const void* Delta, UObject* Parent, int32_t PortFlags, UObject* ExportRootScope) -> bool
+    {
+        if (Data == Delta || !Identical(Data, Delta, PortFlags))
+        {
+            ExportTextItem(ValueStr, Data, Delta, Parent, PortFlags, ExportRootScope);
+            return true;
+        }
+        return false;
+    }
+
+    auto FProperty::ExportText_InContainer(int32_t Index, FString& ValueStr, const void* Data, const void* Delta, UObject* Parent, int32_t PortFlags, UObject* ExportRootScope) -> bool
+    {
+        return ExportText_Direct(ValueStr, ContainerPtrToValuePtr<void>(Data, Index),
+                                 ContainerPtrToValuePtr<void>(Delta, Index),
+                                 Parent, PortFlags, ExportRootScope);
+    }
+
+    auto FProperty::CopySingleValue(void* Dest, void const* Src) -> void
+    {
+        CopyValuesInternal(Dest, Src, 1);
+    }
+
+    auto FProperty::GetValueTypeHash(const void* Src) -> uint32_t
+    {
+        if ((GetPropertyFlags() & CPF_HasGetValueTypeHash) == 0)
         {
             throw std::runtime_error("This property does not have the GetValueTypeHash implementation");
         }
-        return get_value_type_hash_internal(src);
+        return GetValueTypeHashInternal(Src);
     }
 
-    auto FProperty::get_value_type_hash_internal(const void* src) const -> uint32
+    auto FProperty::CopyValuesInternal(void* Dest, const void* Src, int32_t Count) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, GetValueTypeHashInternal, uint32, PARAMS(const void*), ARGS(src))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopyValuesInternal, void, PARAMS(void*, const void*, int32_t), ARGS(Dest, Src, Count))
     }
 
-    auto FProperty::copy_single_value_to_script_vm(void* dest, void const* src) const -> void
+    auto FProperty::GetValueTypeHashInternal(const void* Src) const -> uint32
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopySingleValueToScriptVM, void, PARAMS(void*, void const*), ARGS(dest, src))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, GetValueTypeHashInternal, uint32, PARAMS(const void*), ARGS(Src))
     }
 
-    auto FProperty::copy_complete_value_to_script_vm(void* dest, void const* src) const -> void
+    auto FProperty::CopyCompleteValue(void* Dest, const void* Src) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopyCompleteValueToScriptVM, void, PARAMS(void*, void const*), ARGS(dest, src))
+        CopyValuesInternal(Dest, Src, GetArrayDim());
     }
 
-    auto FProperty::copy_single_value_from_script_vm(void* dest, void const* src) const -> void
+    auto FProperty::CopyCompleteValue_InContainer(void* Dest, const void* Src) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopySingleValueFromScriptVM, void, PARAMS(void*, void const*), ARGS(dest, src))
+        return CopyCompleteValue(ContainerPtrToValuePtr<void>(Dest), ContainerPtrToValuePtr<void>(Src));
     }
 
-    auto FProperty::copy_complete_value_from_script_vm(void* dest, void const* src) const -> void
+    auto FProperty::CopySingleValueToScriptVM(void* Dest, void const* Src) const -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopyCompleteValueFromScriptVM, void, PARAMS(void*, void const*), ARGS(dest, src))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopySingleValueToScriptVM, void, PARAMS(void*, void const*), ARGS(Dest, Src))
     }
 
-    auto FProperty::copy_values_internal(void* dest, const void* src, int32_t count) -> void
+    auto FProperty::CopyCompleteValueToScriptVM(void* Dest, void const* Src) const -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopyValuesInternal, void, PARAMS(void*, const void*, int32_t), ARGS(dest, src, count))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopyCompleteValueToScriptVM, void, PARAMS(void*, void const*), ARGS(Dest, Src))
     }
 
-    auto FProperty::clear_value(void* data) -> void
+    auto FProperty::CopySingleValueFromScriptVM(void* Dest, void const* Src) const -> void
     {
-        if (has_all_property_flags(CPF_NoDestructor | CPF_ZeroConstructor))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopySingleValueFromScriptVM, void, PARAMS(void*, void const*), ARGS(Dest, Src))
+    }
+
+    auto FProperty::CopyCompleteValueFromScriptVM(void* Dest, void const* Src) const -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, CopyCompleteValueFromScriptVM, void, PARAMS(void*, void const*), ARGS(Dest, Src))
+    }
+
+    auto FProperty::ClearValue(void* Data) -> void
+    {
+        if (HasAllPropertyFlags(CPF_NoDestructor | CPF_ZeroConstructor))
         {
-            FMemory::memzero(data, get_element_size());
+            FMemory::memzero(Data, GetElementSize());
         }
         else
         {
-            clear_value_internal(data);
+            ClearValueInternal(Data);
         }
     }
 
-    auto FProperty::clear_value_internal(void* data) const -> void
+    auto FProperty::ClearValue_InContainer(void* Data, int32_t ArrayIndex) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ClearValueInternal, void, PARAMS(void*), ARGS(data))
+        ClearValue(ContainerPtrToValuePtr<void>(Data, ArrayIndex));
     }
 
-    auto FProperty::destroy_value(void* dest) -> void
+    auto FProperty::ClearValueInternal(void* Data) const -> void
     {
-        if (!(get_property_flags() & CPF_NoDestructor))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ClearValueInternal, void, PARAMS(void*), ARGS(Data))
+    }
+
+    auto FProperty::DestroyValue(void* Dest) -> void
+    {
+        if (!(GetPropertyFlags() & CPF_NoDestructor))
         {
-            destroy_value_internal(dest);
+            DestroyValueInternal(Dest);
         }
     }
 
-    auto FProperty::destroy_value_internal(void* dest) const -> void
+    auto FProperty::DestroyValue_InContainer(void* Dest) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, DestroyValueInternal, void, PARAMS(void*), ARGS(dest))
+        DestroyValue(ContainerPtrToValuePtr<void>(Dest));
     }
 
-    auto FProperty::initialize_value(void* dest) -> void
+    auto FProperty::DestroyValueInternal(void* Dest) const -> void
     {
-        if (get_property_flags() & CPF_ZeroConstructor)
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, DestroyValueInternal, void, PARAMS(void*), ARGS(Dest))
+    }
+
+    auto FProperty::InitializeValue(void* Dest) -> void
+    {
+        if (GetPropertyFlags() & CPF_ZeroConstructor)
         {
-            FMemory::memzero(dest, get_element_size() * get_array_dim());
+            FMemory::memzero(Dest, GetElementSize() * GetArrayDim());
         }
         else
         {
-            initialize_value_internal(dest);
+            InitializeValueInternal(Dest);
         }
     }
 
-    auto FProperty::initialize_value_internal(void* dest) const -> void
+    auto FProperty::InitializeValue_InContainer(void* Dest) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, InitializeValueInternal, void, PARAMS(void*), ARGS(dest))
+        InitializeValue(ContainerPtrToValuePtr<void>(Dest));
     }
 
-    auto FProperty::get_id() const -> FName
+    auto FProperty::InitializeValueInternal(void* Dest) const -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, InitializeValueInternal, void, PARAMS(void*), ARGS(Dest))
+    }
+
+    auto FProperty::GetID() const -> FName
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FProperty, GetID, FName)
     }
 
-    auto FProperty::instance_subobjects(void* data, void const* default_data, UObject* owner, FObjectInstancingGraph* instance_graph) -> void
+    auto FProperty::InstanceSubobjects(void* Data, void const* DefaultData, UObject* Owner, FObjectInstancingGraph* InstanceGraph) -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
                                          InstanceSubobjects,
                                          void,
                                          PARAMS(void*, void const*, UObject*, FObjectInstancingGraph*),
-                                         ARGS(data, default_data, owner, instance_graph))
+                                         ARGS(Data, DefaultData, Owner, InstanceGraph))
     }
 
-    auto FProperty::get_min_alignment() const -> int32
+    auto FProperty::GetMinAlignment() const -> int32
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FProperty, GetMinAlignment, int32)
     }
 
-    auto FProperty::contains_object_reference(TArray<const FStructProperty*>& encountered_struct_props, EPropertyObjectReferenceType in_reference_type) const -> bool
+    auto FProperty::ContainsObjectReference(TArray<const FStructProperty*>& EncounteredStructProps, EPropertyObjectReferenceType InReferenceType) const -> bool
     {
         if (Version::is_atleast(4, 26))
         {
@@ -252,18 +308,18 @@ namespace RC::Unreal
                                              ContainsObjectReference,
                                              bool,
                                              PARAMS(TArray<const class FStructProperty*> & , EPropertyObjectReferenceType),
-                                             ARGS(encountered_struct_props, in_reference_type))
+                                             ARGS(EncounteredStructProps, InReferenceType))
         }
         else
         {
             // Before 4.26, the second param didn't exist
             // This branch uses the <4.26 function signature that only has one param
             // All params that don't exist get ignored
-            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>), ARGS(encountered_struct_props))
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>), ARGS(EncounteredStructProps))
         }
     }
 
-    auto FProperty::contains_object_reference(TArray<const FStructProperty*>& encountered_struct_props) const -> bool
+    auto FProperty::ContainsObjectReference(TArray<const FStructProperty*>& EncounteredStructProps) const -> bool
     {
         if (Version::is_atleast(4, 26))
         {
@@ -278,94 +334,94 @@ namespace RC::Unreal
         {
             // Before 4.26, the second param didn't exist
             // This branch uses the <4.26 function signature that only has one param
-            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>), ARGS(encountered_struct_props))
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>), ARGS(EncounteredStructProps))
         }
     }
 
-    auto FProperty::emit_reference_info(UClass& owner_class, int32 base_offset, TArray<const FStructProperty*>& encountered_struct_props) -> void
+    auto FProperty::EmitReferenceInfo(UClass& OwnerClass, int32 BaseOffset, TArray<const FStructProperty*>& EncounteredStructProps) -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
                                          EmitReferenceInfo,
                                          void,
                                          PARAMS(UClass&, int32, TArray<const FStructProperty*>&),
-                                         ARGS(owner_class, base_offset, encountered_struct_props))
+                                         ARGS(OwnerClass, BaseOffset, EncounteredStructProps))
     }
 
-    auto FProperty::same_type(const FProperty* other) const -> bool
+    auto FProperty::SameType(const FProperty* Other) const -> bool
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, SameType, bool, PARAMS(const FProperty*), ARGS(other))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, SameType, bool, PARAMS(const FProperty*), ARGS(Other))
     }
 
-    auto FProperty::copy_values_to_script_vm_internal(void *dest, const void *src, int32_t count) -> void
+    auto FProperty::CopyValuesToScriptVMInternal(void* Dest, const void* Src, int32_t Count) -> void
     {
-        return CALL_VIRTUAL_FUNCTION(this, copy_values_to_script_vm_internal, dest, src, count);
+        return CALL_VIRTUAL_FUNCTION(this, CopyValuesToScriptVMInternal, Dest, Src, Count);
     }
 
-    auto FProperty::copy_values_from_script_vm_internal(void *dest, const void *src, int32_t count) -> void
+    auto FProperty::CopyValuesFromScriptVMInternal(void* Dest, const void* Src, int32_t Count) -> void
     {
-        return CALL_VIRTUAL_FUNCTION(this, copy_values_from_script_vm_internal, dest, src, count);
+        return CALL_VIRTUAL_FUNCTION(this, CopyValuesFromScriptVMInternal, Dest, Src, Count);
     }
 
-    auto FProperty::copy_values_to_script_vm_internal_impl(void *dest, const void *src, int32_t count) -> void
+    auto FProperty::CopyValuesFromScriptVMInternal_Impl(void* Dest, const void* Src, int32_t Count) -> void
     {
-        copy_values_internal(dest, src, count);
+        CopyValuesInternal(Dest, Src, Count);
     }
 
-    auto FProperty::copy_values_from_script_vm_internal_impl(void *dest, const void *src, int32_t count) -> void
+    auto FProperty::CopyValuesToScriptVMInternal_Impl(void* Dest, const void* Src, int32_t Count) -> void
     {
-        copy_values_internal(dest, src, count);
+        CopyValuesInternal(Dest, Src, Count);
     }
 
     /*-----------------------------------------------------------------------------
 	Helpers.
 -----------------------------------------------------------------------------*/
 
-    static std::wstring alpha_numeric_chars = STR("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+    static std::wstring AlphaNumericChars = STR("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
-    FORCEINLINE bool is_valid_token_start(wchar_t first_char, bool dotted_names)
+    FORCEINLINE bool IsValidTokenStart(wchar_t FirstChar, bool DottedNames)
     {
-        return alpha_numeric_chars.find(first_char) != std::wstring::npos || (dotted_names && first_char == '/') || first_char > 255;
+        return AlphaNumericChars.find(FirstChar) != std::wstring::npos || (DottedNames && FirstChar == '/') || FirstChar > 255;
     }
 
-    FORCEINLINE std::wstring parse_property_token(const wchar_t* str, bool dotted_names)
+    FORCEINLINE std::wstring ParsePropertyToken(const wchar_t* Str, bool DottedNames)
     {
-        std::wstring result_string;
-        while (*str)
+        std::wstring ResultString;
+        while (*Str)
         {
-            const wchar_t character = *str++;
-            if (alpha_numeric_chars.find(character) != std::wstring::npos ||
-                    (character == '_' || character == '-' || character == '+') ||
-                    dotted_names && (character == '.' || character == '/' || character == SUBOBJECT_DELIMITER_CHAR)) {
-                result_string.push_back(character);
+            const wchar_t Character = *Str++;
+            if (AlphaNumericChars.find(Character) != std::wstring::npos ||
+                    (Character == '_' || Character == '-' || Character == '+') ||
+                    DottedNames && (Character == '.' || Character == '/' || Character == SUBOBJECT_DELIMITER_CHAR)) {
+                ResultString.push_back(Character);
                 continue;
             }
             break;
         }
-        return result_string;
+        return ResultString;
     }
 
-    const TCHAR* FPropertyHelpers::read_token(const TCHAR* buffer, std::wstring& string, bool dotted_names)
+    const TCHAR* FPropertyHelpers::ReadToken(const TCHAR* Buffer, FString& String, bool DottedNames)
     {
-        if(*buffer == wchar_t('"'))
+        if(*Buffer == wchar_t('"'))
         {
-            int32_t num_chars_read = 0;
-            if (!FParse::quoted_string(buffer, string, &num_chars_read))
+            int32_t NumCharsRead = 0;
+            if (!FParse::quoted_string(Buffer, String, &NumCharsRead))
             {
                 return nullptr;
             }
-            buffer += num_chars_read;
+            Buffer += NumCharsRead;
         }
-        else if (is_valid_token_start(*buffer, dotted_names))
+        else if (IsValidTokenStart(*Buffer, DottedNames))
         {
-            std::wstring token = parse_property_token(buffer, dotted_names);
-            string += token;
-            buffer += token.size();
+            std::wstring Token = ParsePropertyToken(Buffer, DottedNames);
+            String += Token;
+            Buffer += Token.size();
         }
         else
         {
             // Get just one.
-            string += *buffer;
+            String += *Buffer;
         }
-        return buffer;
+        return Buffer;
     }
 }

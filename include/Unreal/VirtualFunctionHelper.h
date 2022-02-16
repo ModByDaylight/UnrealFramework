@@ -155,10 +155,10 @@ private:
 
 /** Defines the basic data needed for the root virtual class */
 #define DECLARE_VIRTUAL_TYPE_BASE(ClassName, TypeAccessorClass) \
-    DECLARE_VIRTUAL_TYPE(ClassName)                  \
-protected:                                           \
     using TypeAccessor = TypeAccessorClass;          \
     using VirtualTypeBaseClass = ClassName;          \
+    DECLARE_VIRTUAL_TYPE(ClassName)                   \
+protected:
 
 /** Registers the implementation override for the provided function */
 #define IMPLEMENT_VIRTUAL_FUNCTION(ClassName, FunctionName) \

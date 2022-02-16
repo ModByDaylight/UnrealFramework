@@ -27,7 +27,7 @@
 #include <Unreal/Property/XDoubleProperty.hpp>
 #include <Unreal/Property/XObjectProperty.hpp>
 #include <Unreal/Property/XWeakObjectProperty.hpp>
-#include <Unreal/Property/XLazyObjectProperty.hpp>
+#include <Unreal/Property/FLazyObjectProperty.hpp>
 #include <Unreal/Property/XSoftObjectProperty.hpp>
 #include <Unreal/Property/FClassProperty.hpp>
 #include <Unreal/Property/XSoftClassProperty.hpp>
@@ -208,7 +208,7 @@ namespace RC::Unreal
         XBoolProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.BoolProperty");
         XMapProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.MapProperty");
         XWeakObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.WeakObjectProperty");
-        XLazyObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.LazyObjectProperty");
+        FLazyObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.LazyObjectProperty");
         XSoftObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.SoftObjectProperty");
         XTextProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.TextProperty");
         XStrProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StrProperty");
@@ -358,7 +358,7 @@ namespace RC::Unreal
                     {
                         m_core_object_pointers[L"LazyObjectProperty"] = ffield_class;
                         m_object_to_string_functions[ffield_class] = &XObjectProperty::to_string;
-                        XLazyObjectProperty::m_static_obj_variant = ffield_class;
+                        FLazyObjectProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"SoftObjectProperty"))
                     {
@@ -540,7 +540,7 @@ namespace RC::Unreal
             add_property(L"/Script/CoreUObject.ClassProperty", L"ClassProperty", {&FClassProperty::to_string}, FClassProperty{});
             add_property(L"/Script/CoreUObject.SoftClassProperty", L"SoftClassProperty", {&FClassProperty::to_string}, XSoftClassProperty{});
             add_property(L"/Script/CoreUObject.WeakObjectProperty", L"WeakObjectProperty", {&XWeakObjectProperty::to_string}, XWeakObjectProperty{});
-            add_property(L"/Script/CoreUObject.LazyObjectProperty", L"LazyObjectProperty", {&XObjectProperty::to_string}, XLazyObjectProperty{});
+            add_property(L"/Script/CoreUObject.LazyObjectProperty", L"LazyObjectProperty", {&XObjectProperty::to_string}, FLazyObjectProperty{});
             add_property(L"/Script/CoreUObject.SoftObjectProperty", L"SoftObjectProperty", {&XObjectProperty::to_string}, XSoftObjectProperty{});
             if (Version::is_atleast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", L"EnumProperty", {&FEnumProperty<uint8_t>::to_string}, FEnumProperty<uint8_t>{}); }
             add_property(L"/Script/CoreUObject.TextProperty", L"TextProperty", {&XTextProperty::to_string}, XTextProperty{});

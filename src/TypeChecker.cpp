@@ -39,9 +39,9 @@
 #include <Unreal/Property/XEnumProperty.hpp>
 #include <Unreal/Property/XTextProperty.hpp>
 #include <Unreal/Property/XStrProperty.hpp>
-#include <Unreal/Property/XDelegateProperty.hpp>
-#include <Unreal/Property/XMulticastInlineDelegateProperty.hpp>
-#include <Unreal/Property/XMulticastSparseDelegateProperty.hpp>
+#include <Unreal/Property/FDelegateProperty.hpp>
+#include <Unreal/Property/FMulticastInlineDelegateProperty.hpp>
+#include <Unreal/Property/FMulticastSparseDelegateProperty.hpp>
 #include <Unreal/Property/XInterfaceProperty.hpp>
 #include <Unreal/Property/XFieldPathProperty.hpp>
 #include <Unreal/UnrealVersion.hpp>
@@ -387,20 +387,20 @@ namespace RC::Unreal
                     if (type_name == FName(L"DelegateProperty"))
                     {
                         m_core_object_pointers[L"DelegateProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XDelegateProperty::to_string;
-                        XDelegateProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FDelegateProperty::to_string;
+                        FDelegateProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"MulticastInlineDelegateProperty"))
                     {
                         m_core_object_pointers[L"MulticastInlineDelegateProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XMulticastInlineDelegateProperty::to_string;
-                        XMulticastInlineDelegateProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FMulticastInlineDelegateProperty::to_string;
+                        FMulticastInlineDelegateProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"MulticastSparseDelegateProperty"))
                     {
                         m_core_object_pointers[L"MulticastSparseDelegateProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XMulticastSparseDelegateProperty::to_string;
-                        XMulticastSparseDelegateProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FMulticastSparseDelegateProperty::to_string;
+                        FMulticastSparseDelegateProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"InterfaceProperty"))
                     {
@@ -545,10 +545,10 @@ namespace RC::Unreal
             if (Version::is_atleast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", L"EnumProperty", {&XEnumProperty<uint8_t>::to_string}, XEnumProperty<uint8_t>{}); }
             add_property(L"/Script/CoreUObject.TextProperty", L"TextProperty", {&XTextProperty::to_string}, XTextProperty{});
             add_property(L"/Script/CoreUObject.StrProperty", L"StrProperty", {&XStrProperty::to_string}, XStrProperty{});
-            add_property(L"/Script/CoreUObject.DelegateProperty", L"DelegateProperty", {&XDelegateProperty::to_string}, XDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastDelegateProperty", L"MulticastDelegateProperty", {&XMulticastInlineDelegateProperty::to_string}, XMulticastInlineDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", L"MulticastInlineDelegateProperty", {&XMulticastInlineDelegateProperty::to_string}, XMulticastInlineDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", L"MulticastSparseDelegateProperty", {&XMulticastSparseDelegateProperty::to_string}, XMulticastSparseDelegateProperty{});
+            add_property(L"/Script/CoreUObject.DelegateProperty", L"DelegateProperty", {&FDelegateProperty::to_string}, FDelegateProperty{});
+            add_property(L"/Script/CoreUObject.MulticastDelegateProperty", L"MulticastDelegateProperty", {&FMulticastInlineDelegateProperty::to_string}, FMulticastInlineDelegateProperty{});
+            add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", L"MulticastInlineDelegateProperty", {&FMulticastInlineDelegateProperty::to_string}, FMulticastInlineDelegateProperty{});
+            add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", L"MulticastSparseDelegateProperty", {&FMulticastSparseDelegateProperty::to_string}, FMulticastSparseDelegateProperty{});
             add_property(L"/Script/CoreUObject.InterfaceProperty", L"InterfaceProperty", {&XInterfaceProperty::to_string}, XInterfaceProperty{});
 
             // Not yet supported, only here for completion and to prevent crashes

@@ -43,7 +43,7 @@
 #include <Unreal/Property/FMulticastInlineDelegateProperty.hpp>
 #include <Unreal/Property/FMulticastSparseDelegateProperty.hpp>
 #include <Unreal/Property/XInterfaceProperty.hpp>
-#include <Unreal/Property/XFieldPathProperty.hpp>
+#include <Unreal/Property/FFieldPathProperty.hpp>
 #include <Unreal/UnrealVersion.hpp>
 
 namespace RC::Unreal
@@ -213,7 +213,7 @@ namespace RC::Unreal
         XTextProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.TextProperty");
         XStrProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StrProperty");
         XInterfaceProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.InterfaceProperty");
-        XFieldPathProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.FieldPathProperty");
+        FFieldPathProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.FieldPathProperty");
 
         // FField / FProperty Types
         if (Version::is_atleast(4, 25))
@@ -411,8 +411,8 @@ namespace RC::Unreal
                     if (type_name == FName(L"FieldPathProperty"))
                     {
                         m_core_object_pointers[L"FieldPathProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XFieldPathProperty::to_string;
-                        XFieldPathProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FFieldPathProperty::to_string;
+                        FFieldPathProperty::m_static_obj_variant = ffield_class;
                     }
 
                     // Not yet supported, only here for completion and to prevent crashes

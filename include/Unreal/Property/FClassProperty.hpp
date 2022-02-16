@@ -13,7 +13,8 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FClassProperty);
 
     public:
-        auto GetMetaClass() -> UClass*;
+        UClass* GetMetaClass();
+        void SetMetaClass(UClass* NewMetaClass);
     };
 }
 

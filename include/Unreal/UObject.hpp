@@ -8,6 +8,7 @@
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/FString.hpp>
 #include <Unreal/UnrealFlags.hpp>
+#include <Unreal/TypeChecker.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
 #include <Unreal/UObjectMacros.h>
 

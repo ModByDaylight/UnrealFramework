@@ -33,6 +33,7 @@ private: \
     static RC::Unreal::UClass* m_static_class; \
     template<typename T>\
     friend class RC::Unreal::Internal::UClassRegistrarTemplate; \
+    friend class RC::Unreal::TypeChecker; \
 \
     inline static RC::Unreal::UClass** static_class_ptr() { return &ClassName::m_static_class; } \
     inline static const wchar_t* static_package() { return STR("/Script/") STR(#ModuleName); }   \
@@ -58,6 +59,7 @@ private: \
     static RC::Unreal::FFieldClassVariant m_static_class; \
     template<typename T>\
     friend class RC::Unreal::Internal::FFieldClassRegistrarTemplate; \
+    friend class RC::Unreal::TypeChecker; \
 \
     inline static RC::Unreal::FFieldClassVariant* static_class_ptr() { return &ClassName::m_static_class; } \
     inline static const wchar_t* static_class_name() { return (STR(#ClassName) + 1); } \

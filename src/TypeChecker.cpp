@@ -34,7 +34,7 @@
 #include <Unreal/Property/FArrayProperty.hpp>
 #include <Unreal/Property/FMapProperty.hpp>
 #include <Unreal/Property/XBoolProperty.hpp>
-#include <Unreal/Property/XNameProperty.hpp>
+#include <Unreal/Property/FNameProperty.hpp>
 #include <Unreal/Property/XStructProperty.hpp>
 #include <Unreal/Property/FEnumProperty.hpp>
 #include <Unreal/Property/XTextProperty.hpp>
@@ -204,7 +204,7 @@ namespace RC::Unreal
         FEnumProperty<uint8_t>::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.EnumProperty");
         FArrayProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ArrayProperty");
         XStructProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StructProperty");
-        XNameProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.NameProperty");
+        FNameProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.NameProperty");
         XBoolProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.BoolProperty");
         FMapProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.MapProperty");
         FWeakObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.WeakObjectProperty");
@@ -267,8 +267,8 @@ namespace RC::Unreal
                     if (type_name == FName(L"NameProperty"))
                     {
                         m_core_object_pointers[L"NameProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XNameProperty::to_string;
-                        XNameProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FNameProperty::to_string;
+                        FNameProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"FloatProperty"))
                     {
@@ -526,7 +526,7 @@ namespace RC::Unreal
             add_property(L"/Script/CoreUObject.Int16Property", L"Int16Property", {&XInt16Property::to_string}, XInt16Property{});
             add_property(L"/Script/CoreUObject.IntProperty", L"IntProperty", {&XIntProperty::to_string}, XIntProperty{});
             add_property(L"/Script/CoreUObject.Int64Property", L"Int64Property", {&XInt64Property::to_string}, XInt64Property{});
-            add_property(L"/Script/CoreUObject.NameProperty", L"NameProperty", {&XNameProperty::to_string}, XNameProperty{});
+            add_property(L"/Script/CoreUObject.NameProperty", L"NameProperty", {&FNameProperty::to_string}, FNameProperty{});
             add_property(L"/Script/CoreUObject.FloatProperty", L"FloatProperty", {&XFloatProperty::to_string}, XFloatProperty{});
             add_property(L"/Script/CoreUObject.DoubleProperty", L"DoubleProperty", {&XDoubleProperty::to_string}, XDoubleProperty{});
             add_property(L"/Script/CoreUObject.ByteProperty", L"ByteProperty", {&XByteProperty::to_string}, XByteProperty{});

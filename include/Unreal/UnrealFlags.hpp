@@ -51,7 +51,7 @@ namespace RC::Unreal
 
     // PropertyFlags from UE4.25 source
     // In the range 4.12 to 5.0 EA (branch: ue5-main):
-    // It's confirmed that there a no breaking changes, so this enum does not need to be moved to a VC yet
+    // It's confirmed that there are no breaking changes, so this enum does not need to be moved to a VC yet
     // Therefore, this is the real enum and not one to be used for converting
     enum EPropertyFlags : uint64_t
     {

@@ -179,17 +179,16 @@ namespace RC::Unreal::UObjectGlobals
     // Find a specified number of objects with the specified class (or none) and name (or none)
     // Must have at least either class or name, or both
     // Required & banned flags can be specified or left to the default (no required/banned flags)
-    using FlagsForFindObjects = std::array<EObjectFlags, EObjectFlags_Max>;
     // Find one or specified amount of objects
     // Specify 0 for 'num_objects_to_find' to not limit to number of objects to find
-    auto RC_UE_API find_objects(size_t num_objects_to_find, const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
-    auto RC_UE_API find_objects(size_t num_objects_to_find, const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
-    auto RC_UE_API find_object(const FName class_name, const FName object_short_name, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> UObject*;
-    auto RC_UE_API find_object(const wchar_t* class_name, const wchar_t* object_short_name, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> UObject*;
+    auto RC_UE_API find_objects(size_t num_objects_to_find, const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> void;
+    auto RC_UE_API find_objects(size_t num_objects_to_find, const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> void;
+    auto RC_UE_API find_object(const FName class_name, const FName object_short_name, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> UObject*;
+    auto RC_UE_API find_object(const wchar_t* class_name, const wchar_t* object_short_name, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> UObject*;
 
     // Find all objects
-    auto RC_UE_API find_objects(const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
-    auto RC_UE_API find_objects(const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const FlagsForFindObjects& required_flags = {}, const FlagsForFindObjects& banned_flags = {}) -> void;
+    auto RC_UE_API find_objects(const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> void;
+    auto RC_UE_API find_objects(const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> void;
     // Custom Helpers -> END
 }
 

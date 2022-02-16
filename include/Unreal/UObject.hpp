@@ -53,6 +53,8 @@ namespace RC::Unreal
         using ProcessEventSignature = void(UObject* context, class UFunction* function, void* params);
         static Function<ProcessEventSignature> process_event_internal;
 
+        friend class AActor;
+
         auto get_internal_index() -> uint32_t;
         auto get_object_item() -> struct FUObjectItem*;
 

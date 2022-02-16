@@ -11,18 +11,9 @@ namespace RC::Unreal
     // 0x4C currently (0x50 if you take into account alignment, sizeof(FAssetData) in UE4SS gives 0x50)
     struct RC_UE_API FAssetData
     {
-        static inline class UScriptStruct* m_static_obj{};
-        auto static set_static_obj_ptr(class UScriptStruct* ptr)
-        {
-            m_static_obj = ptr;
-        }
-
-        auto static static_class() -> class UScriptStruct*
-        {
-            if (!m_static_obj) { throw std::runtime_error{"[FAssetData::static_class] m_static_obj is nullptr"}; }
-
-            return m_static_obj;
-        }
+        // TODO: In 4.26+, AssetData is located in 'CoreUObject', in <4.26, AssetData is located in 'AssetRegistry'
+        //       Do we need to solve this ? And if so, how ?
+        DECLARE_EXTERNAL_OBJECT_CLASS(FAssetData, CoreUObject)
 
         using FAssetDataTagMapSharedView = void*; // <-- Wrapper to a pointer to a map
 

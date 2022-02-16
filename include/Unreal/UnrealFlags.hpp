@@ -51,11 +51,6 @@ namespace RC::Unreal
     inline EObjectFlags& operator|=(EObjectFlags& Lhs, EObjectFlags Rhs) = delete;
     inline EObjectFlags& operator&=(EObjectFlags& Lhs, EObjectFlags Rhs) = delete;
     inline EObjectFlags& operator^=(EObjectFlags& Lhs, EObjectFlags Rhs) = delete;
-    inline constexpr EObjectFlags operator|(EObjectFlags Lhs, EObjectFlags Rhs) = delete;
-    inline constexpr EObjectFlags operator&(EObjectFlags Lhs, EObjectFlags Rhs) = delete;
-    inline constexpr EObjectFlags operator^(EObjectFlags Lhs, EObjectFlags Rhs) = delete;
-    inline constexpr bool operator!(EObjectFlags E)  = delete;
-    inline constexpr EObjectFlags operator~(EObjectFlags E)  = delete;
 
     // PropertyFlags from UE4.25 source
     // In the range 4.12 to 5.0 EA (branch: ue5-main):

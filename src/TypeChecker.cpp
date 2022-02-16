@@ -14,17 +14,8 @@
 #include <Unreal/UInterface.hpp>
 #include <Unreal/UActorComponent.hpp>
 #include <Unreal/UPackage.hpp>
-#include <Unreal/Property/XNumericProperty.hpp>
-#include <Unreal/Property/XInt8Property.hpp>
-#include <Unreal/Property/XInt16Property.hpp>
-#include <Unreal/Property/XIntProperty.hpp>
-#include <Unreal/Property/XInt64Property.hpp>
-#include <Unreal/Property/XByteProperty.hpp>
-#include <Unreal/Property/XUInt16Property.hpp>
-#include <Unreal/Property/XUInt32Property.hpp>
-#include <Unreal/Property/XUInt64Property.hpp>
-#include <Unreal/Property/XFloatProperty.hpp>
-#include <Unreal/Property/XDoubleProperty.hpp>
+#include <Unreal/Property/FNumericProperty.h>
+#include <Unreal/Property/NumericPropertyTypes.h>
 #include <Unreal/Property/FObjectProperty.hpp>
 #include <Unreal/Property/FWeakObjectProperty.hpp>
 #include <Unreal/Property/FLazyObjectProperty.hpp>
@@ -33,7 +24,7 @@
 #include <Unreal/Property/FSoftClassProperty.hpp>
 #include <Unreal/Property/FArrayProperty.hpp>
 #include <Unreal/Property/FMapProperty.hpp>
-#include <Unreal/Property/XBoolProperty.hpp>
+#include <Unreal/Property/FBoolProperty.h>
 #include <Unreal/Property/FNameProperty.hpp>
 #include <Unreal/Property/FStructProperty.hpp>
 #include <Unreal/Property/FEnumProperty.hpp>
@@ -44,6 +35,7 @@
 #include <Unreal/Property/FMulticastSparseDelegateProperty.hpp>
 #include <Unreal/Property/FInterfaceProperty.hpp>
 #include <Unreal/Property/FFieldPathProperty.hpp>
+#include <Unreal/Property/FSetProperty.hpp>
 #include <Unreal/UnrealVersion.hpp>
 
 namespace RC::Unreal
@@ -117,54 +109,54 @@ namespace RC::Unreal
 
     auto TypeChecker::store_all_object_types() -> bool
     {
-        UObject::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Object"));
-        UStruct::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Struct"));
-        AActor::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.Actor"));
+        UObject::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Object");
+        UStruct::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Struct");
+        AActor::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.Actor");
 
         UClass* enum_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Enum");
-        UEnum::set_static_obj_ptr(enum_ptr);
-        m_object_to_string_functions[enum_ptr] = &UEnum::to_string;
+        UEnum::m_static_class = enum_ptr;
+        //m_object_to_string_functions[enum_ptr] = &UEnum::to_string;
 
         UClass* user_defined_enum_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.UserDefinedEnum");
-        UUserDefinedEnum::set_static_obj_ptr(user_defined_enum_ptr);
-        m_object_to_string_functions[user_defined_enum_ptr] = &UEnum::to_string;
+        UUserDefinedEnum::m_static_class = user_defined_enum_ptr;
+        //m_object_to_string_functions[user_defined_enum_ptr] = &UEnum::to_string;
 
         UClass* class_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Class");
-        UClass::set_static_obj_ptr(class_ptr);
-        m_object_to_string_functions[class_ptr] = &UClass::to_string;
+        UClass::m_static_class = class_ptr;
+        //m_object_to_string_functions[class_ptr] = &UClass::to_string;
 
         UClass* bp_generated_class_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.BlueprintGeneratedClass");
-        UBlueprintGeneratedClass::set_static_obj_ptr(bp_generated_class_ptr);
-        m_object_to_string_functions[bp_generated_class_ptr] = &UClass::to_string;
+        UBlueprintGeneratedClass::m_static_class = bp_generated_class_ptr;
+        //m_object_to_string_functions[bp_generated_class_ptr] = &UClass::to_string;
 
         UClass* anim_bp_generated_class_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.AnimBlueprintGeneratedClass");
-        UAnimBlueprintGeneratedClass::set_static_obj_ptr(anim_bp_generated_class_ptr);
-        m_object_to_string_functions[anim_bp_generated_class_ptr] = &UClass::to_string;
+        UAnimBlueprintGeneratedClass::m_static_class = anim_bp_generated_class_ptr;
+        //m_object_to_string_functions[anim_bp_generated_class_ptr] = &UClass::to_string;
 
         UClass* widget_bp_generated_class_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.WidgetBlueprintGeneratedClass");
-        UAnimBlueprintGeneratedClass::set_static_obj_ptr(widget_bp_generated_class_ptr);
-        m_object_to_string_functions[widget_bp_generated_class_ptr] = &UClass::to_string;
+        UAnimBlueprintGeneratedClass::m_static_class = widget_bp_generated_class_ptr;
+        //m_object_to_string_functions[widget_bp_generated_class_ptr] = &UClass::to_string;
 
         // Not available in 4.12 (I've not checked exactly when it starts being available)
-        UScriptStruct* asset_data_ptr = UObjectGlobals::static_find_object<UScriptStruct*>(nullptr, nullptr, STR("/Script/AssetRegistry.AssetData"));
+        UClass* asset_data_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, STR("/Script/AssetRegistry.AssetData"));
         if (!asset_data_ptr)
         {
             // In 4.26, they moved it from the 'AssetRegistry' package to the 'CoreUObject' package
-            asset_data_ptr = UObjectGlobals::static_find_object<UScriptStruct*>(nullptr, nullptr, STR("/Script/CoreUObject.AssetData"));
+            asset_data_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, STR("/Script/CoreUObject.AssetData"));
         }
-        FAssetData::set_static_obj_ptr(asset_data_ptr);
+        FAssetData::m_static_class = asset_data_ptr;
 
-        UPackage::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Package"));
-        UInterface::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Interface"));
-        UActorComponent::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.ActorComponent"));
-        USceneComponent::set_static_obj_ptr(UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.SceneComponent"));
+        UPackage::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Package");
+        UInterface::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Interface");
+        UActorComponent::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.ActorComponent");
+        USceneComponent::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.SceneComponent");
 
         auto register_function_derivative = [](const wchar_t* function_object_string) -> UClass* {
             UClass* ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, function_object_string);
             if (ptr)
             {
                 // The following objects are derived from UFunction and therefor can safely use the UClass version of to_string & the UFunction version of to_string_complex
-                m_object_to_string_functions[ptr] = &UFunction::to_string;
+                //m_object_to_string_functions[ptr] = &UFunction::to_string;
             }
             else
             {
@@ -173,7 +165,7 @@ namespace RC::Unreal
             return ptr;
         };
 
-        UFunction::set_static_obj_ptr(register_function_derivative(L"/Script/CoreUObject.Function"));
+        UFunction::m_static_class = register_function_derivative(L"/Script/CoreUObject.Function");
         register_function_derivative(L"/Script/CoreUObject.DelegateFunction");
 
         if (Version::is_atleast(4, 23))
@@ -182,22 +174,23 @@ namespace RC::Unreal
         }
 
         UClass* script_struct_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ScriptStruct");
-        UScriptStruct::set_static_obj_ptr(script_struct_ptr);
-        m_object_to_string_functions[script_struct_ptr] = &UScriptStruct::to_string;
-        m_object_to_string_complex_functions[script_struct_ptr] = &UScriptStruct::to_string_complex;
+        UScriptStruct::m_static_class = script_struct_ptr;
+        //m_object_to_string_functions[script_struct_ptr] = &UScriptStruct::to_string;
+        //m_object_to_string_complex_functions[script_struct_ptr] = &UScriptStruct::to_string_complex;
 
+        /*
         FProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Property");
-        XNumericProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.NumericProperty");
-        XInt8Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Int8Property");
-        XInt16Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Int16Property");
-        XIntProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.IntProperty");
-        XInt64Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Int64Property");
-        XFloatProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.FloatProperty");
-        XDoubleProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.DoubleProperty");
-        XByteProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ByteProperty");
-        XUInt16Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.UInt16Property");
-        XUInt32Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.UInt32Property");
-        XUInt64Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.UInt64Property");
+        FNumericProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.NumericProperty");
+        FInt8Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Int8Property");
+        FInt16Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Int16Property");
+        FIntProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.IntProperty");
+        FInt64Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Int64Property");
+        FFloatProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.FloatProperty");
+        FDoubleProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.DoubleProperty");
+        FByteProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ByteProperty");
+        FUInt16Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.UInt16Property");
+        FUInt32Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.UInt32Property");
+        FUInt64Property::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.UInt64Property");
         FObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ObjectProperty");
         FClassProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ClassProperty");
         FSoftClassProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.SoftClassProperty");
@@ -214,6 +207,7 @@ namespace RC::Unreal
         FStrProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StrProperty");
         FInterfaceProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.InterfaceProperty");
         FFieldPathProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.FieldPathProperty");
+        //*/
 
         // FField / FProperty Types
         if (Version::is_atleast(4, 25))
@@ -237,80 +231,81 @@ namespace RC::Unreal
                     if (type_name == FName(L"ObjectProperty"))
                     {
                         m_core_object_pointers[L"ObjectProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FObjectProperty::to_string;
-                        FObjectProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FObjectProperty::to_string;
+                        FObjectProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"Int8Property"))
                     {
                         m_core_object_pointers[L"Int8Property"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XInt8Property::to_string;
-                        XInt8Property::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &XInt8Property::to_string;
+                        FInt8Property::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"Int16Property"))
                     {
                         m_core_object_pointers[L"Int16Property"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XInt16Property::to_string;
-                        XInt16Property::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &XInt16Property::to_string;
+                        FInt16Property::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"IntProperty"))
                     {
                         m_core_object_pointers[L"IntProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XIntProperty::to_string;
-                        XIntProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &XIntProperty::to_string;
+                        FIntProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"Int64Property"))
                     {
                         m_core_object_pointers[L"Int64Property"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XInt64Property::to_string;
-                        XInt64Property::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &XInt64Property::to_string;
+                        FInt64Property::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"NameProperty"))
                     {
                         m_core_object_pointers[L"NameProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FNameProperty::to_string;
-                        FNameProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FNameProperty::to_string;
+                        FNameProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"FloatProperty"))
                     {
                         m_core_object_pointers[L"FloatProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XFloatProperty::to_string;
-                        XFloatProperty::m_static_obj_variant = static_cast<FFieldClass*>(ffield_class);
+                        //m_object_to_string_functions[ffield_class] = &XFloatProperty::to_string;
+                        FFloatProperty::m_static_class = static_cast<FFieldClass*>(ffield_class);
 
                         // 'NumericProperty' doesn't appear as the direct type for any properties
                         // Because of this, we need to use a property that we know has 'NumericProperty' in its super chain
-                        XNumericProperty::m_static_obj_variant = static_cast<FFieldClass*>(ffield_class)->super_class;
+                        // We're using 'FFloatProperty' here for no particular reason other than that it has 'NumericProperty' as it's super
+                        FNumericProperty::m_static_class = ffield_class->SuperClass;
                     }
                     if (type_name == FName(L"DoubleProperty"))
                     {
                         m_core_object_pointers[L"DoubleProperty"] = ffield_class;
-                        XDoubleProperty::m_static_obj_variant = ffield_class;
+                        FDoubleProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"ByteProperty"))
                     {
                         m_core_object_pointers[L"ByteProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XByteProperty::to_string;
-                        XByteProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &XByteProperty::to_string;
+                        FByteProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"UInt16Property"))
                     {
                         m_core_object_pointers[L"UInt16Property"] = ffield_class;
-                        XUInt16Property::m_static_obj_variant = ffield_class;
+                        FUInt16Property::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"UInt32Property"))
                     {
                         m_core_object_pointers[L"UInt32Property"] = ffield_class;
-                        XUInt32Property::m_static_obj_variant = ffield_class;
+                        FUInt32Property::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"UInt64Property"))
                     {
                         m_core_object_pointers[L"UInt64Property"] = ffield_class;
-                        XUInt64Property::m_static_obj_variant = ffield_class;
+                        FUInt64Property::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"BoolProperty"))
                     {
                         m_core_object_pointers[L"BoolProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XBoolProperty::to_string;
-                        XBoolProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &XBoolProperty::to_string;
+                        FBoolProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"ArrayProperty"))
                     {
@@ -319,100 +314,100 @@ namespace RC::Unreal
                         // Using XIntProperty for testing but it's possible we can use it this way because
                         // to_string is going to need to dynamically (at runtime) figure out what the derived type is regardless
                         // The templated type would be effectively be useless here but is required since the whole class is templated
-                        m_object_to_string_functions[ffield_class] = &FArrayProperty::to_string;
-                        m_object_to_string_complex_functions[ffield_class] = &FArrayProperty::to_string_complex;
-                        FArrayProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FArrayProperty::to_string;
+                        //m_object_to_string_complex_functions[ffield_class] = &FArrayProperty::to_string_complex;
+                        FArrayProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"MapProperty"))
                     {
                         m_core_object_pointers[L"MapProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FMapProperty::to_string;
-                        m_object_to_string_complex_functions[ffield_class] = &FMapProperty::to_string_complex;
-                        FMapProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FMapProperty::to_string;
+                        //m_object_to_string_complex_functions[ffield_class] = &FMapProperty::to_string_complex;
+                        FMapProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"StructProperty"))
                     {
                         m_core_object_pointers[L"StructProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FStructProperty::to_string;
-                        FStructProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FStructProperty::to_string;
+                        FStructProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"ClassProperty"))
                     {
                         m_core_object_pointers[L"ClassProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FClassProperty::to_string;
-                        FClassProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FClassProperty::to_string;
+                        FClassProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"SoftClassProperty"))
                     {
                         m_core_object_pointers[L"SoftClassProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FClassProperty::to_string;
-                        FSoftClassProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FClassProperty::to_string;
+                        FSoftClassProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"WeakObjectProperty"))
                     {
                         m_core_object_pointers[L"WeakObjectProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FWeakObjectProperty::to_string;
-                        FWeakObjectProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FWeakObjectProperty::to_string;
+                        FWeakObjectProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"LazyObjectProperty"))
                     {
                         m_core_object_pointers[L"LazyObjectProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FObjectProperty::to_string;
-                        FLazyObjectProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FObjectProperty::to_string;
+                        FLazyObjectProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"SoftObjectProperty"))
                     {
                         m_core_object_pointers[L"SoftObjectProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FObjectProperty::to_string;
-                        FSoftObjectProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FObjectProperty::to_string;
+                        FSoftObjectProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"EnumProperty"))
                     {
                         m_core_object_pointers[L"EnumProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FEnumProperty<uint8_t>::to_string;
+                        //m_object_to_string_functions[ffield_class] = &FEnumProperty<uint8_t>::to_string;
                         FEnumProperty<uint8_t>::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"TextProperty"))
                     {
                         m_core_object_pointers[L"TextProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FTextProperty::to_string;
-                        FTextProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FTextProperty::to_string;
+                        FTextProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"StrProperty"))
                     {
                         m_core_object_pointers[L"StrProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FStrProperty::to_string;
-                        FStrProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FStrProperty::to_string;
+                        FStrProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"DelegateProperty"))
                     {
                         m_core_object_pointers[L"DelegateProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FDelegateProperty::to_string;
-                        FDelegateProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FDelegateProperty::to_string;
+                        FDelegateProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"MulticastInlineDelegateProperty"))
                     {
                         m_core_object_pointers[L"MulticastInlineDelegateProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FMulticastInlineDelegateProperty::to_string;
-                        FMulticastInlineDelegateProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FMulticastInlineDelegateProperty::to_string;
+                        FMulticastInlineDelegateProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"MulticastSparseDelegateProperty"))
                     {
                         m_core_object_pointers[L"MulticastSparseDelegateProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FMulticastSparseDelegateProperty::to_string;
-                        FMulticastSparseDelegateProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FMulticastSparseDelegateProperty::to_string;
+                        FMulticastSparseDelegateProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"InterfaceProperty"))
                     {
                         m_core_object_pointers[L"InterfaceProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FInterfaceProperty::to_string;
-                        FInterfaceProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FInterfaceProperty::to_string;
+                        FInterfaceProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"FieldPathProperty"))
                     {
                         m_core_object_pointers[L"FieldPathProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &FFieldPathProperty::to_string;
-                        FFieldPathProperty::m_static_obj_variant = ffield_class;
+                        //m_object_to_string_functions[ffield_class] = &FFieldPathProperty::to_string;
+                        FFieldPathProperty::m_static_class = ffield_class;
                     }
 
                     // Not yet supported, only here for completion and to prevent crashes
@@ -433,7 +428,7 @@ namespace RC::Unreal
                                 if (super_type_name == FName(L"Property"))
                                 {
                                     m_core_object_pointers[L"Property"] = ffield_super_class;
-                                    FProperty::m_static_obj_variant = ffield_class;
+                                    FProperty::m_static_class = ffield_class;
                                     break;
                                 }
 
@@ -489,7 +484,7 @@ namespace RC::Unreal
                 ObjectToStringComplexDecl complex;
             };
 
-            auto add_property = []<typename PropertyType>(const wchar_t* full_property_name, const wchar_t* name, ToStringFuncs to_string_funcs, [[maybe_unused]]PropertyType property_type_object) {
+            auto add_property = []<typename PropertyType>(const wchar_t* full_property_name, const wchar_t* name, /*ToStringFuncs to_string_funcs,*/ [[maybe_unused]]PropertyType property_type_object) {
                 UObject* property = UObjectGlobals::static_find_object(nullptr, nullptr, full_property_name);
                 if (!property)
                 {
@@ -506,9 +501,10 @@ namespace RC::Unreal
 
                 if constexpr (!std::is_same_v<PropertyType, int32_t>)
                 {
-                    PropertyType::m_static_obj_variant = static_cast<UClass*>(property);
+                    PropertyType::m_static_class = static_cast<UClass*>(property);
                 }
 
+                /*
                 if (to_string_funcs.normal)
                 {
                     m_object_to_string_functions[property] = to_string_funcs.normal;
@@ -518,45 +514,46 @@ namespace RC::Unreal
                 {
                     m_object_to_string_complex_functions[property] = to_string_funcs.complex;
                 }
+                //*/
             };
 
-            add_property(L"/Script/CoreUObject.ObjectProperty", L"ObjectProperty", {&FObjectProperty::to_string}, FObjectProperty{});
-            add_property(L"/Script/CoreUObject.NumericProperty", L"NumericProperty", {&XNumericProperty::to_string}, XNumericProperty{});
-            add_property(L"/Script/CoreUObject.Int8Property", L"Int8Property", {&XInt8Property::to_string}, XInt8Property{});
-            add_property(L"/Script/CoreUObject.Int16Property", L"Int16Property", {&XInt16Property::to_string}, XInt16Property{});
-            add_property(L"/Script/CoreUObject.IntProperty", L"IntProperty", {&XIntProperty::to_string}, XIntProperty{});
-            add_property(L"/Script/CoreUObject.Int64Property", L"Int64Property", {&XInt64Property::to_string}, XInt64Property{});
-            add_property(L"/Script/CoreUObject.NameProperty", L"NameProperty", {&FNameProperty::to_string}, FNameProperty{});
-            add_property(L"/Script/CoreUObject.FloatProperty", L"FloatProperty", {&XFloatProperty::to_string}, XFloatProperty{});
-            add_property(L"/Script/CoreUObject.DoubleProperty", L"DoubleProperty", {&XDoubleProperty::to_string}, XDoubleProperty{});
-            add_property(L"/Script/CoreUObject.ByteProperty", L"ByteProperty", {&XByteProperty::to_string}, XByteProperty{});
-            add_property(L"/Script/CoreUObject.UInt16Property", L"UInt16Property", {&XUInt16Property::to_string}, XUInt16Property{});
-            add_property(L"/Script/CoreUObject.UInt32Property", L"UInt32Property", {&XUInt32Property::to_string}, XUInt32Property{});
-            add_property(L"/Script/CoreUObject.UInt64Property", L"UInt64Property", {&XUInt64Property::to_string}, XUInt64Property{});
-            add_property(L"/Script/CoreUObject.BoolProperty", L"BoolProperty", {&XBoolProperty::to_string}, XBoolProperty{});
-            add_property(L"/Script/CoreUObject.ArrayProperty", L"ArrayProperty", {&FArrayProperty::to_string, &FArrayProperty::to_string_complex}, FArrayProperty{});
-            add_property(L"/Script/CoreUObject.MapProperty", L"MapProperty", {&FMapProperty::to_string, &FMapProperty::to_string_complex}, FMapProperty{});
-            add_property(L"/Script/CoreUObject.StructProperty", L"StructProperty", {&FStructProperty::to_string}, FStructProperty{});
-            add_property(L"/Script/CoreUObject.ClassProperty", L"ClassProperty", {&FClassProperty::to_string}, FClassProperty{});
-            add_property(L"/Script/CoreUObject.SoftClassProperty", L"SoftClassProperty", {&FClassProperty::to_string}, FSoftClassProperty{});
-            add_property(L"/Script/CoreUObject.WeakObjectProperty", L"WeakObjectProperty", {&FWeakObjectProperty::to_string}, FWeakObjectProperty{});
-            add_property(L"/Script/CoreUObject.LazyObjectProperty", L"LazyObjectProperty", {&FObjectProperty::to_string}, FLazyObjectProperty{});
-            add_property(L"/Script/CoreUObject.SoftObjectProperty", L"SoftObjectProperty", {&FObjectProperty::to_string}, FSoftObjectProperty{});
-            if (Version::is_atleast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", L"EnumProperty", {&FEnumProperty<uint8_t>::to_string}, FEnumProperty<uint8_t>{}); }
-            add_property(L"/Script/CoreUObject.TextProperty", L"TextProperty", {&FTextProperty::to_string}, FTextProperty{});
-            add_property(L"/Script/CoreUObject.StrProperty", L"StrProperty", {&FStrProperty::to_string}, FStrProperty{});
-            add_property(L"/Script/CoreUObject.DelegateProperty", L"DelegateProperty", {&FDelegateProperty::to_string}, FDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastDelegateProperty", L"MulticastDelegateProperty", {&FMulticastInlineDelegateProperty::to_string}, FMulticastInlineDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", L"MulticastInlineDelegateProperty", {&FMulticastInlineDelegateProperty::to_string}, FMulticastInlineDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", L"MulticastSparseDelegateProperty", {&FMulticastSparseDelegateProperty::to_string}, FMulticastSparseDelegateProperty{});
-            add_property(L"/Script/CoreUObject.InterfaceProperty", L"InterfaceProperty", {&FInterfaceProperty::to_string}, FInterfaceProperty{});
+            add_property(L"/Script/CoreUObject.ObjectProperty", L"ObjectProperty", /*{&FObjectProperty::to_string},*/ FObjectProperty{});
+            add_property(L"/Script/CoreUObject.NumericProperty", L"NumericProperty", /*{&FNumericProperty::to_string},*/ FNumericProperty{});
+            add_property(L"/Script/CoreUObject.Int8Property", L"Int8Property", /*{&FInt8Property::to_string},*/ FInt8Property{});
+            add_property(L"/Script/CoreUObject.Int16Property", L"Int16Property", /*{&FInt16Property::to_string},*/ FInt16Property{});
+            add_property(L"/Script/CoreUObject.IntProperty", L"IntProperty", /*{&FIntProperty::to_string},*/ FIntProperty{});
+            add_property(L"/Script/CoreUObject.Int64Property", L"Int64Property", /*{&FInt64Property::to_string},*/ FInt64Property{});
+            add_property(L"/Script/CoreUObject.NameProperty", L"NameProperty", /*{&FNameProperty::to_string},*/ FNameProperty{});
+            add_property(L"/Script/CoreUObject.FloatProperty", L"FloatProperty", /*{&FFloatProperty::to_string},*/ FFloatProperty{});
+            add_property(L"/Script/CoreUObject.DoubleProperty", L"DoubleProperty", /*{&FDoubleProperty::to_string},*/ FDoubleProperty{});
+            add_property(L"/Script/CoreUObject.ByteProperty", L"ByteProperty", /*{&FByteProperty::to_string},*/ FByteProperty{});
+            add_property(L"/Script/CoreUObject.UInt16Property", L"UInt16Property", /*{&FUInt16Property::to_string},*/ FUInt16Property{});
+            add_property(L"/Script/CoreUObject.UInt32Property", L"UInt32Property", /*{&FUInt32Property::to_string},*/ FUInt32Property{});
+            add_property(L"/Script/CoreUObject.UInt64Property", L"UInt64Property", /*{&FUInt64Property::to_string},*/ FUInt64Property{});
+            add_property(L"/Script/CoreUObject.BoolProperty", L"BoolProperty", /*{&FBoolProperty::to_string},*/ FBoolProperty{});
+            add_property(L"/Script/CoreUObject.ArrayProperty", L"ArrayProperty", /*{&FArrayProperty::to_string, &FArrayProperty::to_string_complex},*/ FArrayProperty{});
+            add_property(L"/Script/CoreUObject.MapProperty", L"MapProperty", /*{&FMapProperty::to_string, &FMapProperty::to_string_complex},*/ FMapProperty{});
+            add_property(L"/Script/CoreUObject.StructProperty", L"StructProperty", /*{&FStructProperty::to_string},*/ FStructProperty{});
+            add_property(L"/Script/CoreUObject.ClassProperty", L"ClassProperty", /*{&FClassProperty::to_string},*/ FClassProperty{});
+            add_property(L"/Script/CoreUObject.SoftClassProperty", L"SoftClassProperty", /*{&FClassProperty::to_string},*/ FSoftClassProperty{});
+            add_property(L"/Script/CoreUObject.WeakObjectProperty", L"WeakObjectProperty", /*{&FWeakObjectProperty::to_string},*/ FWeakObjectProperty{});
+            add_property(L"/Script/CoreUObject.LazyObjectProperty", L"LazyObjectProperty", /*{&FObjectProperty::to_string},*/ FLazyObjectProperty{});
+            add_property(L"/Script/CoreUObject.SoftObjectProperty", L"SoftObjectProperty", /*{&FObjectProperty::to_string},*/ FSoftObjectProperty{});
+            if (Version::is_atleast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", L"EnumProperty", /*{&FEnumProperty::to_string},*/ FEnumProperty{}); }
+            add_property(L"/Script/CoreUObject.TextProperty", L"TextProperty", /*{&FTextProperty::to_string},*/ FTextProperty{});
+            add_property(L"/Script/CoreUObject.StrProperty", L"StrProperty", /*{&FStrProperty::to_string},*/ FStrProperty{});
+            add_property(L"/Script/CoreUObject.DelegateProperty", L"DelegateProperty", /*{&FDelegateProperty::to_string},*/ FDelegateProperty{});
+            add_property(L"/Script/CoreUObject.MulticastDelegateProperty", L"MulticastDelegateProperty", /*{&FMulticastInlineDelegateProperty::to_string},*/ FMulticastInlineDelegateProperty{});
+            add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", L"MulticastInlineDelegateProperty", /*{&FMulticastInlineDelegateProperty::to_string},*/ FMulticastInlineDelegateProperty{});
+            add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", L"MulticastSparseDelegateProperty", /*{&FMulticastSparseDelegateProperty::to_string},*/ FMulticastSparseDelegateProperty{});
+            add_property(L"/Script/CoreUObject.InterfaceProperty", L"InterfaceProperty", /*{&FInterfaceProperty::to_string},*/ FInterfaceProperty{});
 
             // Not yet supported, only here for completion and to prevent crashes
             // Not all of these will be found right now, need to call this function with more UObjects that actually have these properties
-            add_property(L"/Script/CoreUObject.SetProperty", L"SetProperty", {}, int32_t{});
+            add_property(L"/Script/CoreUObject.SetProperty", L"SetProperty", /*{},*/ FSetProperty{});
 
             // Find the root 'Property' FField. This may not be necessary but I'm leaving it here for now, might be useful later.
-            add_property(L"/Script/CoreUObject.Property", L"Property", {}, int32_t{});
+            add_property(L"/Script/CoreUObject.Property", L"Property", /*{},*/ FProperty{});
         }
 
         // Verifying that all the core objects were successfully retrieved

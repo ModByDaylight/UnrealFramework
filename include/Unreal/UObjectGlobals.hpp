@@ -3,6 +3,8 @@
 
 #include <array>
 #include <vector>
+#include <functional>
+
 #include <Function/Function.hpp>
 #include <Constructs/Loop.hpp>
 #include <Unreal/Common.hpp>

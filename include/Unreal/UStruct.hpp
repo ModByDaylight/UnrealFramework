@@ -8,6 +8,7 @@
 #include <Constructs/Loop.hpp>
 
 #include <Unreal/StaticOffsetFinder.hpp>
+#include <Unreal/UObjectGlobals.hpp>
 #include <Unreal/FField.hpp>
 #include <Unreal/UField.hpp>
 
@@ -58,7 +59,7 @@ namespace RC::Unreal
          */
         auto is_child_of(UStruct* ustruct) -> bool;
 
-        template<UObjectGlobals::UObjectDerivative UObjectDerivedType>
+        template<UObjectDerivative UObjectDerivedType>
         auto is_child_of() -> bool
         {
             return is_child_of(UObjectDerivedType::static_class());

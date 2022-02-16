@@ -6,8 +6,6 @@
 namespace RC::Unreal
 {
     IMPLEMENT_FIELD_CLASS(FNumericProperty);
-    IMPLEMENT_VIRTUAL_FUNCTION(FNumericProperty, import_text);
-    IMPLEMENT_VIRTUAL_FUNCTION(FNumericProperty, export_text_item);
 
     auto FNumericProperty::IsFloatingPoint() const -> bool
     {
@@ -77,15 +75,5 @@ namespace RC::Unreal
     auto FNumericProperty::CanHoldUnsignedValueInternal(uint64 Value) const -> bool
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, CanHoldUnsignedValueInternal, bool, PARAMS(uint64), ARGS(Value))
-    }
-
-    auto FNumericProperty::is_unsigned_integer() -> bool
-    {
-        return CALL_VIRTUAL_FUNCTION(this, is_unsigned_integer);
-    }
-
-    auto FNumericProperty::set_unsigned_int_property_value(void* data, uint64_t value) -> void
-    {
-        CALL_VIRTUAL_FUNCTION(this, set_unsigned_int_property_value, data, value);
     }
 }

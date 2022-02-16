@@ -3,16 +3,6 @@
 
 #include <Unreal/FProperty.hpp>
 
-#define IMPLEMENT_TPROPERTY_VIRTUAL_FUNCTIONS(ClassName) \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, initialize_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, destroy_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, clear_value); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, copy_values_internal);
-
-#define IMPLEMENT_TPROPERTY_WITH_EQUALITY_AND_SERIALIZER_VIRTUAL_FUNCTIONS(ClassName) \
-    IMPLEMENT_TPROPERTY_VIRTUAL_FUNCTIONS(ClassName); \
-    IMPLEMENT_VIRTUAL_FUNCTION(ClassName, identical);
-
 namespace RC::Unreal
 {
     /** Implements common operations for the provided template type */

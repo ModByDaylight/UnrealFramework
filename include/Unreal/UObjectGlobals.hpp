@@ -13,6 +13,18 @@ namespace RC::Unreal
 {
     class UObject;
 
+    /** Concept describing the type of the pointer pointing to the UObject-derived object */
+    template<typename SupposedUObject>
+    concept UObjectPointerDerivative = std::is_convertible_v<SupposedUObject, UObject*>;
+
+    /** Concept describing the type derived from the UObject */
+    template<typename SupposedUObject>
+    concept UObjectDerivative = std::is_convertible_v<SupposedUObject, UObject>;
+
+    /** Casts the object to the provided type if possible, returns nullptr otherwise */
+    template<UObjectDerivative CastResultType>
+    auto cast_object(UObject* object) -> CastResultType*;
+
     // Adapted from UE source
     // This struct becomes deprecated in 4.26+ and as such is only used if <=4.25 is detected
 #define StaticConstructObject_Internal_Params_Deprecated \

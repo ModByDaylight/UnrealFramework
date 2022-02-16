@@ -21,18 +21,6 @@ namespace RC::Unreal
     template<typename Key, typename Value>
     class TMap;
 
-    /** Concept describing the type of the pointer pointing to the UObject-derived object */
-    template<typename SupposedUObject>
-    concept UObjectPointerDerivative = std::is_convertible_v<SupposedUObject, UObject*>;
-
-    /** Concept describing the type derived from the UObject */
-    template<typename SupposedUObject>
-    concept UObjectDerivative = std::is_convertible_v<SupposedUObject, UObject>;
-
-    /** Casts the object to the provided type if possible, returns nullptr otherwise */
-    template<UObjectDerivative CastResultType>
-    auto cast_object(UObject* object) -> CastResultType*;
-
     class RC_UE_API UObjectBase
     {
     public:

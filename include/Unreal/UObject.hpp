@@ -19,6 +19,18 @@ namespace RC::Unreal
     class UObject;
     struct FFrame;
 
+    // Placeholder types for virtual functions
+    // TODO: Remove when they are implemented
+    using FObjectInstancingGraph = void*;
+    using FRestoreForUObjectOverwrite = void*;
+    using FArchive = void*;
+    using FObjectDuplicationParameters = void*;
+    using FOutputDevice = void*;
+    using FFeedbackContext = void*;
+    using FResourceSizeEx = void*;
+    using FAssetRegistryTag = void*;
+    using FPrimaryAssetId = void*;
+
     template<typename Key, typename Value>
     class TMap;
 
@@ -70,19 +82,16 @@ namespace RC::Unreal
         void PreSave(const class ITargetPlatform* TargetPlatform);
         bool IsReadyForAsyncPostLoad() const;
         void PostLoad();
-        using FObjectInstancingGraph = void*; // Remove if/when we have an implementation for FObjectInstancingGraph
         void PostLoadSubobjects(FObjectInstancingGraph* OuterInstanceGraph);
         void BeginDestroy();
         bool IsReadyForFinishDestroy();
         void FinishDestroy();
-        using FArchive = void*; // Remove if/when we have an implementation for FArchive
         void Serialize(FArchive& Ar);
         // Implement this when the vtable offset generator supports multiple functions with the same name
         //void Serialize(FStructuredArchive::FRecord Record);
         void ShutdownAfterError();
         void PostInterpChange(class FProperty* PropertyThatChanged);
         void PostRename(UObject* OldOuter, const FName OldName);
-        using FObjectDuplicationParameters = void*; // Remove if/when we have an implementation for FObjectDuplicationParameters
         void PreDuplicate(FObjectDuplicationParameters& DupParams);
         void PostDuplicate(bool bDuplicateForPIE);
         // Implement this when the vtable offset generator supports multiple functions with the same name
@@ -96,9 +105,7 @@ namespace RC::Unreal
         bool IsDestructionThreadSafe() const;
         void GetPreloadDependencies(TArray<UObject*>& OutDeps);
         void GetPrestreamPackages(TArray<UObject*>& OutPrestream);
-        using FOutputDevice = void*; // Remove if/when we have an implementation for FOutputDevice
         void ExportCustomProperties(FOutputDevice& Out, uint32 Indent);
-        using FFeedbackContext = void*; // Remove if/when we have an implementation for FFeedbackContext
         void ImportCustomProperties(const TCHAR* SourceText, FFeedbackContext* Warn);
         void PostEditImport();
         void PostReloadConfig(class FProperty* PropertyThatWasLoaded);
@@ -107,16 +114,12 @@ namespace RC::Unreal
         class UScriptStruct* GetSparseClassDataStruct() const;
         class UWorld* GetWorld() const;
         bool GetNativePropertyValues(TMap<FString, FString>& out_PropertyValues, uint32 ExportFlags=0) const;
-        using FResourceSizeEx = void*; // Remove if/when we have an implementation for FResourceSizeEx
         void GetResourceSizeEx(FResourceSizeEx& CumulativeResourceSize);
         FName GetExporterName();
-        using FRestoreForUObjectOverwrite = void*; // Remove if/when we have an implementation for FRestoreForUObjectOverwrite
         FRestoreForUObjectOverwrite* GetRestoreForUObjectOverwrite();
         bool AreNativePropertiesIdenticalTo(UObject* Other) const;
-        using FAssetRegistryTag = void*; // Remove if/when we have an implementation for FAssetRegistryTag
         void GetAssetRegistryTags(TArray<FAssetRegistryTag>& OutTags) const;
         bool IsAsset() const;
-        using FPrimaryAssetId = void*; // Remove if/when we have an implementation for FPrimaryAssetId
         FPrimaryAssetId GetPrimaryAssetId() const;
         bool IsLocalizedResource() const;
         bool IsSafeForRootSet() const;

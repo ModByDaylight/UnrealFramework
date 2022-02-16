@@ -238,7 +238,7 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject,
                                          Rename,
                                          bool,
-                                         PARAMS(const TCHAR*, UObject*, ENameFlags)
+                                         PARAMS(const TCHAR*, UObject*, ERenameFlags),
                                          ARGS(NewName, NewOuter, Flags))
     }
 
@@ -429,7 +429,7 @@ namespace RC::Unreal
 
     void UObject::ValidateGeneratedRepEnums(const TArray<struct FRepRecord>& ClassReps) const
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, ValidateGeneratedRepEnums, void, PARAMS(TArray<FRepRecord>&), ARGS(ClassReps))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, ValidateGeneratedRepEnums, void, PARAMS(const TArray<FRepRecord>&), ARGS(ClassReps))
     }
 
     void UObject::SetNetPushIdDynamic(const int32 NewNetPushId)

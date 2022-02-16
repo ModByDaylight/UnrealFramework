@@ -168,7 +168,7 @@ template<>                                                  \
 class VirtualFunctionRegistrarHolder<ClassName, decltype(&ClassName::FunctionName), &ClassName::FunctionName> \
 {                                                           \
 public:                                                     \
-   using InnerType = VirtualFunctionRegistrar<decltype(&ClassName::FunctionName), decltype(&ClassName::PREPROCESSOR_JOIN(FunctionName, _impl)), &ClassName::FunctionName, &ClassName::PREPROCESSOR_JOIN(FunctionName, _impl)>; \
+   using InnerType = VirtualFunctionRegistrar<decltype(&ClassName::FunctionName), decltype(&ClassName::PREPROCESSOR_JOIN(FunctionName, _Impl)), &ClassName::FunctionName, &ClassName::PREPROCESSOR_JOIN(FunctionName, _Impl)>; \
 };                                                          \
 static VirtualFunctionRegistrarHolder<ClassName, decltype(&ClassName::FunctionName), &ClassName::FunctionName>::InnerType PREPROCESSOR_JOIN3(__virtual_function_registrar_, ClassName, FunctionName); \
 

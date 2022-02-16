@@ -1,4 +1,6 @@
 #include <stdexcept>
+#include <format>
+
 #include <Helpers/Casting.hpp>
 #include <SigScanner/SinglePassSigScanner.hpp>
 #include <DynamicOutput/DynamicOutput.hpp>
@@ -7,8 +9,9 @@
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/Signatures.hpp>
 #include <Unreal/Hooks.hpp>
+#include <Unreal/UObject.hpp>
 #include <Unreal/FString.hpp>
-#include "Unreal/FMemory.hpp"
+#include <Unreal/FMemory.hpp>
 
 
 namespace RC::Unreal::UnrealInitializer
@@ -190,7 +193,6 @@ namespace RC::Unreal::UnrealInitializer
 
         serialize(ScanTarget::Core, FName::to_string_internal.get_function_address());
         serialize(ScanTarget::Core, FName::constructor_internal.get_function_address());
-        serialize(ScanTarget::Core, FMemory::free.get_function_address());
         serialize(ScanTarget::CoreUObject, UObject::process_event_internal.get_function_address());
         serialize(ScanTarget::CoreUObject, UObjectGlobals::GlobalState::static_construct_object_internal.get_function_address());
     }
@@ -241,7 +243,6 @@ namespace RC::Unreal::UnrealInitializer
 
         FName::to_string_internal.assign_address(deserialize());
         FName::constructor_internal.assign_address(deserialize());
-        FMemory::free.assign_address(deserialize());
         UObject::process_event_internal.assign_address(deserialize());
         void* static_construct_object_address = deserialize();
         UObjectGlobals::GlobalState::static_construct_object_internal.assign_address(static_construct_object_address);

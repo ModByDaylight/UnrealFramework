@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <Function/Function.hpp>
 #include <Unreal/Common.hpp>
 
 namespace RC::Unreal
@@ -33,7 +34,7 @@ namespace RC::Unreal
         uint32_t number{};
 
     public:
-        static inline Function<void(FName*, FStringOut&)> to_string_internal{};
+        static inline Function<void(FName*, class FStringOut&)> to_string_internal{};
         static inline Function<FName(const wchar_t*, EFindName)> constructor_internal{};
 
     private:

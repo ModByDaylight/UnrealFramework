@@ -40,6 +40,43 @@
 
 namespace RC::Unreal
 {
+    std::unordered_map<std::wstring, FName> TypeChecker::m_core_object_names{};
+    std::unordered_map<std::wstring, void*> TypeChecker::m_core_object_pointers{};
+    std::unordered_map<void*, TypeChecker::ObjectToStringDecl> TypeChecker::m_object_to_string_functions{};
+    std::unordered_map<void*, TypeChecker::ObjectToStringComplexDecl> TypeChecker::m_object_to_string_complex_functions{};
+    FName TypeChecker::m_core_world_name{};
+    FName TypeChecker::m_core_level_name{};
+    FName TypeChecker::m_core_package_name{};
+    FName TypeChecker::m_core_enum_name{};
+    FName TypeChecker::m_core_object_name{};
+    FName TypeChecker::m_core_engine_name{};
+    FName TypeChecker::m_property_name{};
+    FName TypeChecker::m_boolproperty_name{};
+    FName TypeChecker::m_int8property_name{};
+    FName TypeChecker::m_int16property_name{};
+    FName TypeChecker::m_intproperty_name{};
+    FName TypeChecker::m_int64property_name{};
+    FName TypeChecker::m_byteproperty_name{};
+    FName TypeChecker::m_uint16property_name{};
+    FName TypeChecker::m_uint32property_name{};
+    FName TypeChecker::m_uint64property_name{};
+    FName TypeChecker::m_floatproperty_name{};
+    FName TypeChecker::m_doubleproperty_name{};
+    FName TypeChecker::m_objectproperty_name{};
+    FName TypeChecker::m_classproperty_name{};
+    FName TypeChecker::m_strproperty_name{};
+    FName TypeChecker::m_textproperty_name{};
+    FName TypeChecker::m_structproperty_name{};
+    FName TypeChecker::m_enumproperty_name{};
+    FName TypeChecker::m_arrayproperty_name{};
+    FName TypeChecker::m_nameproperty_name{};
+    FName TypeChecker::m_scriptdelegateproperty_name{};
+    FName TypeChecker::m_multicastinlinescriptdelegateproperty_name{};
+    FName TypeChecker::m_multicastsparsescriptdelegateproperty_name{};
+    FName TypeChecker::m_weakobjectproperty_name{};
+    FName TypeChecker::m_mapproperty_name{};
+    FName TypeChecker::m_function_name{};
+
     auto TypeChecker::get_world_name() -> FName
     {
         return m_core_world_name;

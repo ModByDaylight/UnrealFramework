@@ -111,7 +111,7 @@ namespace RC::Unreal
             .bAssumeTemplateIsArchetype = bAssumeTemplateIsArchetype_,
             .Template = InTemplate_,
             .InstanceGraph = InInstanceGraph_,
-            .ExternalPackage = static_cast<struct UPackage*>(ExternalPackage_),
+            .ExternalPackage = static_cast<class UPackage*>(ExternalPackage_),
             .SubobjectOverrides = nullptr
         };
 

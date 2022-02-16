@@ -341,7 +341,7 @@ namespace RC::Unreal
 
     auto FFieldClass::GetSuperClass() const -> FFieldClass*
     {
-        return SupeClass;
+        return SuperClass;
     }
 
     auto FFieldClass::IsChildOf(FFieldClass* field_class) const -> bool
@@ -356,5 +356,17 @@ namespace RC::Unreal
         }
         while (current_class);
         return false;
+    }
+
+    auto FFieldVariant::GetOwnerVariant() -> FFieldVariant
+    {
+        if (IsUObject())
+        {
+            return Container.Object->get_outer();
+        }
+        else
+        {
+            return Container.Field->GetOwnerVariant();
+        }
     }
 }

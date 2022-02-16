@@ -34,7 +34,7 @@ inline uint32_t pointer_hash(const void* key, uint32_t C = 0)
     // Ignoring the lower 4 bits since they are likely zero anyway.
 	// Higher bits are more significant in 64 bit builds.
 	auto ptr_int = reinterpret_cast<uintptr_t>(key) >> 4;
-    return hash_combine((uint32_t_t) ptr_int, C);
+    return hash_combine((uint32_t) ptr_int, C);
 }
 
 //
@@ -88,13 +88,16 @@ inline uint32_t get_type_hash(float Value)
 
 inline uint32_t get_type_hash(double Value)
 {
-    return get_type_hash(*(uint64*)&Value);
+    return get_type_hash(*(uint64_t*)&Value);
 }
 
+// Uncomment when we have an implementation of 'FCrc'
+/*
 inline uint32_t get_type_hash(const wchar_t* S)
 {
     return FCrc::strihash_deprecated(S);
 }
+//*/
 
 inline uint32_t get_type_hash(const void* A)
 {

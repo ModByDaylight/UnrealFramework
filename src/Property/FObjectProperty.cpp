@@ -1,5 +1,6 @@
 #include <Unreal/Property/FObjectProperty.hpp>
 #include <Unreal/VersionedContainer/UnrealVirtualImpl/UnrealVirtualBaseVC.hpp>
+#include <Unreal/FString.hpp>
 
 namespace RC::Unreal
 {

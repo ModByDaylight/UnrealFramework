@@ -1,7 +1,7 @@
 #define NOMINMAX
 
 #include <Unreal/FString.hpp>
-#include "Unreal/FMemory.hpp"
+#include <Unreal/FMemory.hpp>
 
 namespace RC::Unreal
 {
@@ -48,22 +48,5 @@ namespace RC::Unreal
         m_str_data.set_data_ptr(nullptr);
     }
 
-    auto FStringOut::unreal_destruct_impl() -> void
-    {
-        // Nothing should be done if there is no str data
-        // This suggests a failed call to get_full_name or other functions that populate an FStringOut(or _impl) object
-        if (!m_str_data.get_data_ptr()) { return; }
-
-        // If this check fails then we leak the string
-        if (!FMalloc::free_internal.is_ready()) { return; }
-
-        // Call FString::~FString() inside Unreal Engine
-        // This tells UE to free the memory of this FString
-        gmalloc->free(m_str_data.get_data_ptr());
-    }
-
-    FStringOut::~FStringOut()
-    {
-        unreal_destruct_impl();
-    }
+    FStringOut::~FStringOut() = default;
 }

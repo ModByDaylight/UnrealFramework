@@ -21,11 +21,14 @@ namespace RC::Unreal
         auto GetKeyProp() -> FProperty*;
         auto GetValueProp() -> FProperty*;
 
-        using FScriptMapLayout = void*;
+        // Uncomment when and if we need these functions
+        /*
+        using FScriptMapLayout = void;
         FScriptMapLayout GetMapLayout();
 
-        using EMapPropertyFlags = void*;
+        using EMapPropertyFlags = void;
         EMapPropertyFlags GetMapFlags();
+        //*/
     };
 }
 

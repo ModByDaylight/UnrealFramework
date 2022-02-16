@@ -3,8 +3,9 @@
 #include <Unreal/Signatures.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/UObjectArray.hpp>
+#include <Unreal/UObject.hpp>
 #include <Unreal/FString.hpp>
-#include "Unreal/FMemory.hpp"
+#include <Unreal/FMemory.hpp>
 #include <SigScanner/SinglePassSigScanner.hpp>
 #include <File/File.hpp>
 #include <Helpers/ASM.hpp>

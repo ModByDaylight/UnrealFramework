@@ -1,4 +1,5 @@
 #include <Unreal/Property/FDelegateProperty.hpp>
+#include <Unreal/UFunction.hpp>
 
 namespace RC::Unreal
 {

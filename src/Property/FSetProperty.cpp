@@ -7,8 +7,10 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<FProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::SetProperty_ElementProp));
     }
 
+    /*
     FSetProperty::FScriptSetLayout FSetProperty::GetSetLayout()
     {
         static_assert(false, "FSetProperty::GetSetLayout not implemented");
     }
+    //*/
 }

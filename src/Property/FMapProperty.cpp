@@ -12,6 +12,7 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<FProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::MapProperty_ValueProp));
     }
 
+    /*
     FMapProperty::FScriptMapLayout FMapProperty::GetMapLayout()
     {
         static_assert(false, "FMapProperty::GetMapLayout not implemented");
@@ -21,4 +22,5 @@ namespace RC::Unreal
     {
         static_assert(false, "FMapProperty::GetMapFlags not implemented");
     }
+    //*/
 }

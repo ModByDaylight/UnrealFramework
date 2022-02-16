@@ -12,8 +12,12 @@ namespace RC::Unreal
 
     public:
         FProperty* GetElementProp();
-        using FScriptSetLayout = void*;
+
+        // Uncomment when and if we need these functions
+        /*
+        using FScriptSetLayout = void;
         FScriptSetLayout GetSetLayout();
+        //*/
     };
 }
 

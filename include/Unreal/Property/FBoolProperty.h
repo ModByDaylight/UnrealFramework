@@ -34,7 +34,7 @@ namespace RC::Unreal
         /** Returns the value of the boolean property inside of it's container */
         FORCEINLINE auto get_property_value_in_container(const void* A, int32_t array_index = 0) -> bool
         {
-            return get_property_value(container_ptr_to_value_ptr<void>(A, array_index));
+            return get_property_value(ContainerPtrToValuePtr<void>(A, array_index));
         }
 
         /** Returns the default value of the boolean property */
@@ -65,7 +65,7 @@ namespace RC::Unreal
         /** Updates property value inside of the container */
         FORCEINLINE auto set_property_value_in_container(void* A, bool value, int32_t array_index = 0)
         {
-            set_property_value(container_ptr_to_value_ptr<void>(A, array_index), value);
+            set_property_value(ContainerPtrToValuePtr<void>(A, array_index), value);
         }
 
         /** If the return value is true this FBoolProperty represents C++ bool type */

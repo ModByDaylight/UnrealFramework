@@ -20,6 +20,13 @@ namespace RC::Unreal
     class UObject;
     struct FFrame;
 
+    namespace UnrealInitializer
+    {
+        struct CacheInfo;
+        auto create_cache(CacheInfo&) -> void;
+        auto load_cache(CacheInfo&) -> void;
+    }
+
     // Placeholder types for virtual functions
     // TODO: Remove when they are implemented
     using FRestoreForUObjectOverwrite = void*;
@@ -60,10 +67,16 @@ namespace RC::Unreal
     class RC_UE_API UObject
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UObject, CoreUObject);
-    protected:
+
+    public:
         using ProcessEventSignature = void(UObject* context, class UFunction* function, void* params);
         static Function<ProcessEventSignature> process_event_internal;
 
+    protected:
+        friend void UnrealInitializer::create_cache(UnrealInitializer::CacheInfo&);
+        friend void UnrealInitializer::load_cache(UnrealInitializer::CacheInfo&);
+        friend void hook_process_event();
+        friend struct FWeakObjectPtr;
         friend class AActor;
 
         auto get_internal_index() -> uint32_t;

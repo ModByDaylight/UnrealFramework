@@ -18,7 +18,7 @@ namespace RC::Unreal
         TWeakPtr object;
         FName function_name;
     };
-    using FScriptDelegate = TScriptDelegate<>;
+    using FScriptDelegate = TScriptDelegate/*<>*/;
 
     class RC_UE_API FDelegateProperty : public FProperty
     {
@@ -26,7 +26,7 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FDelegateProperty);
 
     public:
-        auto GetFunctionSignature() -> UFunction*;
+        auto GetFunctionSignature() -> class UFunction*;
     };
 }
 

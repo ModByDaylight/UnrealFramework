@@ -74,7 +74,7 @@ namespace RC::Unreal
     class RC_UE_API UAnimBlueprintGeneratedClass : public UClass
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UAnimBlueprintGeneratedClass, Engine);
-    }
+    };
 }
 
 

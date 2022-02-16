@@ -3,6 +3,7 @@
 
 #include <Unreal/FProperty.hpp>
 #include <Unreal/Property/FDelegateProperty.hpp>
+#include <Unreal/TArray.hpp>
 
 namespace RC::Unreal
 {
@@ -14,7 +15,7 @@ namespace RC::Unreal
     public:
         FInvocationList invocation_list;
     };
-    using FMulticastScriptDelegate = TMulticastScriptDelegate<>;
+    using FMulticastScriptDelegate = TMulticastScriptDelegate/*<>*/;
 
     class RC_UE_API FMulticastDelegateProperty : public FProperty
     {

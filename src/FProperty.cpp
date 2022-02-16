@@ -4,8 +4,8 @@
 #include <Unreal/FMemory.hpp>
 #include <Unreal/FString.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
-#include <Unreal/UnrealStringConversions.h>
-#include <Unreal/UnrealParsing.h>
+//#include <Unreal/UnrealStringConversions.h>
+//#include <Unreal/UnrealParsing.h>
 
 namespace RC::Unreal
 {
@@ -98,7 +98,7 @@ namespace RC::Unreal
                                          ARGS(Slot, Value, Defaults))
     }
 
-    auto FProperty::NetSerializeItem(FArchive& Ar, UPackageMap* Map, void* Data, TArray<uint8>* MetaData = nullptr) const -> bool
+    auto FProperty::NetSerializeItem(FArchive& Ar, UPackageMap* Map, void* Data, TArray<uint8>* MetaData) const -> bool
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
                                          NetSerializeItem,
@@ -221,7 +221,7 @@ namespace RC::Unreal
     {
         if (HasAllPropertyFlags(CPF_NoDestructor | CPF_ZeroConstructor))
         {
-            FMemory::memzero(Data, GetElementSize());
+            FMemory::Memzero(Data, GetElementSize());
         }
         else
         {
@@ -261,7 +261,7 @@ namespace RC::Unreal
     {
         if (GetPropertyFlags() & CPF_ZeroConstructor)
         {
-            FMemory::memzero(Dest, GetElementSize() * GetArrayDim());
+            FMemory::Memzero(Dest, GetElementSize() * GetArrayDim());
         }
         else
         {
@@ -328,7 +328,7 @@ namespace RC::Unreal
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
                                              ContainsObjectReference,
                                              bool, PARAMS(TArray<const FStructProperty*>, EPropertyObjectReferenceType),
-                                             ARGS(encountered_struct_props, EPropertyObjectReferenceType::Strong))
+                                             ARGS(EncounteredStructProps, EPropertyObjectReferenceType::Strong))
         }
         else
         {
@@ -376,6 +376,7 @@ namespace RC::Unreal
 	Helpers.
 -----------------------------------------------------------------------------*/
 
+    /*
     static std::wstring AlphaNumericChars = STR("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
     FORCEINLINE bool IsValidTokenStart(wchar_t FirstChar, bool DottedNames)
@@ -424,4 +425,5 @@ namespace RC::Unreal
         }
         return Buffer;
     }
+    //*/
 }

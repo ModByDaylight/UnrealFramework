@@ -72,7 +72,7 @@ namespace RC::Unreal
         UObject* Template = nullptr;
 
         /** Contains the mappings of instanced objects and components to their templates */
-        class FObjectInstancingGraph* InstanceGraph = nullptr;
+        struct FObjectInstancingGraph* InstanceGraph = nullptr;
 
         /** Assign an external Package to the created object if non-null */
         class UPackage* ExternalPackage = nullptr;

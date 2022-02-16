@@ -3,9 +3,11 @@
 
 #include <Constructs/Loop.hpp>
 #include <Unreal/Common.hpp>
+#include <Unreal/UObjectMacros.h>
 #include <Unreal/NameTypes.hpp>
-#include <Unreal/TArray.hpp>
+#include <Unreal/ContainersFwd.hpp>
 #include <Unreal/UnrealVersion.hpp>
+#include <Unreal/TypeChecker.hpp>
 #include <Unreal/VirtualFunctionHelper.h>
 
 namespace RC::Unreal
@@ -172,17 +174,7 @@ namespace RC::Unreal
             return Container.Object;
         }
 
-        auto GetOwnerVariant() -> FFieldVariant
-        {
-            if (IsUObject())
-            {
-                return Container.Object->get_outer();
-            }
-            else
-            {
-                return Container.Field->GetOwnerVariant();
-            }
-        }
+        auto GetOwnerVariant() -> FFieldVariant;
 
         auto IsUObject() -> bool
         {

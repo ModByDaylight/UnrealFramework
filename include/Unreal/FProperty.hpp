@@ -338,11 +338,14 @@ namespace RC::Unreal
         //auto copy_values_internal_impl(void* dest, void const* src, int32_t count);
     };
 
+    // This is commented out because the implementation is not complete, and I want the project compile
+    /*
     class RC_UE_API FPropertyHelpers
     {
     public:
         static const wchar_t* ReadToken(const TCHAR* Buffer, FString& Out, bool DottedNames = false);
     };
+    //*/
 }
 
 

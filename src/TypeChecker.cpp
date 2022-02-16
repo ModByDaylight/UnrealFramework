@@ -42,7 +42,7 @@
 #include <Unreal/Property/FDelegateProperty.hpp>
 #include <Unreal/Property/FMulticastInlineDelegateProperty.hpp>
 #include <Unreal/Property/FMulticastSparseDelegateProperty.hpp>
-#include <Unreal/Property/XInterfaceProperty.hpp>
+#include <Unreal/Property/FInterfaceProperty.hpp>
 #include <Unreal/Property/FFieldPathProperty.hpp>
 #include <Unreal/UnrealVersion.hpp>
 
@@ -212,7 +212,7 @@ namespace RC::Unreal
         XSoftObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.SoftObjectProperty");
         XTextProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.TextProperty");
         XStrProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StrProperty");
-        XInterfaceProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.InterfaceProperty");
+        FInterfaceProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.InterfaceProperty");
         FFieldPathProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.FieldPathProperty");
 
         // FField / FProperty Types
@@ -405,8 +405,8 @@ namespace RC::Unreal
                     if (type_name == FName(L"InterfaceProperty"))
                     {
                         m_core_object_pointers[L"InterfaceProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XInterfaceProperty::to_string;
-                        XInterfaceProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FInterfaceProperty::to_string;
+                        FInterfaceProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"FieldPathProperty"))
                     {
@@ -549,7 +549,7 @@ namespace RC::Unreal
             add_property(L"/Script/CoreUObject.MulticastDelegateProperty", L"MulticastDelegateProperty", {&FMulticastInlineDelegateProperty::to_string}, FMulticastInlineDelegateProperty{});
             add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", L"MulticastInlineDelegateProperty", {&FMulticastInlineDelegateProperty::to_string}, FMulticastInlineDelegateProperty{});
             add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", L"MulticastSparseDelegateProperty", {&FMulticastSparseDelegateProperty::to_string}, FMulticastSparseDelegateProperty{});
-            add_property(L"/Script/CoreUObject.InterfaceProperty", L"InterfaceProperty", {&XInterfaceProperty::to_string}, XInterfaceProperty{});
+            add_property(L"/Script/CoreUObject.InterfaceProperty", L"InterfaceProperty", {&FInterfaceProperty::to_string}, FInterfaceProperty{});
 
             // Not yet supported, only here for completion and to prevent crashes
             // Not all of these will be found right now, need to call this function with more UObjects that actually have these properties

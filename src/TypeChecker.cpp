@@ -36,7 +36,7 @@
 #include <Unreal/Property/XBoolProperty.hpp>
 #include <Unreal/Property/XNameProperty.hpp>
 #include <Unreal/Property/XStructProperty.hpp>
-#include <Unreal/Property/XEnumProperty.hpp>
+#include <Unreal/Property/FEnumProperty.hpp>
 #include <Unreal/Property/XTextProperty.hpp>
 #include <Unreal/Property/XStrProperty.hpp>
 #include <Unreal/Property/FDelegateProperty.hpp>
@@ -201,7 +201,7 @@ namespace RC::Unreal
         XObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ObjectProperty");
         FClassProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ClassProperty");
         XSoftClassProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.SoftClassProperty");
-        XEnumProperty<uint8_t>::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.EnumProperty");
+        FEnumProperty<uint8_t>::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.EnumProperty");
         FArrayProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ArrayProperty");
         XStructProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StructProperty");
         XNameProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.NameProperty");
@@ -369,8 +369,8 @@ namespace RC::Unreal
                     if (type_name == FName(L"EnumProperty"))
                     {
                         m_core_object_pointers[L"EnumProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XEnumProperty<uint8_t>::to_string;
-                        XEnumProperty<uint8_t>::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FEnumProperty<uint8_t>::to_string;
+                        FEnumProperty<uint8_t>::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"TextProperty"))
                     {
@@ -542,7 +542,7 @@ namespace RC::Unreal
             add_property(L"/Script/CoreUObject.WeakObjectProperty", L"WeakObjectProperty", {&XWeakObjectProperty::to_string}, XWeakObjectProperty{});
             add_property(L"/Script/CoreUObject.LazyObjectProperty", L"LazyObjectProperty", {&XObjectProperty::to_string}, XLazyObjectProperty{});
             add_property(L"/Script/CoreUObject.SoftObjectProperty", L"SoftObjectProperty", {&XObjectProperty::to_string}, XSoftObjectProperty{});
-            if (Version::is_atleast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", L"EnumProperty", {&XEnumProperty<uint8_t>::to_string}, XEnumProperty<uint8_t>{}); }
+            if (Version::is_atleast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", L"EnumProperty", {&FEnumProperty<uint8_t>::to_string}, FEnumProperty<uint8_t>{}); }
             add_property(L"/Script/CoreUObject.TextProperty", L"TextProperty", {&XTextProperty::to_string}, XTextProperty{});
             add_property(L"/Script/CoreUObject.StrProperty", L"StrProperty", {&XStrProperty::to_string}, XStrProperty{});
             add_property(L"/Script/CoreUObject.DelegateProperty", L"DelegateProperty", {&FDelegateProperty::to_string}, FDelegateProperty{});

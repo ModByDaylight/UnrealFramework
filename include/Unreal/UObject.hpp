@@ -5,6 +5,7 @@
 #include <File/File.hpp>
 #include <Function/Function.hpp>
 #include <Unreal/Common.hpp>
+#include <Unreal/VersionedContainer/Container.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/FString.hpp>
 #include <Unreal/UnrealFlags.hpp>
@@ -164,11 +165,6 @@ namespace RC::Unreal
         auto get_fname() -> FName;
 
         /**
-         * Returns the object flags currently set on the object
-         */
-        auto get_flags() -> EObjectFlags;
-
-        /**
          * Updates the flags currently set on the object to the provided ones
          * This function overwrites the flags completely, use set_flags or clear_flags to
          * add or remove flags instead
@@ -193,7 +189,7 @@ namespace RC::Unreal
          */
         inline auto set_flags(EObjectFlags new_flags) -> void
         {
-            set_flags_to(get_flags() & new_flags);
+            Container::m_unreal_object_base->UObject_set_flags(this, new_flags);
         }
 
         /**
@@ -201,7 +197,7 @@ namespace RC::Unreal
          */
         inline auto clear_flags(EObjectFlags clear_flags) -> void
         {
-            set_flags_to(get_flags() & (~clear_flags));
+            Container::m_unreal_object_base->UObject_clear_flags(this, clear_flags);
         }
 
         /**
@@ -209,8 +205,7 @@ namespace RC::Unreal
          */
         inline auto has_any_flag(EObjectFlags flags_to_check) -> bool
         {
-            //return (get_flags() & flags_to_check) != 0;
-
+            return Container::m_unreal_object_base->UObject_has_any_flag(this, flags_to_check);
         }
 
         /**
@@ -218,7 +213,7 @@ namespace RC::Unreal
          */
         auto has_all_flags(EObjectFlags flags_to_check) -> bool
         {
-            return (get_flags() & flags_to_check) == flags_to_check;
+            return Container::m_unreal_object_base->UObject_has_all_flags(this, flags_to_check);
         }
 
         /**

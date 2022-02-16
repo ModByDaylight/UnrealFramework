@@ -12,4 +12,14 @@
 	inline constexpr bool  operator! (Enum  E)             { return !(__underlying_type(Enum))E; } \
 	inline constexpr Enum  operator~ (Enum  E)             { return (Enum)~(__underlying_type(Enum))E; }
 
+#define ENUM_MAKE_IMMUTABLE(Enum) \
+	inline           Enum& operator|=(Enum& Lhs, Enum Rhs) { static_assert(false, "This enum cannot be modified directly"); return Lhs; } \
+	inline           Enum& operator&=(Enum& Lhs, Enum Rhs) { static_assert(false, "This enum cannot be modified directly"); return Lhs; } \
+	inline           Enum& operator^=(Enum& Lhs, Enum Rhs) { static_assert(false, "This enum cannot be modified directly"); return Lhs; } \
+	inline constexpr Enum  operator| (Enum  Lhs, Enum Rhs) { static_assert(false, "This enum cannot be modified directly"); return Lhs; } \
+	inline constexpr Enum  operator& (Enum  Lhs, Enum Rhs) { static_assert(false, "This enum cannot be modified directly"); return Lhs; } \
+	inline constexpr Enum  operator^ (Enum  Lhs, Enum Rhs) { static_assert(false, "This enum cannot be modified directly"); return Lhs; } \
+	inline constexpr bool  operator! (Enum  E)             { static_assert(false, "This enum cannot be modified directly"); return false; } \
+	inline constexpr Enum  operator~ (Enum  E)             { static_assert(false, "This enum cannot be modified directly"); return E; }
+
 #endif //UE4SS_ENUMHELPER_H

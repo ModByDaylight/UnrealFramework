@@ -58,14 +58,9 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_NamePrivate));
     }
 
-    auto UObject::get_flags() -> EObjectFlags
+    auto UObject::set_flags_to(EObjectFlags new_flags) -> void
     {
-        return Container::m_unreal_object_base->UObject_get_flags(this);
-    }
-
-    auto UObject::set_flags_to(EObjectFlags new_flag) -> void
-    {
-        Container::m_unreal_object_base->UObject_set_flags(this, new_flag);
+        Container::m_unreal_object_base->UObject_set_flags_to(this, new_flags);
     }
 
     auto UObject::get_internal_index() -> uint32_t

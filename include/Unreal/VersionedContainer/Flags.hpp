@@ -28,17 +28,16 @@ namespace RC::Unreal::Flags
     }
 
     template<ValidEnumFlagType FlagsType>
-    auto set_flags(FlagsType* current_flags, FlagsType new_flags) -> void
-    {
-        using UnderlyingEnumType = std::underlying_type_t<FlagsType>;
-        set_flags_to(current_flags, static_cast<FlagsType>(static_cast<UnderlyingEnumType>(*current_flags) | static_cast<UnderlyingEnumType>(new_flags)));
-    };
-
-    template<ValidEnumFlagType FlagsType>
     auto set_flags(void* p_this, FlagsType new_flags) -> void
     {
         using UnderlyingEnumType = std::underlying_type_t<FlagsType>;
         set_flags_to(p_this, static_cast<FlagsType>(static_cast<UnderlyingEnumType>(get_flags<FlagsType>(p_this)) | static_cast<UnderlyingEnumType>(new_flags)));
+    }
+
+    template<ValidEnumFlagType FlagsType>
+    auto clear_flags(void* p_this, FlagsType flags_to_clear) -> void
+    {
+        set_flags_to(get_flags<FlagsType>(p_this) & (~flags_to_clear));
     }
 
     template<ValidEnumFlagType FlagsType>

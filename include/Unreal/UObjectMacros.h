@@ -70,7 +70,7 @@ static RC::Unreal::Internal::FFieldClassRegistrarTemplate<ClassName> __field_cla
 \
 auto ClassName::static_class() -> RC::Unreal::FFieldClassVariant \
 { \
-    if (!m_static_class.is_valid()) \
+    if (!m_static_class.IsValid()) \
     { \
         throw std::runtime_error{"[" #ClassName "::static_class] m_static_class is not valid"}; \
     } \

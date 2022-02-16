@@ -9,7 +9,7 @@ namespace RC::Unreal
     auto Derived425::Field_get_type_fname(const FField* p_this) -> FName
     {
         FFieldClass* ffield_class = static_cast<const FProperty*>(p_this)->get_ffieldclass();
-        return ffield_class->get_fname();
+        return ffield_class->GetFName();
     }
 
     auto Derived425::Field_get_ffield_owner(const FField* p_this) -> void*
@@ -33,7 +33,7 @@ namespace RC::Unreal
         FName property_name(property_string);
 
         uobject_uclass->for_each_child_in_chain<FProperty*>([&](auto* child) {
-            if (child->get_fname() == property_name)
+            if (child->GetFName() == property_name)
             {
                 property = child;
                 return LoopAction::Break;

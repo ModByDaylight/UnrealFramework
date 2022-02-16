@@ -102,7 +102,7 @@ namespace RC::Unreal
         FName prop_name = FName(property_string);
 
         uclass->for_each_property([&](FProperty* child) {
-            if (child->get_fname() == prop_name)
+            if (child->GetFName() == prop_name)
             {
                 prop = child;
                 return LoopAction::Break;
@@ -804,7 +804,7 @@ namespace RC::Unreal
         FName prop_name_to_test_against = FName(L"bBlockingHit");
         FProperty* prop_to_test{};
         hit_result->for_each_property([&](FProperty* child) {
-            if (child->get_fname() == prop_name_to_test_against)
+            if (child->GetFName() == prop_name_to_test_against)
             {
                 prop_to_test = child;
                 return LoopAction::Break;
@@ -2127,7 +2127,7 @@ namespace RC::Unreal
             void* is_pointer = Helper::Casting::offset_deref_safe<void*>(maybe_element_prop, 0, m_process_handle);
             if (!is_pointer) { continue; }
 
-            if (maybe_element_prop->get_fname().equals(element_property_name))
+            if (maybe_element_prop->GetFName().equals(element_property_name))
             {
                 add_static_offset(MemberOffsets::SetProperty_ElementProp, i, STR("SetProperty_ElementProp"));
                 success = true;

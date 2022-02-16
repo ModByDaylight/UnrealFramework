@@ -229,7 +229,7 @@ namespace RC::Unreal
         }
 
         /**
-         * Templated version of the is_a(UClass*) function
+         * Templated version of the IsA(UClass*) function
          */
         template<UObjectDerivative T>
         inline auto is_a() -> bool

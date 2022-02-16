@@ -80,7 +80,7 @@ namespace RC::Unreal
                 FField* current_field_as_ffield = current_field->as_ffield_unsafe();
 
                 //Only trigger the callable on UProperty objects
-                if (FProperty* property = cast_field<FProperty>(current_field_as_ffield)) {
+                if (FProperty* property = CastField<FProperty>(current_field_as_ffield)) {
                     LoopAction loop_action = callable(property);
 
                     if (loop_action == LoopAction::Break) {
@@ -96,14 +96,14 @@ namespace RC::Unreal
 
             while (current_field != nullptr) {
                 //Only trigger the callable on FProperty objects
-                if (FProperty* property = cast_field<FProperty>(current_field)) {
+                if (FProperty* property = CastField<FProperty>(current_field)) {
                     LoopAction loop_action = callable(property);
 
                     if (loop_action == LoopAction::Break) {
                         break;
                     }
                 }
-                current_field = current_field->get_next_ffield_unsafe();
+                current_field = current_field->GetNextFFieldUnsafe();
             }
         }
     }

@@ -39,7 +39,7 @@ namespace RC::Unreal
         FName property_name(property_string);
 
         uobject_uclass->for_each_child_in_chain<FProperty*>([&](auto* child) {
-            if (child->get_fname() == property_name)
+            if (child->GetFName() == property_name)
             {
                 property = child;
                 return LoopAction::Break;

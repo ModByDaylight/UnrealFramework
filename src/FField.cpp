@@ -14,17 +14,17 @@ namespace RC::Unreal
 
     auto Internal::FFieldTypeAccessor::get_object_class(FField* field) -> FFieldClassVariant
     {
-        return field->get_class();
+        return field->GetClass();
     }
 
     auto Internal::FFieldTypeAccessor::get_class_super_class(FFieldClassVariant field_class) -> FFieldClassVariant
     {
-        return field_class.get_super_class();
+        return field_class.GetSuperClass();
     }
 
     auto Internal::FFieldTypeAccessor::is_class_valid(FFieldClassVariant field_class) -> bool
     {
-        return field_class.is_valid();
+        return field_class.IsValid();
     }
 
     auto Internal::FFieldTypeAccessor::register_late_bind_callback(void (*callback)()) -> void
@@ -53,62 +53,62 @@ namespace RC::Unreal
         }
     }
 
-    auto FField::get_class() -> FFieldClassVariant
+    auto FField::GetClass() -> FFieldClassVariant
     {
         if (Version::is_below(4, 25))
         {
-            return as_ufield_unsafe()->get_uclass();
+            return AsUFieldUnsafe()->get_uclass();
         }
         else
         {
-            return get_ffieldclass_unsafe();
+            return GetFFieldClassUnsafe();
         }
     }
 
-    auto FField::get_fname() -> FName
+    auto FField::GetFName() -> FName
     {
         if (Version::is_below(4, 25))
         {
-            return as_ufield_unsafe()->get_fname();
+            return AsUFieldUnsafe()->get_fname();
         }
         else
         {
-            return get_ffield_fname_unsafe();
+            return GetFFieldFNameUnsafe();
         }
     }
 
-    auto FField::is_a(const FFieldClassVariant& uclass) -> bool
+    auto FField::IsA(const FFieldClassVariant& UClass) -> bool
     {
-        return get_class().is_child_of(uclass);
+        return GetClass().IsChildOf(UClass);
     }
 
-    auto FField::get_owner_variant() -> FFieldVariant
+    auto FField::GetOwnerVariant() -> FFieldVariant
     {
         if (Version::is_below(4, 25))
         {
-            return as_ufield_unsafe()->get_outer();
+            return AsUFieldUnsafe()->get_outer();
         }
         else
         {
-            return get_ffield_owner_unsafe();
+            return GetFFieldOwnerUnsafe();
         }
     }
 
-    auto FField::get_typed_owner(UClass* owner_type) -> UObject*
+    auto FField::GetTypedOwner(UClass* OwnerType) -> UObject*
     {
-        FFieldVariant current_variant = get_owner_variant();
+        FFieldVariant current_variant = GetOwnerVariant();
 
-        while (current_variant.is_valid()) {
-            if (current_variant.is_uobject())
+        while (current_variant.IsValid()) {
+            if (current_variant.IsUObject())
             {
-                return current_variant.to_uobject()->get_typed_outer(owner_type);
+                return current_variant.ToUObject()->get_typed_outer(OwnerType);
             }
-            current_variant = current_variant.get_owner_variant();
+            current_variant = current_variant.GetOwnerVariant();
         }
         return nullptr;
     }
 
-    auto FField::as_ufield_unsafe() -> UField*
+    auto FField::AsUFieldUnsafe() -> UField*
     {
         if (!Version::is_below(4, 25))
         {
@@ -117,7 +117,7 @@ namespace RC::Unreal
         return std::bit_cast<UField*>(this);
     }
 
-    auto FField::get_ffieldclass_unsafe() -> FFieldClass*
+    auto FField::GetFFieldClassUnsafe() -> FFieldClass*
     {
         if (Version::is_below(4, 25))
         {
@@ -126,7 +126,7 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<FFieldClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Class));
     }
 
-    auto FField::get_ffield_owner_unsafe() -> FFieldVariant
+    auto FField::GetFFieldOwnerUnsafe() -> FFieldVariant
     {
         if (Version::is_below(4, 25))
         {
@@ -135,7 +135,7 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<FFieldVariant>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Owner));
     }
 
-    auto FField::get_ffield_fname_unsafe() -> FName
+    auto FField::GetFFieldFNameUnsafe() -> FName
     {
         if (Version::is_below(4, 25))
         {
@@ -144,58 +144,58 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_NamePrivate));
     }
 
-    auto FField::serialize(FArchive& ar) -> void
+    auto FField::Serialize(FArchive& Ar) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, Serialize, void, PARAMS(FArchive&), ARGS(ar))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, Serialize, void, PARAMS(FArchive&), ARGS(Ar))
     }
 
-    auto FField::post_load() -> void
+    auto FField::PostLoad() -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, PostLoad, void)
     }
 
-    auto FField::get_preload_dependencies(TArray<UObject*>& out_deps) -> void
+    auto FField::GetPreloadDependencies(TArray<UObject*>& OutDeps) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetPreloadDependencies, void, PARAMS(TArray<UObject*>&), ARGS(out_deps))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetPreloadDependencies, void, PARAMS(TArray<UObject*>&), ARGS(OutDeps))
     }
 
-    auto FField::begin_destroy() -> void
+    auto FField::BeginDestroy() -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, BeginDestroy, void)
     }
 
     using FReferenceCollector = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
-    auto FField::add_referenced_objects(FReferenceCollector& collector) -> void
+    auto FField::AddReferencedObjects(FReferenceCollector& Collector) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddReferencedObjects, void, PARAMS(FReferenceCollector&), ARGS(collector))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddReferencedObjects, void, PARAMS(FReferenceCollector&), ARGS(Collector))
     }
 
-    auto FField::add_cpp_property(FProperty* property) -> void
+    auto FField::AddCppProperty(FProperty* Property) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddCppProperty, void, PARAMS(FProperty*), ARGS(property))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddCppProperty, void, PARAMS(FProperty*), ARGS(Property))
     }
 
-    auto FField::bind() -> void
+    auto FField::Bind() -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, Bind, void)
     }
 
-    auto FField::post_duplicate(const FField& in_field) -> void
+    auto FField::PostDuplicate(const FField& InField) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, PostDuplicate, void, PARAMS(const FField&), ARGS(in_field))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, PostDuplicate, void, PARAMS(const FField&), ARGS(InField))
     }
 
-    auto FField::get_inner_field_by_name(const FName& in_name) -> FField*
+    auto FField::GetInnerFieldByName(const FName& InName) -> FField*
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetInnerFieldByName, FField*, PARAMS(const FName&), ARGS(in_name))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetInnerFieldByName, FField*, PARAMS(const FName&), ARGS(InName))
     }
 
-    auto FField::get_inner_fields(TArray<FField*>& out_fields) -> void
+    auto FField::GetInnerFields(TArray<FField*>& OutFields) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetInnerFields, void, PARAMS(TArray<FField*>&), ARGS(out_fields))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetInnerFields, void, PARAMS(TArray<FField*>&), ARGS(OutFields))
     }
 
-    auto FField::get_next_ffield_unsafe() -> FField*
+    auto FField::GetNextFFieldUnsafe() -> FField*
     {
         if (Version::is_below(4, 25))
         {
@@ -204,41 +204,41 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Next));
     }
 
-    FFieldClassVariant::FFieldClassVariant(FFieldClass* field) : is_object(false)
+    FFieldClassVariant::FFieldClassVariant(FFieldClass* Field) : IsObject(false)
     {
-        container.field = field;
+        Container.Field = Field;
     }
 
-    FFieldClassVariant::FFieldClassVariant(UClass* object) : is_object(true)
+    FFieldClassVariant::FFieldClassVariant(UClass* Object) : IsObject(true)
     {
-        container.object = object;
+        Container.Object = Object;
     }
 
-    FFieldClassVariant::FFieldClassVariant() : is_object(false)
+    FFieldClassVariant::FFieldClassVariant() : IsObject(false)
     {
-        container.field = nullptr;
+        Container.Field = nullptr;
     }
 
-    auto FFieldClassVariant::is_valid() const -> bool
+    auto FFieldClassVariant::IsValid() const -> bool
     {
-        return container.object;
+        return Container.Object;
     }
 
-    auto FFieldClassVariant::is_uclass() const -> bool
+    auto FFieldClassVariant::IsUClass() const -> bool
     {
-        return is_valid() && is_object;
+        return IsValid() && IsObject;
     }
 
-    auto FFieldClassVariant::is_field_class() const -> bool
+    auto FFieldClassVariant::IsFieldClass() const -> bool
     {
-        return is_valid() && !is_object;
+        return IsValid() && !IsObject;
     }
 
-    auto FFieldClassVariant::to_field_class() const -> FFieldClass*
+    auto FFieldClassVariant::ToFieldClass() const -> FFieldClass*
     {
-        if (is_field_class())
+        if (IsFieldClass())
         {
-            return container.field;
+            return Container.Field;
         }
         else
         {
@@ -246,11 +246,11 @@ namespace RC::Unreal
         }
     }
 
-    auto FFieldClassVariant::to_uclass() const -> UClass*
+    auto FFieldClassVariant::ToUClass() const -> UClass*
     {
-        if (is_uclass())
+        if (IsUClass())
         {
-            return container.object;
+            return Container.Object;
         }
         else
         {
@@ -258,93 +258,93 @@ namespace RC::Unreal
         }
     }
 
-    auto FFieldClassVariant::get_fname() const -> FName {
-        if (is_uclass())
+    auto FFieldClassVariant::GetFName() const -> FName {
+        if (IsUClass())
         {
-            return to_uclass()->get_fname();
+            return ToUClass()->get_fname();
         }
         else
         {
-            return to_field_class()->get_fname();
+            return ToFieldClass()->GetFName();
         }
     }
 
-    auto FFieldClassVariant::get_super_class() const -> FFieldClassVariant
+    auto FFieldClassVariant::GetSuperClass() const -> FFieldClassVariant
     {
-        if (is_uclass())
+        if (IsUClass())
         {
-            return to_uclass()->get_super_class();
+            return ToUClass()->get_super_class();
         }
         else
         {
-            return to_field_class()->get_super_class();
+            return ToFieldClass()->GetSuperClass();
         }
     }
 
-    auto FFieldClassVariant::is_child_of(FFieldClassVariant uclass) const -> bool
+    auto FFieldClassVariant::IsChildOf(FFieldClassVariant UClass) const -> bool
     {
         //Comparisons between UClass and FFieldClass never return true
-        if (is_uclass() != uclass.is_uclass())
+        if (IsUClass() != UClass.IsUClass())
         {
             return false;
         }
 
-        if (is_uclass())
+        if (IsUClass())
         {
-            return to_uclass()->is_child_of(uclass.to_uclass());
+            return ToUClass()->is_child_of(UClass.ToUClass());
         }
         else
         {
-            return to_field_class()->is_child_of(uclass.to_field_class());
+            return ToFieldClass()->IsChildOf(UClass.ToFieldClass());
         }
     }
 
-    auto FFieldClassVariant::operator==(const RC::Unreal::FFieldClassVariant& rhs) const -> bool {
-        if (!is_valid() || !rhs.is_valid())
+    auto FFieldClassVariant::operator==(const RC::Unreal::FFieldClassVariant& Rhs) const -> bool {
+        if (!IsValid() || !Rhs.IsValid())
         {
             return false;
         }
-        if (is_uclass() != rhs.is_uclass())
+        if (IsUClass() != Rhs.IsUClass())
         {
             return false;
         }
-        if (is_uclass())
+        if (IsUClass())
         {
-            return to_uclass() == rhs.to_uclass();
+            return ToUClass() == Rhs.ToUClass();
         }
         else
         {
-            return to_field_class() == rhs.to_field_class();
+            return ToFieldClass() == Rhs.ToFieldClass();
         }
     }
 
-    auto FFieldClassVariant::hash_object() const -> size_t
+    auto FFieldClassVariant::HashObject() const -> size_t
     {
-        if (!is_valid())
+        if (!IsValid())
         {
             return 0;
         }
-        if (is_uclass())
+        if (IsUClass())
         {
-            return reinterpret_cast<size_t>(to_uclass());
+            return reinterpret_cast<size_t>(ToUClass());
         }
         else
         {
-            return reinterpret_cast<size_t>(to_field_class());
+            return reinterpret_cast<size_t>(ToFieldClass());
         }
     }
 
-    auto FFieldClass::get_fname() const -> FName
+    auto FFieldClass::GetFName() const -> FName
     {
-        return name;
+        return Name;
     }
 
-    auto FFieldClass::get_super_class() const -> FFieldClass*
+    auto FFieldClass::GetSuperClass() const -> FFieldClass*
     {
-        return super_class;
+        return SupeClass;
     }
 
-    auto FFieldClass::is_child_of(FFieldClass* field_class) const -> bool
+    auto FFieldClass::IsChildOf(FFieldClass* field_class) const -> bool
     {
         const FFieldClass* current_class = this;
         do {
@@ -352,7 +352,7 @@ namespace RC::Unreal
             {
                 return true;
             }
-            current_class = field_class->get_super_class();
+            current_class = field_class->GetSuperClass();
         }
         while (current_class);
         return false;

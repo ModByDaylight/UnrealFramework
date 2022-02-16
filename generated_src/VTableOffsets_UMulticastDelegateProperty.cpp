@@ -17,7 +17,7 @@ namespace RC::Unreal
     uint32_t UMulticastDelegateProperty::VTableOffsets::ExportTextItem = 0;
     uint32_t UMulticastDelegateProperty::VTableOffsets::NetSerializeItem = 0;
     uint32_t UMulticastDelegateProperty::VTableOffsets::ImportText_Internal = 0;
-    uint32_t UMulticastDelegateProperty::VTableOffsets::ContainsWeakObjectReference = 0;
+    //uint32_t UMulticastDelegateProperty::VTableOffsets::ContainsWeakObjectReference = 0;
     uint32_t UMulticastDelegateProperty::VTableOffsets::SameType = 0;
     uint32_t UMulticastDelegateProperty::VTableOffsets::UMulticastDelegateProperty_Destructor = 0;
     uint32_t UMulticastDelegateProperty::VTableOffsets::__vecDelDtor = 0;

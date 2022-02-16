@@ -25,6 +25,6 @@ UProperty::VTableOffsets::ClearValueInternal = 0x2C8;
 UProperty::VTableOffsets::InitializeValueInternal = 0x2D8;
 UProperty::VTableOffsets::GetID = 0x2E0;
 UProperty::VTableOffsets::GetMinAlignment = 0x2F0;
-UProperty::VTableOffsets::ContainsWeakObjectReference = 0x300;
+//UProperty::VTableOffsets::ContainsWeakObjectReference = 0x300;
 UProperty::VTableOffsets::EmitReferenceInfo = 0x308;
 UProperty::VTableOffsets::SameType = 0x310;

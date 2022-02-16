@@ -31,7 +31,7 @@ namespace RC::Unreal
     uint32_t UProperty::VTableOffsets::InitializeValueInternal = 0;
     uint32_t UProperty::VTableOffsets::GetID = 0;
     uint32_t UProperty::VTableOffsets::GetMinAlignment = 0;
-    uint32_t UProperty::VTableOffsets::ContainsWeakObjectReference = 0;
+    //uint32_t UProperty::VTableOffsets::ContainsWeakObjectReference = 0;
     uint32_t UProperty::VTableOffsets::EmitReferenceInfo = 0;
     uint32_t UProperty::VTableOffsets::SameType = 0;
     uint32_t UProperty::VTableOffsets::ConvertFromType = 0;

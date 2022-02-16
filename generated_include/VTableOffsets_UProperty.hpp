@@ -26,7 +26,7 @@ struct VTableOffsets
     static uint32_t InitializeValueInternal;
     static uint32_t GetID;
     static uint32_t GetMinAlignment;
-    static uint32_t ContainsWeakObjectReference;
+    //static uint32_t ContainsWeakObjectReference;
     static uint32_t EmitReferenceInfo;
     static uint32_t SameType;
     static uint32_t ConvertFromType;

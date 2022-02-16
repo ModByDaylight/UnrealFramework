@@ -11,7 +11,7 @@ struct VTableOffsets
     static uint32_t ExportTextItem;
     static uint32_t NetSerializeItem;
     static uint32_t ImportText_Internal;
-    static uint32_t ContainsWeakObjectReference;
+    //static uint32_t ContainsWeakObjectReference;
     static uint32_t SameType;
     static uint32_t UMulticastDelegateProperty_Destructor;
     static uint32_t __vecDelDtor;

@@ -1,7 +1,7 @@
 UMulticastDelegateProperty::VTableOffsets::GetCPPTypeForwardDeclaration = 0x0;
 UMulticastDelegateProperty::VTableOffsets::AddDelegate = 0x348;
 UMulticastDelegateProperty::VTableOffsets::Serialize = 0x0;
-UMulticastDelegateProperty::VTableOffsets::ContainsWeakObjectReference = 0x0;
+//UMulticastDelegateProperty::VTableOffsets::ContainsWeakObjectReference = 0x0;
 UMulticastDelegateProperty::VTableOffsets::Identical = 0x0;
 UMulticastDelegateProperty::VTableOffsets::GetCPPType = 0x0;
 UMulticastDelegateProperty::VTableOffsets::GetMulticastDelegate = 0x338;

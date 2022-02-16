@@ -35,7 +35,7 @@
 #include <Unreal/Property/FMapProperty.hpp>
 #include <Unreal/Property/XBoolProperty.hpp>
 #include <Unreal/Property/FNameProperty.hpp>
-#include <Unreal/Property/XStructProperty.hpp>
+#include <Unreal/Property/FStructProperty.hpp>
 #include <Unreal/Property/FEnumProperty.hpp>
 #include <Unreal/Property/XTextProperty.hpp>
 #include <Unreal/Property/FStrProperty.hpp>
@@ -203,7 +203,7 @@ namespace RC::Unreal
         FSoftClassProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.SoftClassProperty");
         FEnumProperty<uint8_t>::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.EnumProperty");
         FArrayProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.ArrayProperty");
-        XStructProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StructProperty");
+        FStructProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StructProperty");
         FNameProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.NameProperty");
         XBoolProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.BoolProperty");
         FMapProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.MapProperty");
@@ -333,8 +333,8 @@ namespace RC::Unreal
                     if (type_name == FName(L"StructProperty"))
                     {
                         m_core_object_pointers[L"StructProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XStructProperty::to_string;
-                        XStructProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FStructProperty::to_string;
+                        FStructProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"ClassProperty"))
                     {
@@ -536,7 +536,7 @@ namespace RC::Unreal
             add_property(L"/Script/CoreUObject.BoolProperty", L"BoolProperty", {&XBoolProperty::to_string}, XBoolProperty{});
             add_property(L"/Script/CoreUObject.ArrayProperty", L"ArrayProperty", {&FArrayProperty::to_string, &FArrayProperty::to_string_complex}, FArrayProperty{});
             add_property(L"/Script/CoreUObject.MapProperty", L"MapProperty", {&FMapProperty::to_string, &FMapProperty::to_string_complex}, FMapProperty{});
-            add_property(L"/Script/CoreUObject.StructProperty", L"StructProperty", {&XStructProperty::to_string}, XStructProperty{});
+            add_property(L"/Script/CoreUObject.StructProperty", L"StructProperty", {&FStructProperty::to_string}, FStructProperty{});
             add_property(L"/Script/CoreUObject.ClassProperty", L"ClassProperty", {&FClassProperty::to_string}, FClassProperty{});
             add_property(L"/Script/CoreUObject.SoftClassProperty", L"SoftClassProperty", {&FClassProperty::to_string}, FSoftClassProperty{});
             add_property(L"/Script/CoreUObject.WeakObjectProperty", L"WeakObjectProperty", {&FWeakObjectProperty::to_string}, FWeakObjectProperty{});

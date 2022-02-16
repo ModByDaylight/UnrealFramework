@@ -3,8 +3,8 @@
 
 #include <Helpers/Casting.hpp>
 
-#include <Unreal/UStruct.hpp>
 #include <Unreal/StaticOffsetFinder.hpp>
+#include <Unreal/UStruct.hpp>
 #include <Unreal/TypeChecker.hpp>
 
 namespace RC::Unreal
@@ -20,6 +20,8 @@ namespace RC::Unreal
         };
 
     public:
+        int32 GetSize();
+
         /**
          * Returns the struct acting as a parent to this struct
          * Can totally return nullptr since most structs do not have a parent struct

@@ -8,6 +8,12 @@ namespace RC::Unreal
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
+    int32 UScriptStruct::GetSize()
+    {
+        // This is coincidentally the right offset
+        return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_PropertiesSize));
+    }
+
     auto UScriptStruct::get_struct_flags() -> EStructFlags
     {
         return Helper::Casting::offset_deref<EStructFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UScriptStruct_StructFlags));

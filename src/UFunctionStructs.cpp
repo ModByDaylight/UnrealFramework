@@ -53,11 +53,10 @@ namespace RC::Unreal
         }
     }
 
-    UnrealScriptFunctionCallableContext::UnrealScriptFunctionCallableContext(UObject* context, FFrame& the_stack, void* result_decl) {
-        this->context = context;
-        this->the_stack = the_stack;
-        this->result_decl = result_decl;
-    }
+    UnrealScriptFunctionCallableContext::UnrealScriptFunctionCallableContext(UObject* context, FFrame& the_stack, void* result_decl)
+            : context(context),
+              the_stack(the_stack),
+              result_decl(result_decl) {}
 
     static Internal::HookedUFunctionMap g_hooked_script_functions{};
 

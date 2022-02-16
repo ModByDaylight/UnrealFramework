@@ -32,7 +32,7 @@ namespace RC::Unreal
         uint8_t num_parameters = 0;
 
         this->for_each_property([&](FProperty* param) {
-            if (param->has_any_property_flags(Unreal::CPF_Parm))
+            if (param->HasAnyPropertyFlags(Unreal::CPF_Parm))
             {
                 num_parameters++;
             }
@@ -46,9 +46,9 @@ namespace RC::Unreal
         int32_t params_size = 0;
 
         this->for_each_property([&](FProperty* param) {
-            if (param->has_any_property_flags(Unreal::CPF_Parm))
+            if (param->HasAnyPropertyFlags(Unreal::CPF_Parm))
             {
-                params_size = param->get_offset_for_internal() + param->get_size();
+                params_size = param->GetOffset_ForInternal() + param->GetSize();
             }
             return LoopAction::Continue;
         });
@@ -60,7 +60,7 @@ namespace RC::Unreal
         FProperty* return_property = nullptr;
 
         this->for_each_property([&](FProperty* param) {
-            if (param->has_any_property_flags(Unreal::CPF_ReturnParm))
+            if (param->HasAnyPropertyFlags(Unreal::CPF_ReturnParm))
             {
                 return_property = param;
                 return LoopAction::Break;

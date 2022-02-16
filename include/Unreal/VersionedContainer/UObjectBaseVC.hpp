@@ -3,6 +3,7 @@
 
 #include <array>
 
+#include <Helpers/Casting.hpp>
 #include <Unreal/UnrealFlags.hpp>
 
 namespace RC::Unreal

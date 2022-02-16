@@ -8,6 +8,7 @@
 #include <Function/Function.hpp>
 #include <Constructs/Loop.hpp>
 #include <Unreal/Common.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/UnrealFlags.hpp>
 
@@ -101,7 +102,7 @@ namespace RC::Unreal::UObjectGlobals
     auto RC_UE_API setup_static_construct_object_internal_address(void* function_address) -> void;
 
     //Iterates object array and calls the provided function for each object
-    auto for_each_object(const std::function<LoopAction(UObject* object)>& callable) -> void;
+    auto ForEachUObject(const std::function<LoopAction(UObject* object, int32 object_index, int32 chunk_index)>& callable) -> void;
 
     // Internal work-around for not having access to UnrealVersion due to circ-inclusion
     auto RC_UE_API version_is_atmost(uint32_t major_p, uint32_t minor_p) -> bool;
@@ -181,14 +182,16 @@ namespace RC::Unreal::UObjectGlobals
     // Required & banned flags can be specified or left to the default (no required/banned flags)
     // Find one or specified amount of objects
     // Specify 0 for 'num_objects_to_find' to not limit to number of objects to find
-    auto RC_UE_API find_objects(size_t num_objects_to_find, const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> void;
-    auto RC_UE_API find_objects(size_t num_objects_to_find, const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> void;
-    auto RC_UE_API find_object(const FName class_name, const FName object_short_name, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> UObject*;
-    auto RC_UE_API find_object(const wchar_t* class_name, const wchar_t* object_short_name, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> UObject*;
+    // The 'flags' parameters for the following functions are of type EObjectFlags
+    auto RC_UE_API find_objects(size_t num_objects_to_find, const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, int32 required_flags = {}, int32 banned_flags = {}) -> void;
+    auto RC_UE_API find_objects(size_t num_objects_to_find, const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, int32 required_flags = {}, int32 banned_flags = {}) -> void;
+    auto RC_UE_API find_object(const FName class_name, const FName object_short_name, int32 required_flags = {}, int32 banned_flags = {}) -> UObject*;
+    auto RC_UE_API find_object(const wchar_t* class_name, const wchar_t* object_short_name, int32 required_flags = {}, int32 banned_flags = {}) -> UObject*;
 
     // Find all objects
-    auto RC_UE_API find_objects(const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> void;
-    auto RC_UE_API find_objects(const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, const EObjectFlags required_flags = {}, const EObjectFlags banned_flags = {}) -> void;
+    // The 'flags' parameters for the following functions are of type EObjectFlags
+    auto RC_UE_API find_objects(const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, int32 required_flags = {}, int32 banned_flags = {}) -> void;
+    auto RC_UE_API find_objects(const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, int32 required_flags = {}, int32 banned_flags = {}) -> void;
     // Custom Helpers -> END
 }
 

@@ -520,4 +520,21 @@ namespace RC::Unreal
             return out_name;
         }
     }
+
+    bool UObject::is_real(const void* p_this)
+    {
+        bool ObjectWasFound{};
+
+        UObjectGlobals::ForEachUObject([&](void* obj, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t obj_index) {
+            if (p_this == obj)
+            {
+                ObjectWasFound = true;
+                return LoopAction::Break;
+            }
+
+            return LoopAction::Continue;
+        });
+
+        return ObjectWasFound;
+    }
 }

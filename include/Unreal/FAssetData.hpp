@@ -2,6 +2,9 @@
 #define RC_UNREAL_FASSET_DATA_HPP
 
 #include <Unreal/Common.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
+#include <Unreal/UObjectMacros.h>
+#include <Unreal/TypeChecker.hpp>
 #include <Unreal/TArray.hpp>
 
 namespace RC::Unreal
@@ -34,8 +37,10 @@ namespace RC::Unreal
         // This padding might be 'TSharedPtr<FAssetBundleData, ESPMode::ThreadSafe> TaggedAssetBundles' which was added in 4.27
         uint8_t padding[0x8]; // Appears to be right, but how am I missing 8 bytes ?
         // The ChunkIDs array allocator was changed to 'TInlineAllocator<2>' in 4.27
-        TArray<int32_t> ChunkIDs;                   // Size: 0x10
-        uint32_t PackageFlags;                      // Size: 0x4
+        TArray<int32> ChunkIDs;                   // Size: 0x10
+        uint32 PackageFlags;                      // Size: 0x4
+
+        static int32 get_size_in_container();
     };
 }
 

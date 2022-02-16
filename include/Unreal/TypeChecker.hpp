@@ -5,7 +5,6 @@
 #include <functional>
 
 #include <Unreal/Common.hpp>
-//#include <Unreal/NameTypes.hpp>
 
 namespace RC::Unreal
 {
@@ -111,20 +110,6 @@ namespace RC::Unreal
         auto static get_to_string_complex(void* uclass)
         {
             return m_object_to_string_complex_functions[uclass];
-        }
-
-        template<typename Callable, typename Callable2>
-        auto static inline dump_all_stored_object_types(Callable callable, Callable2 callable2) -> void
-        {
-            for (auto&[object_string, object_fname] : m_core_object_names)
-            {
-                callable(object_fname.get_comparison_index(), object_fname.get_number());
-            }
-
-            for (auto&[object_string, object_ptr] : m_core_object_pointers)
-            {
-                callable2(object_string, object_ptr);
-            }
         }
     };
 }

@@ -96,6 +96,7 @@ namespace RC::Unreal
         }
     private:
         friend class UStruct;
+        friend class StaticOffsetFinder;
 
         /**
          * Returns the next FField object in the linked list of class

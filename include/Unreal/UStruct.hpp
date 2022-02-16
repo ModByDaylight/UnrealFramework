@@ -19,6 +19,9 @@ namespace RC::Unreal
     class RC_UE_API UStruct : public UField
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UStruct, CoreUObject)
+
+        friend class StaticOffsetFinder;
+
     protected:
         /**
          * Returns the linked list of UField* objects defined on this struct
@@ -69,13 +72,27 @@ namespace RC::Unreal
          * Iterates properties of this object and calls the provided function on each of them
          * Will stop the iteration once the callable returns Break
          */
-        auto for_each_property(const std::function<LoopAction(FProperty* property)>& callable) -> void;
+        auto for_each_property(const std::function<LoopAction(FProperty*)>& callable) -> void;
 
         /**
          * Iterates the functions of the object and calls the provided function on each of them
          * Will stop the iteration once the callable returns Break
          */
-        auto for_each_function(const std::function<LoopAction(UFunction* function)>& callable) -> void;
+        auto for_each_function(const std::function<LoopAction(UFunction*)>& callable) -> void;
+
+        /**
+         * Iterates the super structs of this object and calls the provided function on each of them
+         * Will stop the iteration once the callable returns Break
+         */
+        using ForEachSuperStructCallable = std::function<LoopAction(UStruct*)>;
+        auto for_each_super_struct(const ForEachSuperStructCallable& callable) -> void;
+
+        /**
+         * Iterates every property in every super struct and calls the provided function on each of them
+         * Will stop the iteration once the callable returns Break
+         */
+        using ForEachPropertyInChainCallable = std::function<LoopAction(FProperty*)>;
+        auto ForEachPropertyInChain(const ForEachPropertyInChainCallable& callable) -> void;
     };
 }
 

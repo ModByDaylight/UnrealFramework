@@ -78,6 +78,7 @@ namespace RC::Unreal
         friend void hook_process_event();
         friend struct FWeakObjectPtr;
         friend class AActor;
+        friend class UAssetRegistry;
 
         auto get_internal_index() -> uint32_t;
         auto get_object_item() -> struct FUObjectItem*;
@@ -278,6 +279,8 @@ namespace RC::Unreal
         auto get_full_name(UObject* stop_outer = nullptr) -> std::wstring;
 
         auto get_path_name(UObject* stop_outer, std::wstring& result_name) -> void;
+
+        static bool is_real(const void* p_this);
     };
 
     template<UObjectDerivative CastResultType>

@@ -139,7 +139,7 @@ namespace RC::Unreal
     {
         if (Version::is_below(4, 25))
         {
-            throw std::runtime_error("FField::Owner is not available in UE versions below 4.25");
+            throw std::runtime_error("FField::FName is not available in UE versions below 4.25");
         }
         return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_NamePrivate));
     }

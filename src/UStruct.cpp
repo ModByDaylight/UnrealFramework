@@ -107,4 +107,75 @@ namespace RC::Unreal
             }
         }
     }
+
+    auto UStruct::for_each_super_struct(const ForEachSuperStructCallable& callable) -> void
+    {
+        UStruct* super_struct = get_super_struct();
+        LoopAction loop_action{};
+
+        while (super_struct)
+        {
+            loop_action = callable(super_struct);
+            if (loop_action == LoopAction::Break) { break; }
+
+            super_struct = super_struct->get_super_struct();
+        }
+    }
+
+    auto UStruct::ForEachPropertyInChain(const ForEachPropertyInChainCallable& callable) -> void
+    {
+        UStruct* uclass = this;
+
+        while (uclass)
+        {
+            bool should_outer_loop_break{};
+
+            uclass->for_each_property([&](FProperty* child) {
+                if (callable(child) == LoopAction::Break)
+                {
+                    should_outer_loop_break = true;
+                    return LoopAction::Break;
+                }
+                else
+                {
+                    return LoopAction::Continue;
+                }
+            });
+
+            if (should_outer_loop_break) { break; }
+
+            uclass->for_each_super_struct([&](UStruct* super_struct) {
+                if (!super_struct) { return LoopAction::Continue; }
+
+                super_struct->for_each_property([&](FProperty* child) {
+                    auto loop_action = callable(child);
+                    if (loop_action == LoopAction::Break)
+                    {
+                        should_outer_loop_break = true;
+                        return LoopAction::Break;
+                    }
+                    else
+                    {
+                        return LoopAction::Continue;
+                    }
+                });
+
+                if (should_outer_loop_break) { return LoopAction::Break; }
+
+                return LoopAction::Continue;
+            });
+
+            if (should_outer_loop_break) { break; }
+
+            UStruct* next_uclass = uclass->get_uclass();
+            if (next_uclass != uclass)
+            {
+                uclass = next_uclass;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
 }

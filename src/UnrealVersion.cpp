@@ -10,7 +10,7 @@ namespace RC::Unreal
         UObject* prop{};
         FName vector_name = FName(STR("Vector"));
         FName x_name = FName(STR("X"));
-        UObject::for_each_uobject([&](void* obj, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t obj_index) {
+        UObjectGlobals::ForEachUObject([&](void* obj, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t obj_index) {
             UObject* typed_obj = static_cast<UObject*>(obj);
             // I would prefer to use a helper function here but get_fname() and get_uclass() are the only API functions available at this point
             FName obj_name = typed_obj->get_fname();

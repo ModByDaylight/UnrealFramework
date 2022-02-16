@@ -4,6 +4,7 @@
 #include <Unreal/UAssetRegistryHelpers.hpp>
 #include <Unreal/UObjectArray.hpp>
 #include <Unreal/UObjectGlobals.hpp>
+#include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
 #include <Unreal/UScriptStruct.hpp>
 

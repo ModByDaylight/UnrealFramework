@@ -4,14 +4,6 @@
 
 namespace RC::Unreal
 {
-    auto UClass::to_string(void* p_this, std::wstring& out_line) -> void
-    {
-        UClass* typed_this = static_cast<UClass*>(p_this);
-
-        trivial_dump_to_string(p_this, out_line);
-        out_line.append(std::format(L" [sps: {:016X}]", reinterpret_cast<uintptr_t>(typed_this->get_super_struct())));
-    }
-
     auto UClass::has_any_class_flags(EClassFlags flags_to_check) -> bool
     {
         return (get_class_flags() & flags_to_check) != 0;

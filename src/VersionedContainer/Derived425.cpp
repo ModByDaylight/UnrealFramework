@@ -2,22 +2,20 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/FField.hpp>
 #include <Unreal/FProperty.hpp>
-#include <Unreal/CustomType.hpp>
 
 namespace RC::Unreal
 {
-    auto Derived425::Field_get_type_fname(const FField* p_this) -> FName
+    auto Derived425::Field_get_type_fname(FField* p_this) -> FName
     {
-        FFieldClass* ffield_class = static_cast<const FProperty*>(p_this)->get_ffieldclass();
-        return ffield_class->GetFName();
+        return p_this->GetClass().GetFName();
     }
 
-    auto Derived425::Field_get_ffield_owner(const FField* p_this) -> void*
+    auto Derived425::Field_get_ffield_owner(FField* p_this) -> void*
     {
         return Helper::Casting::offset_deref<void*>(p_this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Owner));
     }
 
-    auto Derived425::FFieldClass_get_fname(const FFieldClass* p_this) -> FName
+    auto Derived425::FFieldClass_get_fname(FFieldClass* p_this) -> FName
     {
         return Helper::Casting::offset_deref<FName>(p_this, 0);
     }
@@ -32,7 +30,7 @@ namespace RC::Unreal
 
         FName property_name(property_string);
 
-        uobject_uclass->for_each_child_in_chain<FProperty*>([&](auto* child) {
+        uobject_uclass->ForEachPropertyInChain([&](FProperty* child) {
             if (child->GetFName() == property_name)
             {
                 property = child;
@@ -60,9 +58,9 @@ namespace RC::Unreal
         bool is_custom{false};
         if (custom_property)
         {
-            is_custom = true;
-            offset_internal = custom_property->get_offset_for_internal();
-            property = custom_property;
+            //is_custom = true;
+            //offset_internal = custom_property->get_offset_for_internal();
+            //property = custom_property;
         }
         else
         {
@@ -77,7 +75,7 @@ namespace RC::Unreal
             // Maybe make another variant that guarantees success (or throws exception)
             if (!property) { return {}; }
 
-            offset_internal = property->get_offset_for_internal();
+            offset_internal = property->GetOffset_ForInternal();
         }
 
         void* data = static_cast<void*>(static_cast<char*>(uobject) + offset_internal);

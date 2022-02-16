@@ -489,7 +489,7 @@ namespace RC::Unreal
             );
         }
 
-        void* ffield_children = aactor->get_childproperties();
+        void* ffield_children = aactor->get_child_properties();
 
         bool success = false;
         for (int i = 0x0; i < 0x90; i += 0x8)
@@ -546,7 +546,7 @@ namespace RC::Unreal
             );
         }
 
-        void* child_properties = aactor->get_childproperties();
+        void* child_properties = aactor->get_child_properties();
 
         bool success = false;
         for (int i = 0x0; i < 0x90; i += 0x8)
@@ -632,7 +632,7 @@ namespace RC::Unreal
 
         FName knownCoreFName = FName(L"bCanBeDamaged");
 
-        FField* property = actorClass->get_childproperties();
+        FField* property = actorClass->get_child_properties();
         while (property)
         {
             for (int i = 0x8; i < 0x50; i += 0x8)
@@ -646,7 +646,7 @@ namespace RC::Unreal
                 }
             }
 
-            property = property->get_next();
+            property = property->GetNextFFieldUnsafe();
         }
 
         throw_missed_offset(
@@ -752,7 +752,7 @@ namespace RC::Unreal
             UObject* try_object = Helper::Casting::offset_deref<UObject*>(default_pawn, try_offset);
             if (try_object)
             {
-                if (UObject::is_real_object(try_object))
+                if (UObject::is_real(try_object))
                 {
                     std::wstring obj_name = try_object->get_full_name();
                     if (obj_name == L"StaticMeshComponent /Script/Engine.Default__DefaultPawn:MeshComponent0")
@@ -799,7 +799,7 @@ namespace RC::Unreal
         }
 
         // Type: UScriptStruct
-        UField* hit_result = UObjectGlobals::static_find_object<UField*>(nullptr, nullptr, L"/Script/Engine.HitResult");
+        UStruct* hit_result = UObjectGlobals::static_find_object<UStruct*>(nullptr, nullptr, L"/Script/Engine.HitResult");
 
         FName prop_name_to_test_against = FName(L"bBlockingHit");
         FProperty* prop_to_test{};
@@ -1012,7 +1012,7 @@ namespace RC::Unreal
         }
 
         // TODO: Improved this because right now this is a very bad method because of the many versions checks required
-        uint64_t flags_to_check_for;
+        uint64_t flags_to_check_for{};
 
         if (Version::major == 4)
         {
@@ -1447,7 +1447,7 @@ namespace RC::Unreal
         functions_to_test.reserve(num_functions_to_test);
 
         // Find a number of non-default UFunctions
-        UObjectGlobals::find_objects(num_functions_to_test, FName(STR("Function")), FName(0u, 0u), functions_to_test, {}, {RF_DefaultSubObject, RF_ArchetypeObject});
+        UObjectGlobals::find_objects(num_functions_to_test, FName(STR("Function")), FName(0u, 0u), functions_to_test, RF_NoFlags, RF_DefaultSubObject | RF_ArchetypeObject);
 
         // Parse memory
         for (const auto& function_to_test : functions_to_test)

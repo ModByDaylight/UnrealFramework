@@ -74,13 +74,13 @@ namespace RC::Unreal
         // GUObjectArray -> END
 
         // FField -> START
-        virtual auto Field_get_type_fname(const FField* p_this) -> FName = 0;
-        virtual auto Field_get_ffield_owner(const FField* p_this) -> void* = 0;
+        virtual auto Field_get_type_fname(FField* p_this) -> FName = 0;
+        virtual auto Field_get_ffield_owner(FField* p_this) -> void* = 0;
         // FField -> END
 
         // FFieldClass -> START
         // Should map to UField in <4.25
-        virtual auto FFieldClass_get_fname(const FFieldClass* p_this) -> FName = 0;
+        virtual auto FFieldClass_get_fname(FFieldClass* p_this) -> FName = 0;
         // FFieldClass -> END
 
         // FProperty -> START

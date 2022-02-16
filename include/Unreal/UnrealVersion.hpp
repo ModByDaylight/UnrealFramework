@@ -3,11 +3,12 @@
 
 #include <cassert>
 #include <utility>
+#include <format>
 
 #include <Helpers/ASM.hpp>
 #include <Helpers/String.hpp>
+#include <File/File.hpp>
 
-#include <Unreal/UObject.hpp>
 #include <Unreal/UObjectGlobals.hpp>
 
 #define UNREAL_VERSION_RUN_TESTS 1

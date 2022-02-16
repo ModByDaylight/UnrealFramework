@@ -21,11 +21,9 @@ namespace RC::Unreal
 
     // Placeholder types for virtual functions
     // TODO: Remove when they are implemented
-    using FObjectInstancingGraph = void*;
     using FRestoreForUObjectOverwrite = void*;
     using FArchive = void*;
     using FObjectDuplicationParameters = void*;
-    using FOutputDevice = void*;
     using FFeedbackContext = void*;
     using FResourceSizeEx = void*;
     using FAssetRegistryTag = void*;
@@ -211,7 +209,8 @@ namespace RC::Unreal
          */
         inline auto has_any_flag(EObjectFlags flags_to_check) -> bool
         {
-            return (get_flags() & flags_to_check) != 0;
+            //return (get_flags() & flags_to_check) != 0;
+
         }
 
         /**

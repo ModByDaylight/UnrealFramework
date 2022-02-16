@@ -8,7 +8,6 @@
 #include <File/File.hpp>
 
 #include <Unreal/Common.hpp>
-#include <Unreal/StaticOffsetFinder.hpp>
 #include <Unreal/UObjectGlobals.hpp>
 
 namespace RC

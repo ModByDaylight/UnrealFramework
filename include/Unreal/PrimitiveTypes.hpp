@@ -20,6 +20,7 @@ namespace RC::Unreal
     using int64 = int64_t;
 
     using TCHAR = File::CharType;
+    using SIZE_T = size_t;
 }
 
 #endif //RC_UNREAL_PRIMITIVE_TYPES_HPP

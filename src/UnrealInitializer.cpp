@@ -420,6 +420,7 @@ namespace RC::Unreal::UnrealInitializer
         StaticOffsetFinder::output_all_member_offsets();
         Container::m_unreal_virtual_base->set_virtual_offsets();
 
+        FMalloc::IsInitialized = true;
         StaticStorage::is_initialized = true;
 
     }

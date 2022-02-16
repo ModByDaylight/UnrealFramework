@@ -477,7 +477,6 @@ namespace RC::Unreal::Signatures
                     // On Match Found
                     [&](SignatureContainer& self) {
                         scan_result.success_messages.emplace_back(std::format(STR("FMemory::Free address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
-                        FMemory::free.assign_address(self.get_match_address());
                         self.get_did_succeed() = true;
 
                         // Find the second MOV instruction and resolve it
@@ -490,17 +489,7 @@ namespace RC::Unreal::Signatures
                         constexpr uint8_t instr_size = 0x7;
                         uint8_t* next_instruction = mov_instruction + instr_size;
                         uint32_t* offset = std::bit_cast<uint32_t*>(mov_instruction + 0x3);
-                        gmalloc = *std::bit_cast<FMalloc**>(next_instruction + *offset);
-                        FMalloc::malloc_internal.assign_address(gmalloc->get_vtable_entry(2));
-
-                        if (Version::is_below(4, 25))
-                        {
-                            FMalloc::free_internal.assign_address(gmalloc->get_vtable_entry(4));
-                        }
-                        else
-                        {
-                            FMalloc::free_internal.assign_address(gmalloc->get_vtable_entry(6));
-                        }
+                        GMalloc = *std::bit_cast<FMalloc**>(next_instruction + *offset);
 
                         return true;
                     },

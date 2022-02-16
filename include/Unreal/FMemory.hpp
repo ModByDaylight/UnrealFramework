@@ -4,6 +4,7 @@
 #include "Function/Function.hpp"
 
 #include "Unreal/Common.hpp"
+#include <Unreal/PrimitiveTypes.hpp>
 
 /*
  * How GMalloc gets created:
@@ -16,34 +17,49 @@
 
 namespace RC::Unreal
 {
+    struct FGenericMemoryStats;
+
     class FMalloc
     {
-    private:
-        void** vtable;
+    public:
+#include <VTableOffsets_FMalloc.hpp>
+        static bool IsInitialized;
 
     public:
-        static Function<void*(FMalloc* self, size_t count, uint32_t alignment)> malloc_internal;
-        static Function<void(FMalloc* self, void* original)> free_internal;
-
-    public:
-        auto get_vtable_entry(size_t index) -> void*;
-        auto malloc(size_t count, uint32_t alignment = 0) -> void*;
-        auto free(void* original) -> void;
+        void* Malloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+        void* TryMalloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+        void* Realloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+        void* TryRealloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+        void Free(void* Original);
+        SIZE_T QuantizeSize(SIZE_T Count, uint32 Alignment);
+        bool GetAllocationSize(void* Original, SIZE_T& SizeOut);
+        void Trim(bool bTrimThreadCaches);
+        void SetupTLSCachesOnCurrentThread();
+        void ClearAndDisableTLSCachesOnCurrentThread();
+        void InitializeStatsMetadata();
+        void UpdateStats();
+        void GetAllocatorStats(FGenericMemoryStats& out_Stats);
+        void DumpAllocatorStats(class FOutputDevice& Ar);
+        bool IsInternallyThreadSafe() const;
+        bool ValidateHeap();
+        const TCHAR* GetDescriptiveName();
     };
 
-    extern FMalloc* gmalloc;
+    extern FMalloc* GMalloc;
 
     class RC_UE_API FMemory
     {
     public:
-        auto static free(void* ptr) -> void;
-        auto static malloc(size_t size) -> void*;
-        auto static realloc(void* ptr, size_t new_size) -> void*;
-        auto static memzero(void* ptr, size_t size) -> void;
-        auto static memmove(void* dest, void* src, size_t size) -> void;
-        auto static memset(void* src, char value, size_t size) -> void;
-        auto static memcpy(void* dest, const void* src, size_t size) -> void;
-        auto static memcmp(const void* first, const void* second, size_t size) -> int;
+        static void* Memzero(void* Dest, SIZE_T Count);
+        static void* Malloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+        static void* Realloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+        static void Free(void* Original);
+
+        // TODO: Implement if we need them
+        //void static memmove(void* dest, void* src, size_t size);
+        //void static memset(void* src, char value, size_t size);
+        //void static memcpy(void* dest, const void* src, size_t size);
+        //int static memcmp(const void* first, const void* second, size_t size);
     };
 }
 

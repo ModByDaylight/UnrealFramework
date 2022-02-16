@@ -365,7 +365,7 @@ namespace RC::Unreal
                     {
                         m_core_object_pointers[L"EnumProperty"] = ffield_class;
                         //m_object_to_string_functions[ffield_class] = &FEnumProperty<uint8_t>::to_string;
-                        FEnumProperty<uint8_t>::m_static_obj_variant = ffield_class;
+                        FEnumProperty::m_static_class = ffield_class;
                     }
                     if (type_name == FName(L"TextProperty"))
                     {

@@ -38,7 +38,7 @@
 #include <Unreal/Property/XStructProperty.hpp>
 #include <Unreal/Property/FEnumProperty.hpp>
 #include <Unreal/Property/XTextProperty.hpp>
-#include <Unreal/Property/XStrProperty.hpp>
+#include <Unreal/Property/FStrProperty.hpp>
 #include <Unreal/Property/FDelegateProperty.hpp>
 #include <Unreal/Property/FMulticastInlineDelegateProperty.hpp>
 #include <Unreal/Property/FMulticastSparseDelegateProperty.hpp>
@@ -211,7 +211,7 @@ namespace RC::Unreal
         FLazyObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.LazyObjectProperty");
         FSoftObjectProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.SoftObjectProperty");
         XTextProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.TextProperty");
-        XStrProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StrProperty");
+        FStrProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.StrProperty");
         FInterfaceProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.InterfaceProperty");
         FFieldPathProperty::m_static_obj = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.FieldPathProperty");
 
@@ -381,8 +381,8 @@ namespace RC::Unreal
                     if (type_name == FName(L"StrProperty"))
                     {
                         m_core_object_pointers[L"StrProperty"] = ffield_class;
-                        m_object_to_string_functions[ffield_class] = &XStrProperty::to_string;
-                        XStrProperty::m_static_obj_variant = ffield_class;
+                        m_object_to_string_functions[ffield_class] = &FStrProperty::to_string;
+                        FStrProperty::m_static_obj_variant = ffield_class;
                     }
                     if (type_name == FName(L"DelegateProperty"))
                     {
@@ -544,7 +544,7 @@ namespace RC::Unreal
             add_property(L"/Script/CoreUObject.SoftObjectProperty", L"SoftObjectProperty", {&FObjectProperty::to_string}, FSoftObjectProperty{});
             if (Version::is_atleast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", L"EnumProperty", {&FEnumProperty<uint8_t>::to_string}, FEnumProperty<uint8_t>{}); }
             add_property(L"/Script/CoreUObject.TextProperty", L"TextProperty", {&XTextProperty::to_string}, XTextProperty{});
-            add_property(L"/Script/CoreUObject.StrProperty", L"StrProperty", {&XStrProperty::to_string}, XStrProperty{});
+            add_property(L"/Script/CoreUObject.StrProperty", L"StrProperty", {&FStrProperty::to_string}, FStrProperty{});
             add_property(L"/Script/CoreUObject.DelegateProperty", L"DelegateProperty", {&FDelegateProperty::to_string}, FDelegateProperty{});
             add_property(L"/Script/CoreUObject.MulticastDelegateProperty", L"MulticastDelegateProperty", {&FMulticastInlineDelegateProperty::to_string}, FMulticastInlineDelegateProperty{});
             add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", L"MulticastInlineDelegateProperty", {&FMulticastInlineDelegateProperty::to_string}, FMulticastInlineDelegateProperty{});

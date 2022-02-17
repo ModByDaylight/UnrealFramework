@@ -80,32 +80,46 @@ namespace RC::Unreal
 
     File::StringType FField::GetFullName()
     {
-        File::StringType FullName = GetClass().GetName();
-        FullName += STR(" ");
-        FullName += GetPathName();
-        return FullName;
+        if (Version::is_atleast(4, 25 ))
+        {
+            File::StringType FullName = GetClass().GetName();
+            FullName += STR(" ");
+            FullName += GetPathName();
+            return FullName;
+        }
+        else
+        {
+            return AsUFieldUnsafe()->get_full_name();
+        }
     }
 
     File::StringType FField::GetPathName(UObject* StopOuter)
     {
-        File::StringType PathName;
-        for (FFieldVariant TempOwner = GetOwnerVariant(); TempOwner.IsValid(); TempOwner = TempOwner.GetOwnerVariant())
+        if (Version::is_atleast(4, 25))
         {
-            if (!TempOwner.IsUObject())
+            File::StringType PathName;
+            for (FFieldVariant TempOwner = GetOwnerVariant(); TempOwner.IsValid(); TempOwner = TempOwner.GetOwnerVariant())
             {
-                FField* FieldOwner = TempOwner.ToField();
-                PathName = FieldOwner->GetName() + STR(".") + PathName;
+                if (!TempOwner.IsUObject())
+                {
+                    FField* FieldOwner = TempOwner.ToField();
+                    PathName = FieldOwner->GetName() + STR(".") + PathName;
+                }
+                else
+                {
+                    UObject* ObjectOwner = TempOwner.ToUObject();
+                    PathName += ObjectOwner->get_path_name(StopOuter);
+                    PathName += SUBOBJECT_DELIMITER_CHAR;
+                    break;
+                }
             }
-            else
-            {
-                UObject* ObjectOwner = TempOwner.ToUObject();
-                PathName += ObjectOwner->get_path_name(StopOuter);
-                PathName += SUBOBJECT_DELIMITER_CHAR;
-                break;
-            }
+            PathName += GetName();
+            return PathName;
         }
-        PathName += GetName();
-        return PathName;
+        else
+        {
+            return AsUFieldUnsafe()->get_path_name();
+        }
     }
 
     auto FField::IsA(const FFieldClassVariant& UClass) -> bool

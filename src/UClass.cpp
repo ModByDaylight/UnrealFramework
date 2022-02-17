@@ -4,6 +4,10 @@
 
 namespace RC::Unreal
 {
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UClass)
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UBlueprintGeneratedClass)
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UAnimBlueprintGeneratedClass)
+
     auto UClass::has_any_class_flags(EClassFlags flags_to_check) -> bool
     {
         return (get_class_flags() & flags_to_check) != 0;

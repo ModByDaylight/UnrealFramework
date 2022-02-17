@@ -1,4 +1,4 @@
-struct VTableOffsets
+struct RC_UE_API VTableOffsets
 {
     static uint32_t Construct;
     static uint32_t ICppStructOps_Destructor;

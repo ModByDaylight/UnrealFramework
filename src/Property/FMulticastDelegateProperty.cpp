@@ -3,6 +3,8 @@
 
 namespace RC::Unreal
 {
+    IMPLEMENT_FIELD_CLASS(FMulticastDelegateProperty);
+
     auto FMulticastDelegateProperty::GetFunctionSignature() -> UFunction*
     {
         return Helper::Casting::offset_deref<UFunction*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::MulticastDelegateProperty_SignatureFunction));

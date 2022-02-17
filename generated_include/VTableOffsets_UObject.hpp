@@ -1,4 +1,4 @@
-struct VTableOffsets
+struct RC_UE_API VTableOffsets
 {
     static uint32_t PostSaveRoot;
     static uint32_t GetDetailedInfoInternal;

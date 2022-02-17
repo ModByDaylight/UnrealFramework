@@ -1,4 +1,4 @@
-struct VTableOffsets
+struct RC_UE_API VTableOffsets
 {
     static uint32_t CanBeClusterRoot;
     static uint32_t CreateCluster;

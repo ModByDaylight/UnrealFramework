@@ -13,6 +13,8 @@ namespace RC::Unreal
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
+    Function<UObject::ProcessEventSignature> UObject::process_event_internal;
+
     auto UObjectBase::register_dependencies() -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBase, RegisterDependencies, void)

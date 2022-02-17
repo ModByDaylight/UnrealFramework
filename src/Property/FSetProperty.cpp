@@ -2,6 +2,8 @@
 
 namespace RC::Unreal
 {
+    IMPLEMENT_FIELD_CLASS(FSetProperty);
+
     FProperty* FSetProperty::GetElementProp()
     {
         return Helper::Casting::offset_deref<FProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::SetProperty_ElementProp));

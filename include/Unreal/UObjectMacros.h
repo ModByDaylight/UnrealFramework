@@ -86,13 +86,22 @@ namespace RC::Unreal::Internal
     class RC_UE_API UClassRegistrar
     {
     protected:
-        UClassRegistrar(RC::Unreal::UClass** out_static_class, const wchar_t* class_name, const wchar_t* package_name);
+        UClassRegistrar(RC::Unreal::UClass** out_static_class, const wchar_t* class_name, const wchar_t* package_name)
+        {
+            (void)out_static_class;
+            (void)class_name;
+            (void)package_name;
+        };
     };
 
     class RC_UE_API FFieldClassRegistrar
     {
     protected:
-        FFieldClassRegistrar(RC::Unreal::FFieldClassVariant* out_static_class, const wchar_t* class_name);
+        FFieldClassRegistrar(RC::Unreal::FFieldClassVariant* out_static_class, const wchar_t* class_name)
+        {
+            (void)out_static_class;
+            (void)class_name;
+        }
     };
 
     template<typename T>

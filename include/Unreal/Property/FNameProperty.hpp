@@ -10,6 +10,8 @@ namespace RC::Unreal
         DECLARE_FIELD_CLASS(FNameProperty);
         DECLARE_VIRTUAL_TYPE(FNameProperty);
     };
+
+    IMPLEMENT_FIELD_CLASS(FNameProperty)
 }
 
 

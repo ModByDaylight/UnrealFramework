@@ -2,6 +2,7 @@
 
 #include <Unreal/UObject.hpp>
 #include <Unreal/UScriptStruct.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {

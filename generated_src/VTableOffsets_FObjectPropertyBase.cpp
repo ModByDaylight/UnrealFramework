@@ -3,6 +3,7 @@
 #include <Unreal/UObject.hpp>
 #include <Unreal/UScriptStruct.hpp>
 #include <Unreal/FMemory.hpp>
+#include <Unreal/Property/FObjectProperty.hpp>
 
 namespace RC::Unreal
 {

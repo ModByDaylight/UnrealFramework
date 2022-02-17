@@ -2,6 +2,8 @@
 
 namespace RC::Unreal
 {
+    IMPLEMENT_FIELD_CLASS(FMapProperty);
+
     auto FMapProperty::GetKeyProp() -> FProperty*
     {
         return Helper::Casting::offset_deref<FProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::MapProperty_KeyProp));

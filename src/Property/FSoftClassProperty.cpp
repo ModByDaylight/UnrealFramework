@@ -2,6 +2,8 @@
 
 namespace RC::Unreal
 {
+    IMPLEMENT_FIELD_CLASS(FSoftClassProperty);
+
     UClass* FSoftClassProperty::GetMetaClass()
     {
         return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::SoftClassProperty_MetaClass));

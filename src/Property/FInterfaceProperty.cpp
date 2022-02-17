@@ -2,6 +2,8 @@
 
 namespace RC::Unreal
 {
+    IMPLEMENT_FIELD_CLASS(FInterfaceProperty);
+
     UClass* FInterfaceProperty::GetInterfaceClass()
     {
         return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::InterfaceProperty_InterfaceClass));

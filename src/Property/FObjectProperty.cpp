@@ -4,6 +4,9 @@
 
 namespace RC::Unreal
 {
+    IMPLEMENT_FIELD_CLASS(FObjectPropertyBase);
+    IMPLEMENT_FIELD_CLASS(FObjectProperty);
+
     auto FObjectPropertyBase::GetPropertyClass() -> UClass*
     {
         return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::ObjectProperty_PropertyClass));

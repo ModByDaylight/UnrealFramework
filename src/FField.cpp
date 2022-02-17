@@ -2,6 +2,7 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
 
 namespace RC::Unreal
 {
@@ -75,6 +76,36 @@ namespace RC::Unreal
         {
             return GetFFieldFNameUnsafe();
         }
+    }
+
+    File::StringType FField::GetFullName()
+    {
+        File::StringType FullName = GetClass().GetName();
+        FullName += STR(" ");
+        FullName += GetPathName();
+        return FullName;
+    }
+
+    File::StringType FField::GetPathName(UObject* StopOuter)
+    {
+        File::StringType PathName;
+        for (FFieldVariant TempOwner = GetOwnerVariant(); TempOwner.IsValid(); TempOwner = TempOwner.GetOwnerVariant())
+        {
+            if (!TempOwner.IsUObject())
+            {
+                FField* FieldOwner = TempOwner.ToField();
+                PathName = FieldOwner->GetName() + STR(".") + PathName;
+            }
+            else
+            {
+                UObject* ObjectOwner = TempOwner.ToUObject();
+                PathName += ObjectOwner->get_path_name(StopOuter);
+                PathName += SUBOBJECT_DELIMITER_CHAR;
+                break;
+            }
+        }
+        PathName += GetName();
+        return PathName;
     }
 
     auto FField::IsA(const FFieldClassVariant& UClass) -> bool

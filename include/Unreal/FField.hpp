@@ -63,6 +63,9 @@ namespace RC::Unreal
             return GetFName().to_string();
         }
 
+        File::StringType GetFullName();
+        File::StringType GetPathName(UObject* StopOuter = nullptr);
+
         /**
          * Checks whenever this property is of the class specified by the argument
          */

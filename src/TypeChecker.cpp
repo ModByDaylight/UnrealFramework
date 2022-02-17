@@ -471,7 +471,7 @@ namespace RC::Unreal
                                 if (super_type_name == FName(L"Property"))
                                 {
                                     m_core_object_pointers[L"Property"] = ffield_super_class;
-                                    FProperty::m_static_class = ffield_class;
+                                    FProperty::m_static_class = ffield_super_class;
                                     break;
                                 }
 

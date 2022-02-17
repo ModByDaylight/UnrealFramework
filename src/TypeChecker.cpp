@@ -170,8 +170,8 @@ namespace RC::Unreal
         UAnimBlueprintGeneratedClass::m_static_class = anim_bp_generated_class_ptr;
         //m_object_to_string_functions[anim_bp_generated_class_ptr] = &UClass::to_string;
 
-        UClass* widget_bp_generated_class_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.WidgetBlueprintGeneratedClass");
-        UAnimBlueprintGeneratedClass::m_static_class = widget_bp_generated_class_ptr;
+        //UClass* widget_bp_generated_class_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.WidgetBlueprintGeneratedClass");
+        //UAnimBlueprintGeneratedClass::m_static_class = widget_bp_generated_class_ptr;
         //m_object_to_string_functions[widget_bp_generated_class_ptr] = &UClass::to_string;
 
         // Not available in 4.12 (I've not checked exactly when it starts being available)

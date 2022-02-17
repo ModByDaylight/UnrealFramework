@@ -369,4 +369,20 @@ namespace RC::Unreal
             return Container.Field->GetOwnerVariant();
         }
     }
+
+    auto FFieldVariant::HashObject() -> size_t
+    {
+        if (!IsValid())
+        {
+            return 0;
+        }
+        if (IsUObject())
+        {
+            return reinterpret_cast<size_t>(ToUObject());
+        }
+        else
+        {
+            return reinterpret_cast<size_t>(ToField());
+        }
+    }
 }

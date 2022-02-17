@@ -205,6 +205,8 @@ namespace RC::Unreal
                 return nullptr;
             }
         }
+
+        auto HashObject() -> size_t;
     };
 
     /**

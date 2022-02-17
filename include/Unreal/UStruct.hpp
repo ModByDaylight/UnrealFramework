@@ -104,6 +104,8 @@ namespace RC::Unreal
          * Returns true if either 'ChildProperties' or 'Children' is non-nullptr
          */
         bool HasChildren();
+
+        FProperty* GetFirstProperty();
     };
 }
 

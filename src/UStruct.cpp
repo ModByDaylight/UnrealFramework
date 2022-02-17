@@ -202,4 +202,19 @@ namespace RC::Unreal
     {
         return get_child_properties() || get_children();
     }
+
+    FProperty* UStruct::GetFirstProperty()
+    {
+        if (Version::is_below(4, 25))
+        {
+            // In <4.25, this is safe if a UField is a property, which 'CastField' checks
+            // In <4.25, all properties are of type UField
+            auto* Child = Helper::Casting::ptr_cast_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XField_Children));
+            return CastField<FProperty>(Child);
+        }
+        else
+        {
+            return CastField<FProperty>(get_child_properties());
+        }
+    }
 }

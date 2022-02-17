@@ -1,6 +1,8 @@
 #ifndef RC_UNREAL_FSCRIPTARRAY_HPP
 #define RC_UNREAL_FSCRIPTARRAY_HPP
 
+#include <Unreal/PrimitiveTypes.hpp>
+
 namespace RC::Unreal
 {
     // TODO: Make this more proper

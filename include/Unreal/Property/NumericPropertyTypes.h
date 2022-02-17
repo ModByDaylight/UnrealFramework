@@ -10,6 +10,9 @@ namespace RC::Unreal
     {
         DECLARE_FIELD_CLASS(FByteProperty);
         DECLARE_VIRTUAL_TYPE(FByteProperty);
+
+    public:
+        UEnum* GetEnum();
     };
 
     class RC_UE_API FInt8Property : public TProperty_Numeric<int8>

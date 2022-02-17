@@ -22,4 +22,9 @@ namespace RC::Unreal
     IMPLEMENT_FIELD_CLASS(FDoubleProperty);
 
     IMPLEMENT_FIELD_CLASS(FByteProperty);
+
+    UEnum* FByteProperty::GetEnum()
+    {
+        return Helper::Casting::offset_deref<UEnum*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::ByteProperty_Enum));
+    }
 }

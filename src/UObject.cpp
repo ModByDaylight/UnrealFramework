@@ -490,8 +490,12 @@ namespace RC::Unreal
                 outer->get_path_name(stop_outer, result_string);
 
                 // SUBOBJECT_DELIMITER_CHAR is used to indicate that this object's outer is not a UPackage
-                if (outer->get_uclass() != UPackage::static_class()
-                    && outer->get_outer()->get_uclass() == UPackage::static_class())
+                // We use the name of UPackage here instead of StaticClass because StaticClass has not yet been initialized,
+                // and it cannot be initialized until after a bunch of GetPathName calls has already happened
+                if (outer->get_uclass()
+                    && outer->get_uclass()->get_fname() != TypeChecker::m_core_package_name
+                    && outer->get_outer()
+                    && outer->get_outer()->get_uclass()->get_fname() == TypeChecker::m_core_package_name)
                 {
                     result_string.push_back(SUBOBJECT_DELIMITER_CHAR);
                 }

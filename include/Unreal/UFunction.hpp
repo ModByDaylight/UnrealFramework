@@ -69,8 +69,8 @@ namespace RC::Unreal
          */
         auto set_func_ptr(UnrealScriptFunction new_func_ptr) -> void;
 
-        auto register_pre_hook(const UnrealScriptFunctionCallable& pre_callback) -> CallbackId;
-        auto register_post_hook(const UnrealScriptFunctionCallable& post_callback) -> CallbackId;
+        auto register_pre_hook(const UnrealScriptFunctionCallable& pre_callback, void* custom_data = nullptr) -> CallbackId;
+        auto register_post_hook(const UnrealScriptFunctionCallable& post_callback, void* custom_data = nullptr) -> CallbackId;
         auto unregister_hook(CallbackId callback_id) -> bool;
         auto unregister_all_hooks() -> void;
     protected:

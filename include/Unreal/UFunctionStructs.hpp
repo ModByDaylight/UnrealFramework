@@ -33,22 +33,28 @@ namespace RC::Unreal
             return *static_cast<ParamStruct*>(static_cast<void*>(the_stack.Locals));
         }
     };
-    using UnrealScriptFunctionCallable = std::function<void(UnrealScriptFunctionCallableContext& context)>;
+    using UnrealScriptFunctionCallable = std::function<void(UnrealScriptFunctionCallableContext& context, void* custom_data)>;
     using CallbackId = int32_t;
+
+    struct UnrealScriptCallbackData
+    {
+        UnrealScriptFunctionCallable callable;
+        void* custom_data;
+    };
 
     class RC_UE_API UnrealScriptFunctionData
     {
     private:
         UnrealScriptFunction original_func;
         CallbackId hook_index_counter;
-        std::map<int32_t, UnrealScriptFunctionCallable> pre_callbacks;
-        std::map<int32_t, UnrealScriptFunctionCallable> post_callbacks;
+        std::map<int32_t, UnrealScriptCallbackData> pre_callbacks;
+        std::map<int32_t, UnrealScriptCallbackData> post_callbacks;
     public:
         UnrealScriptFunctionData(UnrealScriptFunction original_func_ptr);
         inline auto get_original_func_ptr() const -> UnrealScriptFunction { return original_func; }
 
-        CallbackId add_pre_callback(const UnrealScriptFunctionCallable& callable);
-        CallbackId add_post_callback(const UnrealScriptFunctionCallable& callable);
+        CallbackId add_pre_callback(const UnrealScriptFunctionCallable& callable, void* custom_data = nullptr);
+        CallbackId add_post_callback(const UnrealScriptFunctionCallable& callable, void* custom_data = nullptr);
         bool remove_callback(CallbackId callback_id);
 
         void remove_all_callbacks();

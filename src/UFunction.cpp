@@ -83,16 +83,16 @@ namespace RC::Unreal
         return iterator->second;
     }
 
-    auto UFunction::register_pre_hook(const UnrealScriptFunctionCallable& pre_callback) -> CallbackId
+    auto UFunction::register_pre_hook(const UnrealScriptFunctionCallable& pre_callback, void* custom_data) -> CallbackId
     {
         UnrealScriptFunctionData& function_data = get_function_hook_data();
-        return function_data.add_pre_callback(pre_callback);
+        return function_data.add_pre_callback(pre_callback, custom_data);
     }
 
-    auto UFunction::register_post_hook(const UnrealScriptFunctionCallable& pre_callback) -> CallbackId
+    auto UFunction::register_post_hook(const UnrealScriptFunctionCallable& pre_callback, void* custom_data) -> CallbackId
     {
         UnrealScriptFunctionData& function_data = get_function_hook_data();
-        return function_data.add_pre_callback(pre_callback);
+        return function_data.add_post_callback(pre_callback, custom_data);
     }
 
     auto UFunction::unregister_hook(CallbackId callback_id) -> bool

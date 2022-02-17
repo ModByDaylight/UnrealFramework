@@ -11,17 +11,17 @@ namespace RC::Unreal
         this->hook_index_counter = 1;
     }
 
-    CallbackId UnrealScriptFunctionData::add_pre_callback(const UnrealScriptFunctionCallable& callable)
+    CallbackId UnrealScriptFunctionData::add_pre_callback(const UnrealScriptFunctionCallable& callable, void* custom_data)
     {
         CallbackId new_callback_id = this->hook_index_counter++;
-        this->pre_callbacks.insert({new_callback_id, callable});
+        this->pre_callbacks.insert({new_callback_id, {callable, custom_data}});
         return new_callback_id;
     }
 
-    CallbackId UnrealScriptFunctionData::add_post_callback(const UnrealScriptFunctionCallable& callable)
+    CallbackId UnrealScriptFunctionData::add_post_callback(const UnrealScriptFunctionCallable& callable, void* custom_data)
     {
         CallbackId new_callback_id = this->hook_index_counter++;
-        this->post_callbacks.insert({new_callback_id, callable});
+        this->post_callbacks.insert({new_callback_id, {callable, custom_data}});
         return new_callback_id;
     }
 
@@ -39,17 +39,17 @@ namespace RC::Unreal
 
     void UnrealScriptFunctionData::fire_pre_callbacks(UnrealScriptFunctionCallableContext& context) const
     {
-        for (const auto& pair : pre_callbacks)
+        for (const auto& [callback_id, callback_data] : pre_callbacks)
         {
-            pair.second(context);
+            callback_data.callable(context, callback_data.custom_data);
         }
     }
 
     void UnrealScriptFunctionData::fire_post_callbacks(UnrealScriptFunctionCallableContext& context) const
     {
-        for (const auto& pair : post_callbacks)
+        for (const auto& [callback_id, callback_data]  : post_callbacks)
         {
-            pair.second(context);
+            callback_data.callable(context, callback_data.custom_data);
         }
     }
 

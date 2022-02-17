@@ -512,6 +512,11 @@ namespace RC::Unreal
         }
     }
 
+    size_t UObject::HashObject()
+    {
+        return reinterpret_cast<size_t>(this);
+    }
+
     auto UObject::get_full_name(UObject* stop_outer) -> std::wstring
     {
         if (this == nullptr)

@@ -280,6 +280,8 @@ namespace RC::Unreal
 
         auto get_path_name(UObject* stop_outer, std::wstring& result_name) -> void;
 
+        size_t HashObject();
+
         static bool is_real(const void* p_this);
     };
 

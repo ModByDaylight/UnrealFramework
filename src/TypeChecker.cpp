@@ -253,13 +253,19 @@ namespace RC::Unreal
                 UClass* actor_obj = static_cast<UClass*>(UObjectGlobals::static_find_object(nullptr, nullptr, obj_string));
                 if (!actor_obj) { return; }
 
-                actor_obj->for_each_property([&](FProperty* child) {
-                    // TODO: This is hard-coded for now... perhaps come up with a solution that isn't hardcoded
-                    // This could break in the future if FFieldClass* is no longer at offset 0x8 in the FField struct
-                    FFieldClass* ffield_class = Helper::Casting::offset_deref<FFieldClass*>(child, ffield_class_offset);
-                    if (!ffield_class) { return LoopAction::Continue; }
+                // Manually iterating fields here because 'ForEachProperty' isn't ready until after this function is done
+                FField* field = actor_obj->get_child_properties();
+                while (field)
+                {
+                    // Hard-coded offset cast here because 'FField::GetClass' is not ready until after this function is done
+                    FFieldClass* ffield_class = Helper::Casting::ptr_cast_deref<FFieldClass*>(field, ffield_class_offset);
+                    if (!ffield_class)
+                    {
+                        field = field->GetNextFFieldUnsafe();
+                        continue;
+                    }
 
-                    FName type_name = Helper::Casting::offset_deref<FName>(ffield_class, 0);
+                    FName type_name = ffield_class->GetFName();
 
                     // TODO: Look at the dumped objects and put every single FField type in here
                     // At the moment there are probably some missing types
@@ -456,12 +462,12 @@ namespace RC::Unreal
                     {
                         // TODO: This is hard-coded for now... perhaps come up with a solution that isn't hardcoded
                         // This could break in the future if FFieldClass* is no longer at offset 0x8 in the FField struct
-                        void* ffield_super_class = Helper::Casting::offset_deref<void*>(ffield_class, super_class_offset);
+                        FFieldClass* ffield_super_class = ffield_class->GetSuperClass();
                         if (ffield_super_class)
                         {
                             do
                             {
-                                FName super_type_name = Helper::Casting::offset_deref<FName>(ffield_super_class, 0);
+                                FName super_type_name = ffield_super_class->GetFName();
                                 if (super_type_name == FName(L"Property"))
                                 {
                                     m_core_object_pointers[L"Property"] = ffield_super_class;
@@ -469,13 +475,13 @@ namespace RC::Unreal
                                     break;
                                 }
 
-                                ffield_super_class = Helper::Casting::offset_deref<void*>(ffield_super_class, super_class_offset);
+                                ffield_super_class = ffield_super_class->GetSuperClass();
                             } while (ffield_super_class);
                         }
                     }
 
-                    return LoopAction::Continue;
-                });
+                    field = field->GetNextFFieldUnsafe();
+                }
             };
 
             // TODO: Maybe replace all of the calls to 'find_all_property_types' with a GUObjectArray iteration with an early exit once everything's been found ?

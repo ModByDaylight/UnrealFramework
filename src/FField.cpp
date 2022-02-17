@@ -1,6 +1,7 @@
 #include <Unreal/FField.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
+#include <Unreal/FProperty.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
 
@@ -175,6 +176,15 @@ namespace RC::Unreal
         {
             return GetNextFFieldUnsafe();
         }
+    }
+
+    FProperty* FField::GetNextFieldAsProperty()
+    {
+        // In <4.25, we can cast to a property because all properties inherits from UField
+        // In <4.25, this FField struct represents UField
+        // In 4.25+, properties inherit from FField so there's no problem with this cast
+        auto* Next = Helper::Casting::ptr_cast_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Next));
+        return CastField<FProperty>(Next);
     }
 
     auto FField::AsUFieldUnsafe() -> UField*

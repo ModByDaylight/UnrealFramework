@@ -15,6 +15,7 @@ namespace RC::Unreal
     class UClass;
     class UStruct;
     class FField;
+    class FProperty;
     class FFieldVariant;
     class FFieldClassVariant;
     class FFieldClass;
@@ -104,6 +105,8 @@ namespace RC::Unreal
          * Returns whether the 'Next' pointer is non-nullptr
          */
         bool HasNext();
+
+        FProperty* GetNextFieldAsProperty();
 
     private:
         friend class UStruct;

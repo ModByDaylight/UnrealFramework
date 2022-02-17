@@ -99,6 +99,12 @@ namespace RC::Unreal
         {
             return cast_object<T>(GetTypedOwner(T::static_class()));
         }
+
+        /**
+         * Returns whether the 'Next' pointer is non-nullptr
+         */
+        bool HasNext();
+
     private:
         friend class UStruct;
         friend class StaticOffsetFinder;

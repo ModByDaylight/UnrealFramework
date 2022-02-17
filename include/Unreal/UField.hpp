@@ -8,6 +8,9 @@ namespace RC::Unreal
     class RC_UE_API UField : public UObject
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UField, CoreUObject);
+
+        friend class FField;
+
     protected:
         friend class UStruct;
 

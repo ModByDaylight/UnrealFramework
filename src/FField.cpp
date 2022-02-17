@@ -165,6 +165,18 @@ namespace RC::Unreal
         return nullptr;
     }
 
+    bool FField::HasNext()
+    {
+        if (Version::is_below(4, 25))
+        {
+            return AsUFieldUnsafe()->get_next_ufield();
+        }
+        else
+        {
+            return GetNextFFieldUnsafe();
+        }
+    }
+
     auto FField::AsUFieldUnsafe() -> UField*
     {
         if (!Version::is_below(4, 25))

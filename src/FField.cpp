@@ -352,7 +352,7 @@ namespace RC::Unreal
             {
                 return true;
             }
-            current_class = field_class->GetSuperClass();
+            current_class = current_class->GetSuperClass();
         }
         while (current_class);
         return false;

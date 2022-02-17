@@ -99,6 +99,11 @@ namespace RC::Unreal
          * Returns the property or nullptr if one isn't found
          */
         FProperty* FindProperty(FName PropertyName);
+
+        /**
+         * Returns true if either 'ChildProperties' or 'Children' is non-nullptr
+         */
+        bool HasChildren();
     };
 }
 

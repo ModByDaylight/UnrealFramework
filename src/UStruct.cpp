@@ -197,4 +197,9 @@ namespace RC::Unreal
 
         return PropertyFound;
     }
+
+    bool UStruct::HasChildren()
+    {
+        return get_child_properties() || get_children();
+    }
 }

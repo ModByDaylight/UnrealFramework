@@ -139,6 +139,18 @@ namespace RC::Unreal
         }
     }
 
+    UObject* FField::GetOutermostOwner()
+    {
+        auto CurrentVariant = GetOwnerVariant();
+
+        while (!CurrentVariant.IsUObject())
+        {
+            CurrentVariant = CurrentVariant.GetOwnerVariant();
+        }
+
+        return CurrentVariant.ToUObject();
+    }
+
     auto FField::GetTypedOwner(UClass* OwnerType) -> UObject*
     {
         FFieldVariant current_variant = GetOwnerVariant();

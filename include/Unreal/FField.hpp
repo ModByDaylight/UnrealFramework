@@ -83,6 +83,8 @@ namespace RC::Unreal
          */
         auto GetOwnerVariant() -> FFieldVariant;
 
+        UObject* GetOutermostOwner();
+
         /**
          * Returns the first UObject owner of this field of the provided type
          */

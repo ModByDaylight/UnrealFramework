@@ -57,7 +57,7 @@ namespace RC::Unreal
          * @param data - pointer to property data to get
          * @return Data as a signed int
         **/
-        auto GetSignedIntPropertyValue(void* Data, int64 Value) -> void;
+        auto GetSignedIntPropertyValue(void* Data) -> int64;
 
         /**
          * Gets the value of an unsigned integral property type

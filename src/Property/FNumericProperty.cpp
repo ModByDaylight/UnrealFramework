@@ -42,9 +42,9 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, SetNumericPropertyValueFromString, void, PARAMS(void*, TCHAR const*), ARGS(Data, Value))
     }
 
-    auto FNumericProperty::GetSignedIntPropertyValue(void* Data, int64 Value) -> void
+    auto FNumericProperty::GetSignedIntPropertyValue(void* Data) -> int64
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, GetSignedIntPropertyValue, void, PARAMS(void*, int64), ARGS(Data, Value))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FNumericProperty, GetSignedIntPropertyValue, int64, PARAMS(void*), ARGS(Data))
     }
 
     auto FNumericProperty::GetUnsignedIntPropertyValue(void const* Data) -> uint64

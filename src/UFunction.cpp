@@ -41,6 +41,11 @@ namespace RC::Unreal
         return num_parameters;
     }
 
+    uint16 UFunction::GetReturnValueOffset()
+    {
+        return Helper::Casting::ptr_cast_deref<uint16>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UFunction_ReturnValueOffset));
+    }
+
     auto UFunction::get_parms_size() -> int32_t
     {
         int32_t params_size = 0;

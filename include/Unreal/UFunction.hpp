@@ -43,6 +43,8 @@ namespace RC::Unreal
          */
         auto get_num_parms() -> uint8_t;
 
+        uint16 GetReturnValueOffset();
+
         /**
          * Returns the total size of the function params used by the function
          * Keep in mind that this value is different from properties size, as it includes

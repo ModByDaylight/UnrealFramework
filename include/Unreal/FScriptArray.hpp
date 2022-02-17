@@ -14,6 +14,12 @@ namespace RC::Unreal
     public:
         int32 GetArrayNum() { return ArrayNum; }
         int32 GetArrayMax() { return ArrayMax; }
+
+        // Very temporary functionsthat exists because I'm too lazy to implement a full FScriptArray right now
+        void SetArrayNum(int32 NewArrayNum) { ArrayNum = NewArrayNum; }
+        void SetArrayMax(int32 NewArrayMax) { ArrayMax = NewArrayMax; }
+        void* GetAllocatorInstance() { return AllocatorInstance; }
+        void SetAllocatorInstance(void* NewAllocatorInstance) { AllocatorInstance = NewAllocatorInstance; }
     };
 }
 

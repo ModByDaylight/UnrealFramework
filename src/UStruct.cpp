@@ -178,4 +178,23 @@ namespace RC::Unreal
             }
         }
     }
+
+    FProperty* UStruct::FindProperty(FName PropertyName)
+    {
+        FProperty* PropertyFound = nullptr;
+
+        for_each_property([&](FProperty* Property) {
+            if (Property->GetFName() == PropertyName)
+            {
+                PropertyFound = Property;
+                return LoopAction::Break;
+            }
+            else
+            {
+                return LoopAction::Continue;
+            }
+        });
+
+        return PropertyFound;
+    }
 }

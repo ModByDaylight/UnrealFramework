@@ -93,6 +93,12 @@ namespace RC::Unreal
          */
         using ForEachPropertyInChainCallable = std::function<LoopAction(FProperty*)>;
         auto ForEachPropertyInChain(const ForEachPropertyInChainCallable& callable) -> void;
+
+        /**
+         * Finds a property by FName
+         * Returns the property or nullptr if one isn't found
+         */
+        FProperty* FindProperty(FName PropertyName);
     };
 }
 

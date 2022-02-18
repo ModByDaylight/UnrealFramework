@@ -4,6 +4,7 @@
 namespace RC::Unreal
 {
     FMalloc* GMalloc{};
+    FMalloc** FMalloc::UnrealStaticGMalloc{};
     bool FMalloc::IsInitialized = false;
 
     void* FMalloc::Malloc(SIZE_T Count, uint32 Alignment)

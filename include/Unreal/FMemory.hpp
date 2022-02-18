@@ -18,11 +18,31 @@ namespace RC::Unreal
 {
     struct FGenericMemoryStats;
 
+    namespace UnrealInitializer
+    {
+        struct Config;
+        struct CacheInfo;
+        auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
+        auto load_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
+    }
+
+    namespace Signatures
+    {
+        struct ScanResult;
+        auto scan_for_guobjectarray_impl(const UnrealInitializer::Config&) -> ScanResult;
+    }
+
     class FMalloc
     {
     public:
 #include <VTableOffsets_FMalloc.hpp>
         static bool IsInitialized;
+
+    private:
+        friend Signatures::ScanResult Signatures::scan_for_guobjectarray_impl(const UnrealInitializer::Config&);
+        friend void UnrealInitializer::create_cache(UnrealInitializer::CacheInfo&);
+        friend void UnrealInitializer::load_cache(UnrealInitializer::CacheInfo&);
+        static FMalloc** UnrealStaticGMalloc;
 
     public:
         void* Malloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);

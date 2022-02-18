@@ -490,7 +490,8 @@ namespace RC::Unreal::Signatures
                         constexpr uint8_t instr_size = 0x7;
                         uint8_t* next_instruction = mov_instruction + instr_size;
                         uint32_t* offset = std::bit_cast<uint32_t*>(mov_instruction + 0x3);
-                        GMalloc = *std::bit_cast<FMalloc**>(next_instruction + *offset);
+                        FMalloc::UnrealStaticGMalloc = std::bit_cast<FMalloc**>(next_instruction + *offset);
+                        GMalloc = *FMalloc::UnrealStaticGMalloc;
 
                         return true;
                     },

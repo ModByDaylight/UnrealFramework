@@ -3,7 +3,7 @@
 
 #include <Unreal/Common.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
-#include <Unreal/UObjectMacros.h>
+#include <Unreal/UObjectMacros.hpp>
 #include <Unreal/TypeChecker.hpp>
 #include <Unreal/TArray.hpp>
 

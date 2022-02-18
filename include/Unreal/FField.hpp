@@ -3,7 +3,7 @@
 
 #include <Constructs/Loop.hpp>
 #include <Unreal/Common.hpp>
-#include <Unreal/UObjectMacros.h>
+#include <Unreal/UObjectMacros.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/ContainersFwd.hpp>
 #include <Unreal/UnrealVersion.hpp>

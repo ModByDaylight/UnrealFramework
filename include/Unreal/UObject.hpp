@@ -12,7 +12,7 @@
 #include <Unreal/UnrealFlags.hpp>
 #include <Unreal/TypeChecker.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
-#include <Unreal/UObjectMacros.h>
+#include <Unreal/UObjectMacros.hpp>
 
 #define SUBOBJECT_DELIMITER_CHAR ':'
 

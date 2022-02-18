@@ -433,6 +433,9 @@ namespace RC::Unreal
                         m_core_object_pointers[L"MulticastInlineDelegateProperty"] = ffield_class;
                         //m_object_to_string_functions[ffield_class] = &FMulticastInlineDelegateProperty::to_string;
                         FMulticastInlineDelegateProperty::m_static_class = ffield_class;
+
+                        m_core_object_pointers[L"MulticastDelegateProperty"] = ffield_class->GetSuperClass();
+                        FMulticastDelegateProperty::m_static_class = ffield_class->GetSuperClass();
                     }
                     if (type_name == FName(L"MulticastSparseDelegateProperty"))
                     {
@@ -586,7 +589,7 @@ namespace RC::Unreal
             add_property(L"/Script/CoreUObject.TextProperty", L"TextProperty", /*{&FTextProperty::to_string},*/ FTextProperty{});
             add_property(L"/Script/CoreUObject.StrProperty", L"StrProperty", /*{&FStrProperty::to_string},*/ FStrProperty{});
             add_property(L"/Script/CoreUObject.DelegateProperty", L"DelegateProperty", /*{&FDelegateProperty::to_string},*/ FDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastDelegateProperty", L"MulticastDelegateProperty", /*{&FMulticastInlineDelegateProperty::to_string},*/ FMulticastInlineDelegateProperty{});
+            add_property(L"/Script/CoreUObject.MulticastDelegateProperty", L"MulticastDelegateProperty", /*{&FMulticastInlineDelegateProperty::to_string},*/ FMulticastDelegateProperty{});
             add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", L"MulticastInlineDelegateProperty", /*{&FMulticastInlineDelegateProperty::to_string},*/ FMulticastInlineDelegateProperty{});
             add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", L"MulticastSparseDelegateProperty", /*{&FMulticastSparseDelegateProperty::to_string},*/ FMulticastSparseDelegateProperty{});
             add_property(L"/Script/CoreUObject.InterfaceProperty", L"InterfaceProperty", /*{&FInterfaceProperty::to_string},*/ FInterfaceProperty{});

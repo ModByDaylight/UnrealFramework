@@ -12,14 +12,13 @@ struct RC_UE_API FGuid
 {
 public:
     /** Default constructor. */
-    FGuid(): A(0), B(0), C(0), D(0) {
-    }
+    FGuid() : A(0), B(0), C(0), D(0) {}
 
     /**
      * Creates and initializes a new GUID from the specified components.
      */
-    FGuid(uint32_t InA, uint32_t InB, uint32_t InC, uint32_t InD): A(InA), B(InB), C(InC), D(InD) {
-    }
+    FGuid(uint32_t InA, uint32_t InB, uint32_t InC, uint32_t InD) : A(InA), B(InB), C(InC), D(InD) {}
+
 public:
     /**
      * Compares two GUIDs for equality.
@@ -58,7 +57,7 @@ public:
      */
     uint32_t& operator[](int32_t index)
     {
-        switch(index)
+        switch (index)
         {
             case 0: return A;
             case 1: return B;
@@ -76,7 +75,7 @@ public:
      */
     const uint32_t& operator[](int32_t index) const
     {
-        switch(index)
+        switch (index)
         {
             case 0: return A;
             case 1: return B;
@@ -85,6 +84,7 @@ public:
         }
         return A;
     }
+
 public:
     /**
      * Invalidates the GUID.
@@ -102,6 +102,7 @@ public:
     {
         return ((A | B | C | D) != 0);
     }
+
 public:
     /** Holds the first component. */
     uint32_t A;
@@ -119,10 +120,8 @@ struct RC_UE_API FVector
     float Y;
     float Z;
 
-    inline FVector() : X(0.0f), Y(0.0f), Z(0.0f) {
-    }
-    inline FVector(float x, float y, float z) : X(x), Y(y), Z(z) {
-    }
+    inline FVector() : X(0.0f), Y(0.0f), Z(0.0f) {}
+    inline FVector(float x, float y, float z) : X(x), Y(y), Z(z) {}
 };
 
 struct RC_UE_API FRotator
@@ -131,10 +130,8 @@ struct RC_UE_API FRotator
     float Yaw;
     float Roll;
 
-    inline FRotator() : Pitch(0.0f), Yaw(0.0f), Roll(0.0f) {
-    }
-    inline FRotator(float pitch, float yaw, float roll) : Pitch(pitch), Yaw(yaw), Roll(roll) {
-    }
+    inline FRotator() : Pitch(0.0f), Yaw(0.0f), Roll(0.0f) {}
+    inline FRotator(float pitch, float yaw, float roll) : Pitch(pitch), Yaw(yaw), Roll(roll) {}
 };
 
 NS_RC_UE_END;

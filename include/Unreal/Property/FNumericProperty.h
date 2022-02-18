@@ -1,7 +1,7 @@
 #ifndef UE4SS_FNUMERICPROPERTY_H
 #define UE4SS_FNUMERICPROPERTY_H
 
-#include <Unreal/Property/TProperty.h>
+#include <Unreal/TProperty.hpp>
 #include <File/File.hpp>
 //#include "Unreal/UnrealStringConversions.h"
 

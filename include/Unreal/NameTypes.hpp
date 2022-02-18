@@ -16,7 +16,9 @@ namespace RC::Unreal
 
     // TODO: Figure out what's going on here
     //       It shouldn't be required to use 'alignas' here to make sure it's aligned properly in containers (like TArray)
-    struct /*alignas(8)*/ RC_UE_API FName
+    //       I've never seen an FName not be 8-byte aligned in memory,
+    //       but it is 4-byte aligned in the source so hopefully this doesn't cause any problems
+    struct alignas(8) RC_UE_API FName
     {
     public:
         enum class EFindName

@@ -12,6 +12,9 @@
 
 namespace RC::Unreal
 {
+    using FEnumNamePair = TPair<FName, int64_t>;
+    using FEnumNameArray = TArray<FEnumNamePair>;
+
     class RC_UE_API UEnum : public UField
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UEnum, CoreUObject)
@@ -55,7 +58,7 @@ namespace RC::Unreal
          * Keep in mind that enumeration can have gaps as well as negative values
          * The last entry of the array will always be a _MAX constant
          */
-        auto get_enum_names() -> TArray<TPair<FName, int64_t>>;
+        auto get_enum_names() -> FEnumNameArray&;
 
         /**
          * Returns the C++ form using which the enum has been originally declared

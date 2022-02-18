@@ -7,11 +7,10 @@ namespace RC::Unreal
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UUserDefinedEnum);
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
-    using FEnumNameArray = TArray<TPair<FName, int64_t>>;
 
-    auto UEnum::get_enum_names() -> FEnumNameArray
+    auto UEnum::get_enum_names() -> FEnumNameArray&
     {
-        return Helper::Casting::offset_deref<FEnumNameArray>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UEnum_Names));
+        return *Helper::Casting::ptr_cast<FEnumNameArray*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UEnum_Names));
     }
 
     auto UEnum::get_cpp_form() -> ECppForm

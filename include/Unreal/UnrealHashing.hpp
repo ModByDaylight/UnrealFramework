@@ -1,5 +1,5 @@
-#ifndef UE4SS_UNREALHASHING_H
-#define UE4SS_UNREALHASHING_H
+#ifndef RC_UNREAL_UNREALHASHING_H
+#define RC_UNREAL_UNREALHASHING_H
 
 #include <Unreal/Common.hpp>
 #include <cstdlib>
@@ -115,4 +115,4 @@ FORCEINLINE std::enable_if_t<std::is_enum_v<EnumType>, uint32_t> get_type_hash(E
     return get_type_hash((__underlying_type(EnumType))E);
 }
 
-#endif //UE4SS_UNREALHASHING_H
+#endif //RC_UNREAL_UNREALHASHING_H

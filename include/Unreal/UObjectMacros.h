@@ -1,5 +1,5 @@
-#ifndef UE4SS_UOBJECTMACROS_H
-#define UE4SS_UOBJECTMACROS_H
+#ifndef RC_UNREAL_UOBJECTMACROS_H
+#define RC_UNREAL_UOBJECTMACROS_H
 
 #include <Unreal/PrimitiveTypes.hpp>
 
@@ -121,4 +121,4 @@ namespace RC::Unreal::Internal
     };
 }
 
-#endif //UE4SS_UOBJECTMACROS_H
+#endif //RC_UNREAL_UOBJECTMACROS_H

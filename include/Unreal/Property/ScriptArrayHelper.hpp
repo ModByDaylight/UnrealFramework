@@ -1,5 +1,5 @@
-#ifndef UE4SS_SCRIPTARRAYHELPER_H
-#define UE4SS_SCRIPTARRAYHELPER_H
+#ifndef RC_UNREAL_SCRIPTARRAYHELPER_H
+#define RC_UNREAL_SCRIPTARRAYHELPER_H
 
 #include <Unreal/Container/ScriptArray.h>
 #include <Unreal/Property/XArrayProperty.hpp>
@@ -393,4 +393,4 @@ namespace RC::Unreal
     };
 }
 
-#endif //UE4SS_SCRIPTARRAYHELPER_H
+#endif //RC_UNREAL_SCRIPTARRAYHELPER_H

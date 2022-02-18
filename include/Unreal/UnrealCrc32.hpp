@@ -1,5 +1,5 @@
-#ifndef UE4SS_UNREALCRC32_H
-#define UE4SS_UNREALCRC32_H
+#ifndef RC_UNREAL_UNREALCRC32_H
+#define RC_UNREAL_UNREALCRC32_H
 
 #include <Unreal/Common.hpp>
 #include <cstdint>
@@ -167,4 +167,4 @@ inline uint32_t FCrc::strihash_deprecated(const int32_t data_len, const wchar_t*
 
 NS_RC_UE_END;
 
-#endif //UE4SS_UNREALCRC32_H
+#endif //RC_UNREAL_UNREALCRC32_H

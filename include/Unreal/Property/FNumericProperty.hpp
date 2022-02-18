@@ -1,5 +1,5 @@
-#ifndef UE4SS_FNUMERICPROPERTY_H
-#define UE4SS_FNUMERICPROPERTY_H
+#ifndef RC_UNREAL_FNUMERICPROPERTY_H
+#define RC_UNREAL_FNUMERICPROPERTY_H
 
 #include <Unreal/TProperty.hpp>
 #include <File/File.hpp>
@@ -128,4 +128,4 @@ namespace RC::Unreal
     };
 }
 
-#endif //UE4SS_FNUMERICPROPERTY_H
+#endif //RC_UNREAL_FNUMERICPROPERTY_H

@@ -1,5 +1,5 @@
-#ifndef UE4SS_FBOOLPROPERTY_H
-#define UE4SS_FBOOLPROPERTY_H
+#ifndef RC_UNREAL_FBOOLPROPERTY_H
+#define RC_UNREAL_FBOOLPROPERTY_H
 
 #include <File/File.hpp>
 #include <Unreal/FProperty.hpp>
@@ -76,4 +76,4 @@ namespace RC::Unreal
     };
 }
 
-#endif //UE4SS_FBOOLPROPERTY_H
+#endif //RC_UNREAL_FBOOLPROPERTY_H

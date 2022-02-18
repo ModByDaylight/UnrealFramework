@@ -11,55 +11,55 @@
 #include <Unreal/Common.hpp>
 #include <Unreal/UnrealInitializer.hpp>
 
-#define UE4SS_ENUMERATE_MEMBER_OFFSETS \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UObject_ClassPrivate) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UObject_OuterPrivate) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UStruct_SuperStruct) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(XField_Children) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(XField_ChildProperties) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(XField_Next) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(FField_Owner) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(FField_Next) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(FField_Class) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UField_Next) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(StructProperty_Struct) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(ArrayProperty_Inner) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(XProperty_Offset_Internal) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UFunction_NumParms) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UFunction_ReturnValueOffset) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UFunction_FunctionFlags) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UFunction_Func) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UStruct_PropertiesSize) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UStruct_MinAlignment) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UStruct_RefLink) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UScriptStruct_StructFlags) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UObject_NamePrivate) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(FField_NamePrivate) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(FieldSize_BoolProperty) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(ByteOffset_BoolProperty) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(ByteMask_BoolProperty) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(FieldMask_BoolProperty) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UClass_ClassFlags) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UClass_ClassWithin) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UClass_ClassDefaultObject) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UClass_Interfaces) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(Property_PropertyFlags) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(ByteProperty_Enum) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(EnumProperty_UnderlyingType) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(EnumProperty_Enum) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(UEnum_Names) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(ObjectProperty_PropertyClass) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(ClassProperty_MetaClass) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(SoftClassProperty_MetaClass) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(MapProperty_KeyProp) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(MapProperty_ValueProp) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(DelegateProperty_SignatureFunction) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(MulticastDelegateProperty_SignatureFunction) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(MulticastInlineDelegateProperty_SignatureFunction) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(MulticastSparseDelegateProperty_SignatureFunction) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(InterfaceProperty_InterfaceClass) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(FieldPathProperty_PropertyClass) \
-    UE4SS_ENUMERATE_MEMBER_OFFSET(SetProperty_ElementProp)
+#define RC_UNREAL_ENUMERATE_MEMBER_OFFSETS \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UObject_ClassPrivate) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UObject_OuterPrivate) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UStruct_SuperStruct) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(XField_Children) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(XField_ChildProperties) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(XField_Next) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(FField_Owner) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(FField_Next) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(FField_Class) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UField_Next) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(StructProperty_Struct) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(ArrayProperty_Inner) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(XProperty_Offset_Internal) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UFunction_NumParms) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UFunction_ReturnValueOffset) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UFunction_FunctionFlags) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UFunction_Func) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UStruct_PropertiesSize) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UStruct_MinAlignment) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UStruct_RefLink) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UScriptStruct_StructFlags) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UObject_NamePrivate) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(FField_NamePrivate) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(FieldSize_BoolProperty) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(ByteOffset_BoolProperty) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(ByteMask_BoolProperty) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(FieldMask_BoolProperty) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UClass_ClassFlags) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UClass_ClassWithin) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UClass_ClassDefaultObject) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UClass_Interfaces) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(Property_PropertyFlags) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(ByteProperty_Enum) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(EnumProperty_UnderlyingType) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(EnumProperty_Enum) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(UEnum_Names) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(ObjectProperty_PropertyClass) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(ClassProperty_MetaClass) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(SoftClassProperty_MetaClass) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(MapProperty_KeyProp) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(MapProperty_ValueProp) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(DelegateProperty_SignatureFunction) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(MulticastDelegateProperty_SignatureFunction) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(MulticastInlineDelegateProperty_SignatureFunction) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(MulticastSparseDelegateProperty_SignatureFunction) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(InterfaceProperty_InterfaceClass) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(FieldPathProperty_PropertyClass) \
+    RC_UNREAL_ENUMERATE_MEMBER_OFFSET(SetProperty_ElementProp)
 
 namespace RC::Unreal
 {
@@ -68,9 +68,9 @@ namespace RC::Unreal
     public:
         enum class MemberOffsets : int32_t
         {
-#define UE4SS_ENUMERATE_MEMBER_OFFSET(member_offset) member_offset,
-            UE4SS_ENUMERATE_MEMBER_OFFSETS
-#undef UE4SS_ENUMERATE_MEMBER_OFFSET
+#define RC_UNREAL_ENUMERATE_MEMBER_OFFSET(member_offset) member_offset,
+            RC_UNREAL_ENUMERATE_MEMBER_OFFSETS
+#undef RC_UNREAL_ENUMERATE_MEMBER_OFFSET
 
             Max,
         };
@@ -79,9 +79,9 @@ namespace RC::Unreal
         {
             switch (member_offset)
             {
-#define UE4SS_ENUMERATE_MEMBER_OFFSET(member_offset) case MemberOffsets::member_offset: return STR(#member_offset);
-                UE4SS_ENUMERATE_MEMBER_OFFSETS
-#undef UE4SS_NUMERATE_MEMBER_OFFSET
+#define RC_UNREAL_ENUMERATE_MEMBER_OFFSET(member_offset) case MemberOffsets::member_offset: return STR(#member_offset);
+                RC_UNREAL_ENUMERATE_MEMBER_OFFSETS
+#undef RC_UNREAL_NUMERATE_MEMBER_OFFSET
             }
 
             throw std::runtime_error{"[member_offset_to_string] member offset outside of the range of the MemberOffsets enum"};

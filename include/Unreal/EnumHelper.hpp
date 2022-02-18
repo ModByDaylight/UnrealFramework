@@ -1,5 +1,5 @@
-#ifndef UE4SS_ENUMHELPER_H
-#define UE4SS_ENUMHELPER_H
+#ifndef RC_UNREAL_ENUMHELPER_H
+#define RC_UNREAL_ENUMHELPER_H
 
 // Defines all bitwise operators for enum classes so it can be (mostly) used as a regular flags enum
 #define ENUM_CLASS_FLAGS(Enum) \
@@ -22,4 +22,4 @@
 	inline constexpr bool  operator! (Enum  E)             { static_assert(false, "This enum cannot be modified directly"); return false; } \
 	inline constexpr Enum  operator~ (Enum  E)             { static_assert(false, "This enum cannot be modified directly"); return E; }
 
-#endif //UE4SS_ENUMHELPER_H
+#endif //RC_UNREAL_ENUMHELPER_H

@@ -1,5 +1,5 @@
-#ifndef UE4SS_VIRTUALFUNCTIONHELPER_H
-#define UE4SS_VIRTUALFUNCTIONHELPER_H
+#ifndef RC_UNREAL_VIRTUALFUNCTIONHELPER_H
+#define RC_UNREAL_VIRTUALFUNCTIONHELPER_H
 
 #include <unordered_map>
 #include <stdexcept>
@@ -176,4 +176,4 @@ static VirtualFunctionRegistrarHolder<ClassName, decltype(&ClassName::FunctionNa
 #define CALL_VIRTUAL_FUNCTION(Self, FunctionName, ...) \
     VirtualFunctionInvoker<decltype(&std::remove_reference_t<decltype(*Self)>::FunctionName), &std::remove_reference_t<decltype(*Self)>::FunctionName>::dispatch_call(Self, __VA_ARGS__)
 
-#endif //UE4SS_VIRTUALFUNCTIONHELPER_H
+#endif //RC_UNREAL_VIRTUALFUNCTIONHELPER_H

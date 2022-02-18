@@ -1,5 +1,5 @@
-#ifndef UE4SS_TPROPERTY_H
-#define UE4SS_TPROPERTY_H
+#ifndef RC_UNREAL_TPROPERTY_H
+#define RC_UNREAL_TPROPERTY_H
 
 #include <Unreal/FProperty.hpp>
 
@@ -170,4 +170,4 @@ namespace RC::Unreal
     };
 }
 
-#endif //UE4SS_TPROPERTY_H
+#endif //RC_UNREAL_TPROPERTY_H

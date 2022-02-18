@@ -168,6 +168,27 @@ namespace RC::Unreal
         //    Slot << *TTypeFundamentals::GetPropertyValuePtr(Value);
         //}
     };
+
+    // From: https://stackoverflow.com/a/22592618
+    template<class SupposedTProperty>
+    struct IsTPropertyHelper
+    {
+    private:
+#pragma warning(disable: 4068)
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "NotImplementedFunctions"
+        template<class InTCppType, class TInPropertyBaseClass>
+        static decltype(static_cast<const ::RC::Unreal::TProperty<InTCppType, TInPropertyBaseClass>&>(std::declval<SupposedTProperty>()), std::true_type{})
+        test(const ::RC::Unreal::TProperty<InTCppType, TInPropertyBaseClass>&);
+
+        static std::false_type test(...);
+#pragma clang diagnostic pop
+#pragma warning(default: 4068)
+    public:
+        static constexpr bool value = decltype(IsTPropertyHelper::test(std::declval<SupposedTProperty>()))::value;
+    };
+    template<class SupposedTProperty>
+    inline constexpr bool IsTProperty = IsTPropertyHelper<SupposedTProperty>::value;
 }
 
 #endif //RC_UNREAL_TPROPERTY_H

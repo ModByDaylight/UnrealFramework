@@ -199,7 +199,14 @@ namespace RC::Unreal
 
     bool UStruct::HasChildren()
     {
-        return get_child_properties() || get_children();
+        if (Version::is_below(4, 25))
+        {
+            return get_children();
+        }
+        else
+        {
+            return get_child_properties() || get_children();
+        }
     }
 
     FProperty* UStruct::GetFirstProperty()

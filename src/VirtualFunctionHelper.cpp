@@ -1,4 +1,4 @@
-#include "Unreal/VirtualFunctionHelper.h"
+#include "Unreal/VirtualFunctionHelper.hpp"
 
 auto get_shared_objects() -> std::unordered_map<std::string, void*>&
 {

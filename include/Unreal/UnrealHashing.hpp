@@ -4,7 +4,7 @@
 #include <Unreal/Common.hpp>
 #include <cstdlib>
 #include <type_traits>
-#include <Unreal/UnrealHashing.h>
+#include <Unreal/UnrealHashing.hpp>
 
 /**
  * Combines two hash values to get a third.

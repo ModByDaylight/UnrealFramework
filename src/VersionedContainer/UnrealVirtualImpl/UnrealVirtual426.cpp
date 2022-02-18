@@ -5,7 +5,7 @@
 #include <Unreal/UScriptStruct.hpp>
 #include <Unreal/FField.hpp>
 #include <Unreal/FProperty.hpp>
-#include <Unreal/Property/FNumericProperty.h>
+#include <Unreal/Property/FNumericProperty.hpp>
 #include <Unreal/Property/FObjectProperty.hpp>
 
 namespace RC::Unreal

@@ -1,7 +1,7 @@
 #ifndef RC_UNREAL_UNREALFLAGS_HPP
 #define RC_UNREAL_UNREALFLAGS_HPP
 
-#include "Unreal/EnumHelper.h"
+#include "Unreal/EnumHelper.hpp"
 
 #define INDEX_NONE -1
 

@@ -1,6 +1,6 @@
 #include <Unreal/StaticOffsetFinder.hpp>
-#include "Unreal/Property/FBoolProperty.h"
-#include "Unreal/UnrealHashing.h"
+#include "Unreal/Property/FBoolProperty.hpp"
+#include "Unreal/UnrealHashing.hpp"
 
 namespace RC::Unreal
 {

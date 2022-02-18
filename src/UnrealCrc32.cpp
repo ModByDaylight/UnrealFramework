@@ -1,4 +1,4 @@
-#include "Unreal/UnrealCrc32.h"
+#include "Unreal/UnrealCrc32.hpp"
 
 NS_RC_UE_START;
 

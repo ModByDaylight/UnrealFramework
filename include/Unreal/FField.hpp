@@ -8,7 +8,7 @@
 #include <Unreal/ContainersFwd.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/TypeChecker.hpp>
-#include <Unreal/VirtualFunctionHelper.h>
+#include <Unreal/VirtualFunctionHelper.hpp>
 
 namespace RC::Unreal
 {

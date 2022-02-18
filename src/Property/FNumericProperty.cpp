@@ -1,4 +1,4 @@
-#include "Unreal/Property/FNumericProperty.h"
+#include "Unreal/Property/FNumericProperty.hpp"
 #include "Unreal/UEnum.hpp"
 #include <Unreal/FString.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>

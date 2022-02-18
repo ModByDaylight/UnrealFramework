@@ -14,8 +14,8 @@
 #include <Unreal/UInterface.hpp>
 #include <Unreal/UActorComponent.hpp>
 #include <Unreal/UPackage.hpp>
-#include <Unreal/Property/FNumericProperty.h>
-#include <Unreal/Property/NumericPropertyTypes.h>
+#include <Unreal/Property/FNumericProperty.hpp>
+#include <Unreal/Property/NumericPropertyTypes.hpp>
 #include <Unreal/Property/FObjectProperty.hpp>
 #include <Unreal/Property/FWeakObjectProperty.hpp>
 #include <Unreal/Property/FLazyObjectProperty.hpp>
@@ -24,7 +24,7 @@
 #include <Unreal/Property/FSoftClassProperty.hpp>
 #include <Unreal/Property/FArrayProperty.hpp>
 #include <Unreal/Property/FMapProperty.hpp>
-#include <Unreal/Property/FBoolProperty.h>
+#include <Unreal/Property/FBoolProperty.hpp>
 #include <Unreal/Property/FNameProperty.hpp>
 #include <Unreal/Property/FStructProperty.hpp>
 #include <Unreal/Property/FEnumProperty.hpp>

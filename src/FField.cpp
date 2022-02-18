@@ -3,7 +3,6 @@
 #include <Unreal/UFunction.hpp>
 #include <Unreal/FProperty.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
-#include <Unreal/PrimitiveTypes.hpp>
 
 namespace RC::Unreal
 {

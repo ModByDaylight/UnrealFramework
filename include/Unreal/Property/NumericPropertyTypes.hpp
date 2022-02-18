@@ -1,8 +1,8 @@
 #ifndef RC_UNREAL_NUMERICPROPERTYTYPES_HPP
 #define RC_UNREAL_NUMERICPROPERTYTYPES_HPP
 
-#include "Unreal/Property/FNumericProperty.hpp"
-#include "Unreal/PrimitiveTypes.hpp"
+#include <Unreal/Property/FNumericProperty.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
 
 namespace RC::Unreal
 {

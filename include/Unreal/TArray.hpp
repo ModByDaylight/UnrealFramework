@@ -8,7 +8,6 @@
 
 #include <Constructs/Loop.hpp>
 #include <Helpers/Format.hpp>
-
 #include <Unreal/Common.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
 #include <Unreal/ChooseClass.hpp>
@@ -16,7 +15,6 @@
 #include <Unreal/ContainerAllocationPolicies.hpp>
 #include <Unreal/FMemory.hpp>
 #include <Unreal/VersionedContainer/Base.hpp>
-
 #include <Unreal/TypeChecker.hpp>
 
 //#include <Unreal/Property/FArrayProperty.hpp>

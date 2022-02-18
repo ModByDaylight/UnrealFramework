@@ -1,7 +1,7 @@
 #ifndef UE4SS_UNREALCRC32_H
 #define UE4SS_UNREALCRC32_H
 
-#include "Unreal/Common.hpp"
+#include <Unreal/Common.hpp>
 #include <cstdint>
 #include <cctype>
 #include <type_traits>

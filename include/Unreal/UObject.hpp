@@ -2,6 +2,7 @@
 #define RC_UNREAL_UOBJECT_HPP
 
 #include <stdexcept>
+
 #include <File/File.hpp>
 #include <Function/Function.hpp>
 #include <Unreal/Common.hpp>

@@ -14,7 +14,7 @@ namespace RC::Unreal
         bool b_is_bound;
     };
 
-    class RC_UE_API FMulticastSparseDelegateProperty : public FMulticastDelegateProperty
+    class RC_UE_API FMulticastSparseDelegateProperty : public TProperty<FSparseDelegate, FMulticastDelegateProperty>
     {
         DECLARE_FIELD_CLASS(FMulticastSparseDelegateProperty);
         DECLARE_VIRTUAL_TYPE(FMulticastSparseDelegateProperty);

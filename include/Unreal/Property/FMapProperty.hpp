@@ -2,6 +2,8 @@
 #define RC_UNREAL_FMAPPROPERTY_HPP
 
 #include <Unreal/FProperty.hpp>
+#include <Unreal/TProperty.hpp>
+#include <Unreal/TMap.hpp>
 
 namespace RC::Unreal
 {
@@ -12,6 +14,7 @@ namespace RC::Unreal
         int32_t max_elements;
     };
 
+    // TODO: This should inherit from 'TProperty<FScriptMap, FProperty>' when we have FScriptMap
     class RC_UE_API FMapProperty : public FProperty
     {
         DECLARE_FIELD_CLASS(FMapProperty);

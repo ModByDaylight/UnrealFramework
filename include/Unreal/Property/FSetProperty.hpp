@@ -5,6 +5,7 @@
 
 namespace RC::Unreal
 {
+    // TODO: This should inherit from 'TProperty<FScriptSet, FProperty>' when we have FScriptSet
     class RC_UE_API FSetProperty : public FProperty
     {
         DECLARE_FIELD_CLASS(FSetProperty);

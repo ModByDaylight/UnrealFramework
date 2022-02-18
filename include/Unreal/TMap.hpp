@@ -34,17 +34,6 @@ namespace RC::Unreal
     public:
         TMap(MapElement* elements_ptr, int32_t current_size, int32_t capacity) : elements(elements_ptr), map_num(current_size), map_max(capacity) {}
 
-    public:
-        auto static read_data(PropertyDataVC data) -> TMap<MapInnerKeyType, MapInnerValueType>
-        {
-            MapData map_data = FMapProperty::read_data(data);
-            return TMap<MapInnerKeyType, MapInnerValueType>(
-                    static_cast<MapElement*>(map_data.elements_ptr),
-                    map_data.num_elements,
-                    map_data.max_elements
-            );
-        }
-
     protected:
         template<typename Callable>
         auto for_each(Callable callable) -> void

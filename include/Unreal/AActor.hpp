@@ -2,8 +2,7 @@
 #define RC_UNREAL_AACTOR_HPP
 
 #include <Unreal/UObject.hpp>
-#include <Unreal/FVector.hpp>
-#include <Unreal/FRotator.hpp>
+#include <Unreal/UnrealCoreStructs.hpp>
 
 namespace RC::Unreal
 {

@@ -4,6 +4,7 @@
 #include <Helpers/Format.hpp>
 
 #include <Unreal/FProperty.hpp>
+#include <Unreal/TProperty.hpp>
 #include <Unreal/FWeakObjectPtr.hpp>
 #include <Unreal/Property/FDelegateProperty.hpp>
 
@@ -20,7 +21,7 @@ namespace RC::Unreal
     };
     using FScriptDelegate = TScriptDelegate/*<>*/;
 
-    class RC_UE_API FDelegateProperty : public FProperty
+    class RC_UE_API FDelegateProperty : public TProperty<FScriptDelegate, FProperty>
     {
         DECLARE_FIELD_CLASS(FDelegateProperty);
         DECLARE_VIRTUAL_TYPE(FDelegateProperty);

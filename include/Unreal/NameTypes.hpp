@@ -14,7 +14,9 @@ namespace RC::Unreal
         RC_UE_API auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
     }
 
-    struct RC_UE_API FName
+    // TODO: Figure out what's going on here
+    //       It shouldn't be required to use 'alignas' here to make sure it's aligned properly in containers (like TArray)
+    struct /*alignas(8)*/ RC_UE_API FName
     {
     public:
         enum class EFindName

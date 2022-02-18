@@ -50,7 +50,7 @@ add_rc_dependency_to_target(${TARGET} DynamicOutput)
 
 target_include_directories(${TARGET} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(${TARGET} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated_include>)
-target_compile_options(${TARGET} PRIVATE /MP $<$<CONFIG:RELEASE>:/Zi> /W4)
+target_compile_options(${TARGET} PRIVATE /MP $<$<CONFIG:RELEASE>:/Zi> /W4 /wd4005)
 target_link_options(${TARGET} PRIVATE /DEBUG:FULL)
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 

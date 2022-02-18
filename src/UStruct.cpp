@@ -182,8 +182,7 @@ namespace RC::Unreal
     FProperty* UStruct::FindProperty(FName PropertyName)
     {
         FProperty* PropertyFound = nullptr;
-
-        for_each_property([&](FProperty* Property) {
+        ForEachPropertyInChain([&](FProperty* Property) {
             if (Property->GetFName() == PropertyName)
             {
                 PropertyFound = Property;

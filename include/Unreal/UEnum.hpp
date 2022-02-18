@@ -12,6 +12,9 @@
 
 namespace RC::Unreal
 {
+    // The "UEnum::Names" pair is "TPair<FName, uint8>" in earlier engine versions
+    // This can cause a problem, therefore, you should be careful when using this pair
+    // This is a case where we perhaps should abstract this array and deny direct access to the TArray
     using FEnumNamePair = TPair<FName, int64_t>;
     using FEnumNameArray = TArray<FEnumNamePair>;
 

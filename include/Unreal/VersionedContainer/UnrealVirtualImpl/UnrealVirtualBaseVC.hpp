@@ -22,6 +22,12 @@ throw std::runtime_error{"Function '" #function_name "' not available"}; \
 }                                                                          \
 return func(this, args);
 
+#define GET_ADDRESS_OF_UNREAL_VIRTUAL(class_name, function_name, instance) \
+[&instance]() -> void* {                                                           \
+    std::byte* vtable = std::bit_cast<std::byte*>(*std::bit_cast<std::byte**>(instance)); \
+    return *std::bit_cast<void**>(vtable + class_name::VTableOffsets::function_name);\
+}();
+
 namespace RC::Unreal
 {
     class UnrealVirtualBaseVC

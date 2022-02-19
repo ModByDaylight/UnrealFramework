@@ -68,7 +68,37 @@ namespace RC::Unreal
         }
 
         // Constructor for when we want to allocate a new TArray in the games memory
+        // The TArray itself is on the stack (or local heap) but the data pointer will be in the games own heap
         TArray() = default;
+
+        // Problems with this copying:
+        // The underlying data might get deallocated from the original TArray going out of scope
+        // At that point, any access to the copied TArray is undefined
+        // For now, delete the copy constructor & copy assignment operator to disallow copying
+        TArray(const TArray& Other)
+        {
+            CopyFrom_Helper(Other);
+        }
+
+        TArray& operator=(const TArray& Other)
+        {
+            if (this != &Other)
+            {
+                CopyFrom_Helper(Other);
+            }
+
+            return *this;
+        }
+
+        TArray& operator=(TArray& Other)
+        {
+            if (this != &Other)
+            {
+                CopyFrom_Helper(Other);
+            }
+
+            return *this;
+        }
 
         ~TArray()
         {
@@ -76,6 +106,15 @@ namespace RC::Unreal
         }
 
         // Memory related -> START
+    private:
+        void CopyFrom_Helper(const TArray& Other)
+        {
+            AllocatorInstance.Data = static_cast<FScriptContainerElement*>(FMemory::Malloc(Other.ArrayMax * sizeof(ElementType)));
+            std::memcpy(AllocatorInstance.Data, Other.AllocatorInstance.Data, Other.ArrayNum * sizeof(ElementType));
+            ArrayNum = Other.ArrayNum;
+            ArrayMax = Other.ArrayMax;
+        }
+
     public:
         void Reserve(SizeType Number)
         {
@@ -136,7 +175,13 @@ namespace RC::Unreal
             AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(new_data_ptr);
         }
 
+        // Temporary function to keep compatibility with UE4SS before UE4SS is fully updated
         auto get_array_num() const -> int32_t
+        {
+            return ArrayNum;
+        }
+
+        SizeType Num() const
         {
             return ArrayNum;
         }
@@ -146,7 +191,13 @@ namespace RC::Unreal
             ArrayNum = new_array_num;
         }
 
+        // Temporary function to keep compatibility with UE4SS before UE4SS is fully updated
         auto get_array_max() const -> int32_t
+        {
+            return ArrayMax;
+        }
+
+        SizeType Max() const
         {
             return ArrayMax;
         }

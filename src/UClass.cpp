@@ -38,8 +38,9 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_ClassDefaultObject));
     }
 
-    auto UClass::get_interfaces() -> TArray<FImplementedInterface>
+    auto UClass::get_interfaces() -> TArray<FImplementedInterface>&
     {
-        return Helper::Casting::offset_deref<TArray<FImplementedInterface>>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_Interfaces));
+        //return Helper::Casting::offset_deref<TArray<FImplementedInterface>>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_Interfaces));
+        return *Helper::Casting::ptr_cast<TArray<FImplementedInterface>*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_Interfaces));
     }
 }

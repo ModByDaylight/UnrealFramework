@@ -58,7 +58,7 @@ namespace RC::Unreal
         auto get_class_within() -> UClass*;
         auto get_class_config_name() -> FName;
         auto get_class_default_object() -> UObject*;
-        auto get_interfaces() -> TArray<FImplementedInterface>;
+        auto get_interfaces() -> TArray<FImplementedInterface>&;
 
         auto get_super_class() -> UClass*
         {

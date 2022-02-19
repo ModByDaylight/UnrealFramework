@@ -5,6 +5,7 @@
 #include <Unreal/ReflectedFunction.hpp>
 #include <Unreal/UObject.hpp>
 #include <Unreal/FAssetData.hpp>
+#include <Unreal/Property/FInterfaceProperty.hpp>
 
 namespace RC::Unreal
 {
@@ -25,7 +26,7 @@ namespace RC::Unreal
     public:
         struct GetAssetRegistry_Params
         {
-            UAssetRegistry* ReturnValue; // 0x0
+            FScriptInterface ReturnValue; // 0x0
         };
 
         struct GetAsset_Params
@@ -38,7 +39,7 @@ namespace RC::Unreal
         auto static verify_self() -> bool;
 
     public:
-        auto static GetAssetRegistry() -> UAssetRegistry*;
+        auto static GetAssetRegistry() -> FScriptInterface;
         auto static GetAsset(FAssetData& in_asset_data) -> UObject*;
     };
 }

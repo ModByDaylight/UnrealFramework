@@ -8,8 +8,9 @@ namespace RC::Unreal
 {
     class FScriptInterface
     {
-        UObject* ObjectPointer;
-        void* InterfacePointer;
+    public:
+        UObject* ObjectPointer{};
+        void* InterfacePointer{};
     };
 
     class RC_UE_API FInterfaceProperty : public TProperty<FScriptInterface, FProperty>

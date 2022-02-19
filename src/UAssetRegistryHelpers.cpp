@@ -19,12 +19,12 @@ namespace RC::Unreal
         return true;
     }
 
-    auto UAssetRegistryHelpers::GetAssetRegistry() -> UAssetRegistry*
+    auto UAssetRegistryHelpers::GetAssetRegistry() -> FScriptInterface
     {
-        if (!verify_self()) { return nullptr; }
-        if (!StaticFunctions::get_asset_registry.is_valid()) { return nullptr; }
+        if (!verify_self()) { return {}; }
+        if (!StaticFunctions::get_asset_registry.is_valid()) { return {}; }
 
-        GetAssetRegistry_Params params{nullptr};
+        GetAssetRegistry_Params params{};
         StaticFunctions::get_asset_registry(params);
         return params.ReturnValue;
     }

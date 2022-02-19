@@ -81,6 +81,7 @@ namespace RC::Unreal
         {
             m_unreal_vc_base = std::make_unique<Derived425>();
             m_unreal_object_base = std::make_unique<UObject425>();
+            m_unreal_virtual_base = std::make_unique<UnrealVirtual426>();
         }
         else if (Version::is_equal(4, 26))
         {

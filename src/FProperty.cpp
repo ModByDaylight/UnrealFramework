@@ -315,7 +315,7 @@ namespace RC::Unreal
             // Before 4.26, the second param didn't exist
             // This branch uses the <4.26 function signature that only has one param
             // All params that don't exist get ignored
-            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>), ARGS(EncounteredStructProps))
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>&), ARGS(EncounteredStructProps))
         }
     }
 
@@ -327,14 +327,14 @@ namespace RC::Unreal
             // This branch uses the 4.26 function signature that includes this param
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty,
                                              ContainsObjectReference,
-                                             bool, PARAMS(TArray<const FStructProperty*>, EPropertyObjectReferenceType),
+                                             bool, PARAMS(TArray<const FStructProperty*>&, EPropertyObjectReferenceType),
                                              ARGS(EncounteredStructProps, EPropertyObjectReferenceType::Strong))
         }
         else
         {
             // Before 4.26, the second param didn't exist
             // This branch uses the <4.26 function signature that only has one param
-            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>), ARGS(EncounteredStructProps))
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FProperty, ContainsObjectReference, bool, PARAMS(TArray<const FStructProperty*>&), ARGS(EncounteredStructProps))
         }
     }
 

@@ -156,11 +156,19 @@ namespace RC::Unreal
             ArrayMax = new_array_max;
         }
 
-        auto copy_fast(const TArray<InElementType, Allocator>& other) -> void
+        // Temporary function
+        // Transfers ownership of another data ptr to this instance of TArray
+        // The 'other' TArray becomes zeroed
+        auto copy_fast(TArray<InElementType, Allocator>& other) -> void
         {
             AllocatorInstance.Data = other.AllocatorInstance.GetAllocation();
             ArrayNum = other.ArrayNum;
             ArrayMax = other.ArrayMax;
+
+            // Hack to prevent deallocation when 'other' goes out of scope
+            other.AllocatorInstance.Data = nullptr;
+            other.ArrayNum = 0;
+            other.ArrayMax = 0;
         }
 
         auto at(size_t index) -> InElementType*

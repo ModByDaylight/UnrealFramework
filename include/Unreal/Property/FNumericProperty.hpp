@@ -48,11 +48,6 @@ namespace RC::Unreal
         auto SetNumericPropertyValueFromString(void* Data, TCHAR const* Value) -> void;
 
         /**
-         * Set the value of a signed integral property type
-         * @param data - pointer to property data to set
-         * @param value - Value to set data to
-        **/
-        /**
          * Gets the value of a signed integral property type
          * @param data - pointer to property data to get
          * @return Data as a signed int
@@ -117,6 +112,11 @@ namespace RC::Unreal
             TTypeFundamentals::set_property_value(data, (TCppType) value);
         }
 
+        /**
+         * Set the value of a signed integral property type
+         * @param data - pointer to property data to set
+         * @param value - Value to set data to
+        **/
         auto SetSignedIntPropertyValue(void* data, int64_t value) -> void
         {
             if (!std::is_integral_v<TCppType>)

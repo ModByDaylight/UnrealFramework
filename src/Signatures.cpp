@@ -98,7 +98,7 @@ namespace RC::Unreal::Signatures
 
         if (config.scan_overrides.version_finder)
         {
-            config.scan_overrides.version_finder(signature_containers_core);
+            config.scan_overrides.version_finder(signature_containers_core, scan_result);
         }
         else
         {
@@ -196,7 +196,7 @@ namespace RC::Unreal::Signatures
 
         if (config.scan_overrides.fname_to_string)
         {
-            config.scan_overrides.fname_to_string(signature_containers_core);
+            config.scan_overrides.fname_to_string(signature_containers_core, scan_result);
         }
         else
         {
@@ -270,7 +270,7 @@ namespace RC::Unreal::Signatures
 
         if (config.scan_overrides.fname_constructor)
         {
-            config.scan_overrides.fname_constructor(signature_containers_core);
+            config.scan_overrides.fname_constructor(signature_containers_core, scan_result);
         }
         else
         {
@@ -360,7 +360,7 @@ namespace RC::Unreal::Signatures
 
         if (config.scan_overrides.process_event)
         {
-            config.scan_overrides.process_event(signature_containers_coreuobject);
+            config.scan_overrides.process_event(signature_containers_coreuobject, scan_result);
         }
         else
         {
@@ -394,7 +394,7 @@ namespace RC::Unreal::Signatures
 
         if (config.scan_overrides.static_construct_object)
         {
-            config.scan_overrides.static_construct_object(signature_containers_umg);
+            config.scan_overrides.static_construct_object(signature_containers_umg, scan_result);
         }
         else
         {
@@ -464,7 +464,7 @@ namespace RC::Unreal::Signatures
         // This is because we need access to the engine version which we don't until after the first pass
         if (config.scan_overrides.fmemory_free)
         {
-            config.scan_overrides.fmemory_free(signature_containers_core);
+            config.scan_overrides.fmemory_free(signature_containers_core, scan_result);
         }
         else
         {
@@ -509,7 +509,7 @@ namespace RC::Unreal::Signatures
 
         if (config.scan_overrides.guobjectarray)
         {
-            config.scan_overrides.guobjectarray(signature_containers_coreuobject);
+            config.scan_overrides.guobjectarray(signature_containers_coreuobject, scan_result);
         }
         else
         {

@@ -434,5 +434,11 @@ namespace RC::Unreal::UnrealInitializer
         FMalloc::IsInitialized = true;
         StaticStorage::is_initialized = true;
 
+        // Post-init stage
+        if (!GMalloc && FMalloc::UnrealStaticGMalloc)
+        {
+            GMalloc = *FMalloc::UnrealStaticGMalloc;
+            Output::send(STR("Post-initialization: GMalloc: {} -> {}\n"), (void*)FMalloc::UnrealStaticGMalloc, (void*)GMalloc);
+        }
     }
 }

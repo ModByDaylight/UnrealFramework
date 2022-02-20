@@ -186,8 +186,7 @@ namespace RC::Unreal::Signatures
                         {
                             Version::major = 4;
                             Version::minor = 25;
-                            auto& error = scan_result.errors.emplace_back(fmt("%S\nWas unable to find AOB for 'Unreal Engine Version', assuming 4.25.\nIf you run into problems, you can override the engine version in 'UE4SS-settings.ini, this bypasses the need for an AOB.", version_status.error_message.c_str()));
-                            error.is_fatal = false;
+                            auto& error = scan_result.errors.emplace_back(fmt("%S\nWas unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.", version_status.error_message.c_str()));
                         }
                     }
             };

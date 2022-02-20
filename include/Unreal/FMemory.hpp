@@ -42,6 +42,8 @@ namespace RC::Unreal
         friend Signatures::ScanResult Signatures::scan_for_guobjectarray_impl(const UnrealInitializer::Config&);
         friend void UnrealInitializer::create_cache(UnrealInitializer::CacheInfo&);
         friend void UnrealInitializer::load_cache(UnrealInitializer::CacheInfo&);
+
+    public:
         static FMalloc** UnrealStaticGMalloc;
 
     public:

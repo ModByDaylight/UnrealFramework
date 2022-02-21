@@ -6,6 +6,7 @@
 #include <DynamicOutput/DynamicOutput.hpp>
 #include <Unreal/UnrealInitializer.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
+#include <Unreal/VersionedContainer/UnrealVirtualImpl/UnrealVirtualBaseVC.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/Signatures.hpp>
 #include <Unreal/Hooks.hpp>
@@ -265,6 +266,20 @@ namespace RC::Unreal::UnrealInitializer
         Container::set_derived_base_objects();
     }
 
+    auto static post_initialize() -> void
+    {
+        if (!GMalloc && FMalloc::UnrealStaticGMalloc)
+        {
+            GMalloc = *FMalloc::UnrealStaticGMalloc;
+            Output::send(STR("Post-initialization: GMalloc: {} -> {}\n"), (void*)FMalloc::UnrealStaticGMalloc, (void*)GMalloc);
+        }
+
+        if (FAssetData::FAssetDataAssumedStaticSize < FAssetData::StaticSize())
+        {
+            throw std::runtime_error{"Tell a developer: FAssetData::StaticSize is too small to hold the entire struct"};
+        }
+    }
+
     auto initialize(const Config& config) -> void
     {
         // Setup scanner
@@ -402,7 +417,6 @@ namespace RC::Unreal::UnrealInitializer
         Hook::add_required_object(STR("/Script/CoreUObject.DynamicClass"));
 
         hook_static_construct_object();
-        hook_process_event();
 
         for (int32_t i = 0; i < 2000 && !Hook::StaticStorage::all_required_objects_constructed; ++i)
         {
@@ -413,6 +427,17 @@ namespace RC::Unreal::UnrealInitializer
             // It will also prevent unnecessarily high CPU usage
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
+
+        Container::m_unreal_virtual_base->set_virtual_offsets();
+
+        auto* object = UObjectGlobals::static_find_object(nullptr, nullptr, STR("/Script/CoreUObject.Default__Object"));
+        if (!object)
+        {
+            throw std::runtime_error{"Post-initialization: Was unable to find 'CoreUObject.Default__Object' to use to retrieve the address of ProcessEvent"};
+        }
+
+        UObject::process_event_internal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessEvent, object));
+        hook_process_event();
 
         TypeChecker::store_all_object_names();
 
@@ -430,21 +455,10 @@ namespace RC::Unreal::UnrealInitializer
 
         StaticOffsetFinder::find_offsets(config.process_handle);
         StaticOffsetFinder::output_all_member_offsets();
-        Container::m_unreal_virtual_base->set_virtual_offsets();
 
         FMalloc::IsInitialized = true;
         StaticStorage::is_initialized = true;
 
-        // Post-init stage
-        if (!GMalloc && FMalloc::UnrealStaticGMalloc)
-        {
-            GMalloc = *FMalloc::UnrealStaticGMalloc;
-            Output::send(STR("Post-initialization: GMalloc: {} -> {}\n"), (void*)FMalloc::UnrealStaticGMalloc, (void*)GMalloc);
-        }
-
-        if (FAssetData::FAssetDataAssumedStaticSize < FAssetData::StaticSize())
-        {
-            throw std::runtime_error{"Tell a developer: FAssetData::StaticSize is too small to hold the entire struct"};
-        }
+        post_initialize();
     }
 }

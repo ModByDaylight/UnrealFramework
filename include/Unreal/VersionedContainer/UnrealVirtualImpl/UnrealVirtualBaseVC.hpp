@@ -26,7 +26,7 @@ return func(this, args);
 [&instance]() -> void* {                                                           \
     std::byte* vtable = std::bit_cast<std::byte*>(*std::bit_cast<std::byte**>(instance)); \
     return *std::bit_cast<void**>(vtable + class_name::VTableOffsets::function_name);\
-}();
+}()
 
 namespace RC::Unreal
 {

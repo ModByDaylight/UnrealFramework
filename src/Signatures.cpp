@@ -267,40 +267,6 @@ namespace RC::Unreal::Signatures
             signature_containers_core.emplace_back(fname_to_string);
         }
 
-        if (config.scan_overrides.process_event)
-        {
-            config.scan_overrides.process_event(signature_containers_coreuobject, scan_result);
-        }
-        else
-        {
-            SignatureContainer process_event{
-                    {
-                            {
-                                    "4 0/5 5/5 6/5 7/4 1/5 4/4 1/5 5/4 1/5 6/4 1/5 7/4 8/8 1/E C/F 0/0 0/0 0/0 0/4 8/8 D/6 C/2 4/3 0/4 8/8 9/9 D/1 8/0 1/0 0/0 0/4 8/8 B/? ?/? ?/? ?/? ?/? ?/4 8/3 3/C 5/4 8/8 9/8 5",
-                            },
-                            {
-                                    "4 0/5 5/5 6/5 7/4 1/5 4/4 1/5 5/4 1/5 6/4 1/5 7/4 8/8 1/E C/A 0/0 1/0 0/0 0/4 8/8 D/6 C/2 4/3 0/4 8/8 9/9 D/C 8/0 1/0 0/0 0/4 8/8 B/? ?/? ?/? ?/? ?/? ?/4 8/3 3/C 5/4 8/8 9/8 5",
-                            },
-                    },
-                    // On Match Found
-                    [&](SignatureContainer& self) {
-                        UObject::process_event_internal.assign_address(self.get_match_address());
-
-                        scan_result.success_messages.emplace_back(std::format(STR("UObject::ProcessEvent: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
-                        self.get_did_succeed() = true;
-                        return true;
-                    },
-                    // On Scan Completed
-                    [&](const SignatureContainer& self) {
-                        if (!self.get_did_succeed())
-                        {
-                            scan_result.errors.emplace_back("Was unable to find AOB for 'UObject::ProcessEvent'\nYou can supply your own in 'UE4SS_Signatures/ProcessEvent.lua'");
-                        }
-                    }
-            };
-            signature_containers_coreuobject.emplace_back(process_event);
-        }
-
         if (config.scan_overrides.static_construct_object)
         {
             config.scan_overrides.static_construct_object(signature_containers_umg, scan_result);

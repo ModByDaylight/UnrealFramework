@@ -4,6 +4,20 @@
 
 namespace RC::Unreal
 {
+    FAssetData UAssetRegistryHelpers::GetAsset_Params::InAssetData()
+    {
+        return InAssetData_Private;
+    }
+
+    UObject* UAssetRegistryHelpers::GetAsset_Params::ReturnValue()
+    {
+        return Helper::Casting::ptr_cast_deref<UObject*>(this, UAssetRegistryHelpers::StaticFunctions::get_asset.GetReturnValueOffset());
+    }
+
+    UAssetRegistryHelpers::GetAsset_Params::GetAsset_Params(const FAssetData& InAssetData) : InAssetData_Private(InAssetData)
+    {
+    }
+
     auto UAssetRegistryHelpers::verify_self() -> bool
     {
         if (!self)
@@ -36,6 +50,6 @@ namespace RC::Unreal
 
         GetAsset_Params params{in_asset_data};
         StaticFunctions::get_asset(params);
-        return params.ReturnValue;
+        return params.ReturnValue();
     }
 }

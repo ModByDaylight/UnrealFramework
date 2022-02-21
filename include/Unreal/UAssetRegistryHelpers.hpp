@@ -31,8 +31,14 @@ namespace RC::Unreal
 
         struct GetAsset_Params
         {
-            FAssetData InAssetData; // 0x0
-            UObject* ReturnValue; // 0x50
+        private:
+            FAssetData InAssetData_Private; // 0x0
+            UObject* ReturnValue_Private; // 0x50
+
+        public:
+            GetAsset_Params(const FAssetData& InAssetData);
+            FAssetData InAssetData();
+            UObject* ReturnValue();
         };
 
     private:

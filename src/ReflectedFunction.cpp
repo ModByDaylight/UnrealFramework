@@ -4,6 +4,14 @@
 
 namespace RC::Unreal
 {
+    auto ReflectedFunctionBase::assign_function(UFunction* function) -> void
+    {
+        if (!function) { return; }
+
+        m_function = function;
+        ReturnValueOffset = function->GetReturnValueOffset();
+    }
+
     auto ReflectedFunctionBase::is_valid() -> bool
     {
         if (!m_function)

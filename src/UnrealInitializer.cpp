@@ -12,6 +12,7 @@
 #include <Unreal/UObject.hpp>
 #include <Unreal/FString.hpp>
 #include <Unreal/FMemory.hpp>
+#include <Unreal/FAssetData.hpp>
 
 
 namespace RC::Unreal::UnrealInitializer
@@ -439,6 +440,11 @@ namespace RC::Unreal::UnrealInitializer
         {
             GMalloc = *FMalloc::UnrealStaticGMalloc;
             Output::send(STR("Post-initialization: GMalloc: {} -> {}\n"), (void*)FMalloc::UnrealStaticGMalloc, (void*)GMalloc);
+        }
+
+        if (FAssetData::FAssetDataAssumedStaticSize < FAssetData::StaticSize())
+        {
+            throw std::runtime_error{"Tell a developer: FAssetData::StaticSize is too small to hold the entire struct"};
         }
     }
 }

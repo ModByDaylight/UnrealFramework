@@ -3,6 +3,7 @@
 
 #include <Unreal/PrimitiveTypes.hpp>
 #include <Unreal/FMemory.hpp>
+#include <Unreal/TypeCompatibleBytes.hpp>
 
 namespace RC::Unreal
 {
@@ -25,6 +26,9 @@ namespace RC::Unreal
     struct TBitsToSizeType<32> { using Type = int32; };
     template<>
     struct TBitsToSizeType<64> { using Type = int64; };
+
+    template<typename ReferencedType>
+    ReferencedType* IfAThenAElseB(ReferencedType* A,ReferencedType* B);
 
     template <typename SizeType>
     SizeType DefaultCalculateSlackShrink(SizeType NumElements, SizeType NumAllocatedElements, SIZE_T BytesPerElement, bool bAllowQuantize, uint32 Alignment = DEFAULT_ALIGNMENT)
@@ -181,6 +185,168 @@ namespace RC::Unreal
             }
         };
     };
+
+    template <uint32 NumInlineElements, typename SecondaryAllocator = FDefaultAllocator>
+    class TInlineAllocator
+    {
+    public:
+        using SizeType = int32;
+
+        enum { NeedsElementType = true };
+        enum { RequireRangeCheck = true };
+
+        template<typename ElementType>
+        class ForElementType
+        {
+            // Hack to allow the allocator to be set by the TArray constructor for when we want to interact with an already constucted TArray in memory
+            template<typename T1, typename T2>
+            friend class TArray;
+
+        public:
+            /** Default constructor. */
+            ForElementType()
+            {
+            }
+
+            /**
+             * Moves the state of another allocator into this one.
+             * Assumes that the allocator is currently empty, i.e. memory may be allocated but any existing elements have already been destructed (if necessary).
+             * @param Other - The allocator to move the state from.  This allocator should be left in a valid empty state.
+             */
+            FORCEINLINE void MoveToEmpty(ForElementType& Other)
+            {
+                checkSlow(this != &Other);
+
+                if (!Other.SecondaryData.GetAllocation())
+                {
+                    // Relocate objects from other inline storage only if it was stored inline in Other
+                    RelocateConstructItems<ElementType>((void*)InlineData, Other.GetInlineElements(), NumInlineElements);
+                }
+
+                // Move secondary storage in any case.
+                // This will move secondary storage if it exists but will also handle the case where secondary storage is used in Other but not in *this.
+                SecondaryData.MoveToEmpty(Other.SecondaryData);
+            }
+
+            // FContainerAllocatorInterface
+            FORCEINLINE ElementType* GetAllocation() const
+            {
+                return IfAThenAElseB<ElementType>(SecondaryData.GetAllocation(),GetInlineElements());
+            }
+
+            void ResizeAllocation(SizeType PreviousNumElements, SizeType NumElements,SIZE_T NumBytesPerElement)
+            {
+                // Check if the new allocation will fit in the inline data area.
+                if(NumElements <= NumInlineElements)
+                {
+                    // If the old allocation wasn't in the inline data area, relocate it into the inline data area.
+                    if(SecondaryData.GetAllocation())
+                    {
+                        RelocateConstructItems<ElementType>((void*)InlineData, (ElementType*)SecondaryData.GetAllocation(), PreviousNumElements);
+
+                        // Free the old indirect allocation.
+                        SecondaryData.ResizeAllocation(0,0,NumBytesPerElement);
+                    }
+                }
+                else
+                {
+                    if(!SecondaryData.GetAllocation())
+                    {
+                        // Allocate new indirect memory for the data.
+                        SecondaryData.ResizeAllocation(0,NumElements,NumBytesPerElement);
+
+                        // Move the data out of the inline data area into the new allocation.
+                        RelocateConstructItems<ElementType>((void*)SecondaryData.GetAllocation(), GetInlineElements(), PreviousNumElements);
+                    }
+                    else
+                    {
+                        // Reallocate the indirect data for the new size.
+                        SecondaryData.ResizeAllocation(PreviousNumElements, NumElements, NumBytesPerElement);
+                    }
+                }
+            }
+
+            FORCEINLINE SizeType CalculateSlackReserve(SizeType NumElements, SIZE_T NumBytesPerElement) const
+            {
+                // If the elements use less space than the inline allocation, only use the inline allocation as slack.
+                return NumElements <= NumInlineElements ?
+                       NumInlineElements :
+                       SecondaryData.CalculateSlackReserve(NumElements, NumBytesPerElement);
+            }
+            FORCEINLINE SizeType CalculateSlackShrink(SizeType NumElements, SizeType NumAllocatedElements, SIZE_T NumBytesPerElement) const
+            {
+                // If the elements use less space than the inline allocation, only use the inline allocation as slack.
+                return NumElements <= NumInlineElements ?
+                       NumInlineElements :
+                       SecondaryData.CalculateSlackShrink(NumElements, NumAllocatedElements, NumBytesPerElement);
+            }
+            FORCEINLINE SizeType CalculateSlackGrow(SizeType NumElements, SizeType NumAllocatedElements, SIZE_T NumBytesPerElement) const
+            {
+                // If the elements use less space than the inline allocation, only use the inline allocation as slack.
+                return NumElements <= NumInlineElements ?
+                       NumInlineElements :
+                       SecondaryData.CalculateSlackGrow(NumElements, NumAllocatedElements, NumBytesPerElement);
+            }
+
+            SIZE_T GetAllocatedSize(SizeType NumAllocatedElements, SIZE_T NumBytesPerElement) const
+            {
+                if (NumAllocatedElements > NumInlineElements)
+                {
+                    return SecondaryData.GetAllocatedSize(NumAllocatedElements, NumBytesPerElement);
+                }
+                return 0;
+            }
+
+            bool HasAllocation() const
+            {
+                return SecondaryData.HasAllocation();
+            }
+
+            SizeType GetInitialCapacity() const
+            {
+                return NumInlineElements;
+            }
+
+        private:
+            ForElementType(const ForElementType&);
+            ForElementType& operator=(const ForElementType&);
+
+            /** The data is stored in this array if less than NumInlineElements is needed. */
+            TTypeCompatibleBytes<ElementType> InlineData[NumInlineElements];
+
+            /** The data is allocated through the indirect allocation policy if more than NumInlineElements is needed. */
+            typename SecondaryAllocator::template ForElementType<ElementType> SecondaryData;
+
+            /** @return the base of the aligned inline element data */
+            ElementType* GetInlineElements() const
+            {
+                return (ElementType*)InlineData;
+            }
+        };
+
+        typedef void ForAnyElementType;
+    };
+
+    // From: https://stackoverflow.com/a/22592618
+    template<class Allocator>
+    struct IsTInlineAllocatorHelper
+    {
+    private:
+#pragma warning(disable: 4068)
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "NotImplementedFunctions"
+        template <uint32 NumInlineElements, typename SecondaryAllocator = FDefaultAllocator>
+        static decltype(static_cast<const ::RC::Unreal::TInlineAllocator<NumInlineElements, SecondaryAllocator>&>(std::declval<Allocator>()), std::true_type{})
+        test(const ::RC::Unreal::TInlineAllocator<NumInlineElements, SecondaryAllocator>&);
+
+        static std::false_type test(...);
+#pragma clang diagnostic pop
+#pragma warning(default: 4068)
+    public:
+        static constexpr bool value = decltype(IsTInlineAllocatorHelper::test(std::declval<Allocator>()))::value;
+    };
+    template<class Allocator>
+    inline constexpr bool IsTInlineAllocator = IsTInlineAllocatorHelper<Allocator>::value;
 
     template<int IndexSize>
     class TSizedDefaultAllocator : public TSizedHeapAllocator<IndexSize>

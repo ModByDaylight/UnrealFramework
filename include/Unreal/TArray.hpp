@@ -62,9 +62,9 @@ namespace RC::Unreal
         //TArray(ArrayInnerType* data_ptr, int32_t current_size, int32_t capacity) : data(data_ptr), ArrayNum(current_size),
         //                                                                           ArrayMax(capacity) {}
 
-        TArray(InElementType* data_ptr, int32_t current_size, int32_t capacity) : ArrayNum(current_size), ArrayMax(capacity)
+        TArray([[maybe_unused]]InElementType* data_ptr, int32_t current_size, int32_t capacity) : ArrayNum(current_size), ArrayMax(capacity)
         {
-            AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(data_ptr);
+            //AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(data_ptr);
         }
 
         // Constructor for when we want to allocate a new TArray in the games memory
@@ -107,12 +107,71 @@ namespace RC::Unreal
 
         // Memory related -> START
     private:
+        SizeType GetElementSize()
+        {
+            if constexpr (std::is_same_v<ElementType, struct FAssetData>)
+            {
+                // Structs where the size is unknown to the compiler
+                // This happens when a struct has had layout changes and now has different sizes in different engine versions
+                return ElementType::StaticSize();
+            }
+            else
+            {
+                // Structs where the size is known to the compiler
+                return sizeof(ElementType);
+            }
+        }
+
+        SizeType GetElementSize() const
+        {
+            if constexpr (std::is_same_v<ElementType, struct FAssetData>)
+            {
+                // Structs where the size is unknown to the compiler
+                // This happens when a struct has had layout changes and now has different sizes in different engine versions
+                return ElementType::StaticSize();
+            }
+            else
+            {
+                // Structs where the size is known to the compiler
+                return sizeof(ElementType);
+            }
+        }
+
         void CopyFrom_Helper(const TArray& Other)
         {
-            AllocatorInstance.Data = static_cast<FScriptContainerElement*>(FMemory::Malloc(Other.ArrayMax * sizeof(ElementType)));
-            std::memcpy(AllocatorInstance.Data, Other.AllocatorInstance.Data, Other.ArrayNum * sizeof(ElementType));
-            ArrayNum = Other.ArrayNum;
-            ArrayMax = Other.ArrayMax;
+            if constexpr (IsTInlineAllocator<InAllocator>)
+            {
+                std::memcpy(&AllocatorInstance, &Other.AllocatorInstance, Other.AllocatorInstance.GetInitialCapacity() * GetElementSize());
+
+                if (auto AllocatedSize = Other.AllocatorInstance.GetAllocatedSize(Other.ArrayNum, Other.GetElementSize()); AllocatedSize > 0)
+                {
+                    AllocatorInstance.SecondaryData.Data = static_cast<FScriptContainerElement*>(FMemory::Malloc(Other.ArrayMax * GetElementSize()));
+                    std::memcpy(AllocatorInstance.SecondaryData.Data, Other.AllocatorInstance.SecondaryData.Data, AllocatedSize);
+                }
+                else
+                {
+                    AllocatorInstance.SecondaryData.Data = nullptr;
+                }
+
+                ArrayNum = Other.ArrayNum;
+                ArrayMax = Other.ArrayMax;
+            }
+            else
+            {
+                if (Other.AllocatorInstance.GetAllocation())
+                {
+                    AllocatorInstance.Data = static_cast<FScriptContainerElement*>(FMemory::Malloc(Other.ArrayMax * GetElementSize()));
+                    std::memcpy(AllocatorInstance.Data, Other.AllocatorInstance.Data, Other.ArrayNum * GetElementSize());
+                    ArrayNum = Other.ArrayNum;
+                    ArrayMax = Other.ArrayMax;
+                }
+                else
+                {
+                    AllocatorInstance.Data = nullptr;
+                    ArrayNum = 0;
+                    ArrayMax = 0;
+                }
+            }
         }
 
     public:
@@ -130,13 +189,13 @@ namespace RC::Unreal
         {
             if (NewMax)
             {
-                NewMax = AllocatorInstance.CalculateSlackReserve(NewMax, sizeof(ElementType));
+                NewMax = AllocatorInstance.CalculateSlackReserve(NewMax, GetElementSize());
             }
 
             if (NewMax != ArrayMax)
             {
                 ArrayMax = NewMax;
-                AllocatorInstance.ResizeAllocation(ArrayNum, ArrayMax, sizeof(ElementType));
+                AllocatorInstance.ResizeAllocation(ArrayNum, ArrayMax, GetElementSize());
             }
         }
 
@@ -153,14 +212,14 @@ namespace RC::Unreal
         SizeType AddZeroed(SizeType Count = 1)
         {
             const SizeType Index = AddUninitialized(Count);
-            FMemory::Memzero((uint8*)AllocatorInstance.GetAllocation() + Index*sizeof(ElementType), Count*sizeof(ElementType));
+            FMemory::Memzero((uint8*)AllocatorInstance.GetAllocation() + Index*GetElementSize(), Count*GetElementSize());
             return Index;
         }
 
         void ResizeGrow(SizeType OldNum)
         {
-            ArrayMax = AllocatorInstance.CalculateSlackGrow(ArrayNum, ArrayMax, sizeof(ElementType));
-            AllocatorInstance.ResizeAllocation(OldNum, ArrayMax, sizeof(ElementType));
+            ArrayMax = AllocatorInstance.CalculateSlackGrow(ArrayNum, ArrayMax, GetElementSize());
+            AllocatorInstance.ResizeAllocation(OldNum, ArrayMax, GetElementSize());
         }
         // Memory related -> END
 
@@ -172,7 +231,14 @@ namespace RC::Unreal
 
         auto set_data_ptr(InElementType* new_data_ptr) -> void
         {
-            AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(new_data_ptr);
+            if constexpr (IsTInlineAllocator<InAllocator>)
+            {
+                static_assert(false, "TArray::set_data_ptr cannot be used with TInlineAllocator");
+            }
+            else
+            {
+                AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(new_data_ptr);
+            }
         }
 
         // Temporary function to keep compatibility with UE4SS before UE4SS is fully updated
@@ -212,6 +278,11 @@ namespace RC::Unreal
         // The 'other' TArray becomes zeroed
         auto copy_fast(TArray<InElementType, Allocator>& other) -> void
         {
+            if constexpr (IsTInlineAllocator<InAllocator>)
+            {
+                static_assert(false, "TArray::copy_fast cannot be used with TInlineAllocator");
+            }
+
             AllocatorInstance.Data = other.AllocatorInstance.GetAllocation();
             ArrayNum = other.ArrayNum;
             ArrayMax = other.ArrayMax;
@@ -240,17 +311,7 @@ namespace RC::Unreal
             }
             else
             {
-                //if constexpr (ArraySizeIsImplicit<InElementType>)
-                if constexpr (std::is_same_v<InElementType, struct FAssetData>)
-                {
-                    // FAssetData has a corresponding UScriptStruct that stores the size
-                    return reinterpret_cast<InElementType*>(reinterpret_cast<uintptr_t>(AllocatorInstance.GetAllocation()) + (index * InElementType::get_size_in_container()));
-                }
-                else
-                {
-                    // This is for trivial types, ElementSize is known by the compiler
-                    return std::bit_cast<InElementType*>(&AllocatorInstance.GetAllocation()[index * sizeof(ElementType)]);
-                }
+                return std::bit_cast<InElementType*>(&AllocatorInstance.GetAllocation()[index * GetElementSize()]);
             }
         }
 

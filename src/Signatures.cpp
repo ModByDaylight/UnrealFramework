@@ -267,96 +267,6 @@ namespace RC::Unreal::Signatures
             signature_containers_core.emplace_back(fname_to_string);
         }
 
-        if (config.scan_overrides.fname_constructor)
-        {
-            config.scan_overrides.fname_constructor(signature_containers_core, scan_result);
-        }
-        else
-        {
-            auto resolve_fname_jmp = [&](uint8_t* ptr, int32_t offset, ScanResult& scan_result, bool call_instead_of_jmp = false) -> bool {
-                uint8_t* instr = ptr + offset;
-
-                uint8_t* destination;
-                if (call_instead_of_jmp)
-                {
-                    destination = Helper::ASM::follow_call(instr);
-                }
-                else
-                {
-                    destination = Helper::ASM::follow_jmp(instr);
-                }
-
-                if (!destination) { return false; }
-
-                FName name = FName(L"bCanBeDamaged", destination);
-
-                if (name == L"bCanBeDamaged")
-                {
-                    scan_result.success_messages.emplace_back(std::format(STR("FName::FName address: {} <- Built-in\n"), static_cast<void*>(destination)));
-                    FName::constructor_internal.assign_address(destination);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            };
-
-            enum FNameConstructorSignatureType
-            {
-                Default,
-                Modularized_425,
-            };
-
-            SignatureContainer fname_constructor{
-                    {
-                            {
-                                    "4 1/B 8/0 1/0 0/0 0/0 0/4 8/8 D/1 5/? ?/? ?/? ?/? ?/4 8/8 D/0 D/? ?/? ?/? ?/? ?/E 9",
-                            },
-                            {
-                                    // 4.25 Modularized
-                                    "E 8/? ?/? ?/? ?/? ?/4 8/8 B/4 4/2 4/3 0/4 8/8 9/? ?/? ?/? ?/? ?/? ?/C 7/0 5",
-                                    FNameConstructorSignatureType::Modularized_425,
-                            },
-                    },
-                    // On Match Found
-                    []([[maybe_unused]]const SignatureContainer& self) {
-                        return false;
-                    },
-                    // On Scan Completed
-                    [&](SignatureContainer& self) {
-                        bool success{};
-
-                        for (const auto& result_container : self.get_result_store())
-                        {
-                            const int32_t custom_data = self.get_signatures()[result_container.index_into_signatures].custom_data;
-                            const FNameConstructorSignatureType signature_identifier = static_cast<const FNameConstructorSignatureType>(custom_data);
-
-                            if (signature_identifier == FNameConstructorSignatureType::Default)
-                            {
-                                success = resolve_fname_jmp(result_container.match_address, 0x14, scan_result);
-                            }
-                            else if (signature_identifier == FNameConstructorSignatureType::Modularized_425)
-                            {
-                                success = resolve_fname_jmp(result_container.match_address, 0x0, scan_result, true);
-                            }
-
-                            if (success) { break; }
-                        }
-
-                        if (!success)
-                        {
-                            scan_result.errors.emplace_back("Was unable to find AOB for 'FName::FName'\nYou can supply your own in 'UE4SS_Signatures/FName_Constructor.lua'");
-                        }
-                        else
-                        {
-                            self.get_did_succeed() = true;
-                        }
-                    }, true // true = store results
-            };
-            signature_containers_core.emplace_back(fname_constructor);
-        }
-
         if (config.scan_overrides.process_event)
         {
             config.scan_overrides.process_event(signature_containers_coreuobject, scan_result);
@@ -458,6 +368,97 @@ namespace RC::Unreal::Signatures
         SinglePassScanner::SignatureContainerMap signature_container_map;
         std::vector<SignatureContainer> signature_containers_coreuobject;
         std::vector<SignatureContainer> signature_containers_core;
+
+        // FName:FName has to be in the second pass because we need access to FName::ToString which is found in the first pass
+        if (config.scan_overrides.fname_constructor)
+        {
+            config.scan_overrides.fname_constructor(signature_containers_core, scan_result);
+        }
+        else
+        {
+            auto resolve_fname_jmp = [&](uint8_t* ptr, int32_t offset, ScanResult& scan_result, bool call_instead_of_jmp = false) -> bool {
+                uint8_t* instr = ptr + offset;
+
+                uint8_t* destination;
+                if (call_instead_of_jmp)
+                {
+                    destination = Helper::ASM::follow_call(instr);
+                }
+                else
+                {
+                    destination = Helper::ASM::follow_jmp(instr);
+                }
+
+                if (!destination) { return false; }
+
+                FName name = FName(L"bCanBeDamaged", destination);
+
+                if (name == L"bCanBeDamaged")
+                {
+                    scan_result.success_messages.emplace_back(std::format(STR("FName::FName address: {} <- Built-in\n"), static_cast<void*>(destination)));
+                    FName::constructor_internal.assign_address(destination);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            };
+
+            enum FNameConstructorSignatureType
+            {
+                Default,
+                Modularized_425,
+            };
+
+            SignatureContainer fname_constructor{
+                    {
+                            {
+                                    "4 1/B 8/0 1/0 0/0 0/0 0/4 8/8 D/1 5/? ?/? ?/? ?/? ?/4 8/8 D/0 D/? ?/? ?/? ?/? ?/E 9",
+                            },
+                            {
+                                    // 4.25 Modularized
+                                    "E 8/? ?/? ?/? ?/? ?/4 8/8 B/4 4/2 4/3 0/4 8/8 9/? ?/? ?/? ?/? ?/? ?/C 7/0 5",
+                                    FNameConstructorSignatureType::Modularized_425,
+                            },
+                    },
+                    // On Match Found
+                    []([[maybe_unused]]const SignatureContainer& self) {
+                        return false;
+                    },
+                    // On Scan Completed
+                    [&](SignatureContainer& self) {
+                        bool success{};
+
+                        for (const auto& result_container : self.get_result_store())
+                        {
+                            const int32_t custom_data = self.get_signatures()[result_container.index_into_signatures].custom_data;
+                            const FNameConstructorSignatureType signature_identifier = static_cast<const FNameConstructorSignatureType>(custom_data);
+
+                            if (signature_identifier == FNameConstructorSignatureType::Default)
+                            {
+                                success = resolve_fname_jmp(result_container.match_address, 0x14, scan_result);
+                            }
+                            else if (signature_identifier == FNameConstructorSignatureType::Modularized_425)
+                            {
+                                success = resolve_fname_jmp(result_container.match_address, 0x0, scan_result, true);
+                            }
+
+                            if (success) { break; }
+                        }
+
+                        if (!success)
+                        {
+                            scan_result.errors.emplace_back("Was unable to find AOB for 'FName::FName'\nYou can supply your own in 'UE4SS_Signatures/FName_Constructor.lua'");
+                        }
+                        else
+                        {
+                            self.get_did_succeed() = true;
+                        }
+                    }, true // true = store results
+            };
+            signature_containers_core.emplace_back(fname_constructor);
+        }
 
         // FMemory stuff needs to be scanned in the second pass
         // This is because we need access to the engine version which we don't until after the first pass

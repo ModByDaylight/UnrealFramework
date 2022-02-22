@@ -1,4 +1,4 @@
-struct RC_UE_API VTableOffsets
+struct VTableOffsets
 {
     static uint32_t PostLoad;
     static uint32_t Serialize;

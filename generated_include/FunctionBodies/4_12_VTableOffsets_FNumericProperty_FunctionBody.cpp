@@ -10,5 +10,5 @@ FNumericProperty::VTableOffsets::SetFloatingPointPropertyValue = 0x2E8;
 FNumericProperty::VTableOffsets::GetSignedIntPropertyValue = 0x2F8;
 FNumericProperty::VTableOffsets::GetUnsignedIntPropertyValue = 0x300;
 FNumericProperty::VTableOffsets::GetNumericPropertyValueToString = 0x310;
-FNumericProperty::VTableOffsets::FNumericProperty_Destructor = 0x0;
+FNumericProperty::VTableOffsets::UNumericProperty_Destructor = 0x0;
 FNumericProperty::VTableOffsets::__vecDelDtor = 0x0;

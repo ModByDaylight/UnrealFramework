@@ -2,7 +2,11 @@
 
 #include <Unreal/UObject.hpp>
 #include <Unreal/UScriptStruct.hpp>
+#include <Unreal/FMemory.hpp>
+#include <Unreal/Property/FMulticastDelegateProperty.hpp>
 #include <Unreal/Property/FNumericProperty.hpp>
+#include <Unreal/Property/FObjectProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
@@ -20,7 +24,8 @@ namespace RC::Unreal
     uint32_t FNumericProperty::VTableOffsets::GetSignedIntPropertyValue = 0;
     uint32_t FNumericProperty::VTableOffsets::GetUnsignedIntPropertyValue = 0;
     uint32_t FNumericProperty::VTableOffsets::GetNumericPropertyValueToString = 0;
+    uint32_t FNumericProperty::VTableOffsets::UNumericProperty_Destructor = 0;
+    uint32_t FNumericProperty::VTableOffsets::__vecDelDtor = 0;
     uint32_t FNumericProperty::VTableOffsets::CanHoldSignedValueInternal = 0;
     uint32_t FNumericProperty::VTableOffsets::FNumericProperty_Destructor = 0;
-    uint32_t FNumericProperty::VTableOffsets::__vecDelDtor = 0;
 }

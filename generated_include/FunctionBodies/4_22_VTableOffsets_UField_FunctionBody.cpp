@@ -4,5 +4,5 @@
 //UField::VTableOffsets::NeedsLoadForClient = 0x0;
 //UField::VTableOffsets::Bind = 0x240;
 //UField::VTableOffsets::NeedsLoadForServer = 0x0;
-//UField::VTableOffsets::FField_Destructor = 0x0;
+//UField::VTableOffsets::UField_Destructor = 0x0;
 //UField::VTableOffsets::__vecDelDtor = 0x0;

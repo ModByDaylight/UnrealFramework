@@ -13,5 +13,5 @@ FNumericProperty::VTableOffsets::GetSignedIntPropertyValue = 0x360;
 FNumericProperty::VTableOffsets::GetUnsignedIntPropertyValue = 0x368;
 FNumericProperty::VTableOffsets::GetNumericPropertyValueToString = 0x378;
 FNumericProperty::VTableOffsets::CanHoldSignedValueInternal = 0x388;
-FNumericProperty::VTableOffsets::FNumericProperty_Destructor = 0x0;
+FNumericProperty::VTableOffsets::UNumericProperty_Destructor = 0x0;
 FNumericProperty::VTableOffsets::__vecDelDtor = 0x0;

@@ -1,4 +1,4 @@
-struct RC_UE_API VTableOffsets
+struct VTableOffsets
 {
     static uint32_t ImportText_Internal;
     static uint32_t IsInteger;
@@ -14,7 +14,8 @@ struct RC_UE_API VTableOffsets
     static uint32_t GetSignedIntPropertyValue;
     static uint32_t GetUnsignedIntPropertyValue;
     static uint32_t GetNumericPropertyValueToString;
+    static uint32_t UNumericProperty_Destructor;
+    static uint32_t __vecDelDtor;
     static uint32_t CanHoldSignedValueInternal;
     static uint32_t FNumericProperty_Destructor;
-    static uint32_t __vecDelDtor;
 };

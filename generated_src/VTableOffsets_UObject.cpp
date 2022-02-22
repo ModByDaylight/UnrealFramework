@@ -2,6 +2,11 @@
 
 #include <Unreal/UObject.hpp>
 #include <Unreal/UScriptStruct.hpp>
+#include <Unreal/FMemory.hpp>
+#include <Unreal/Property/FMulticastDelegateProperty.hpp>
+#include <Unreal/Property/FNumericProperty.hpp>
+#include <Unreal/Property/FObjectProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
@@ -71,8 +76,8 @@ namespace RC::Unreal
     uint32_t UObject::VTableOffsets::NeedsLoadForTargetPlatform = 0;
     uint32_t UObject::VTableOffsets::OverridePerObjectConfigSection = 0;
     uint32_t UObject::VTableOffsets::IsReadyForAsyncPostLoad = 0;
-    uint32_t UObject::VTableOffsets::PreDuplicate = 0;
     uint32_t UObject::VTableOffsets::IsDestructionThreadSafe = 0;
+    uint32_t UObject::VTableOffsets::PreDuplicate = 0;
     uint32_t UObject::VTableOffsets::GetSparseClassDataStruct = 0;
     uint32_t UObject::VTableOffsets::ValidateGeneratedRepEnums = 0;
     uint32_t UObject::VTableOffsets::SetNetPushIdDynamic = 0;

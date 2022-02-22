@@ -1,5 +1,5 @@
 FProperty::VTableOffsets::GetCPPTypeForwardDeclaration = 0x208;
-FProperty::VTableOffsets::FProperty_Destructor = 0x0;
+FProperty::VTableOffsets::UProperty_Destructor = 0x0;
 FProperty::VTableOffsets::DestroyValueInternal = 0x278;
 FProperty::VTableOffsets::Serialize = 0x0;
 FProperty::VTableOffsets::LinkInternal = 0x210;
@@ -24,6 +24,6 @@ FProperty::VTableOffsets::ClearValueInternal = 0x270;
 FProperty::VTableOffsets::InitializeValueInternal = 0x280;
 FProperty::VTableOffsets::GetID = 0x288;
 FProperty::VTableOffsets::GetMinAlignment = 0x298;
-//FProperty::VTableOffsets::ContainsWeakObjectReference = 0x2A8;
+FProperty::VTableOffsets::ContainsWeakObjectReference = 0x2A8;
 FProperty::VTableOffsets::EmitReferenceInfo = 0x2B0;
 FProperty::VTableOffsets::SameType = 0x2B8;

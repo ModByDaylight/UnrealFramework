@@ -1,4 +1,4 @@
-struct RC_UE_API VTableOffsets
+struct VTableOffsets
 {
     static uint32_t AddReferencedObjects;
     static uint32_t FField_Destructor;

@@ -1,4 +1,4 @@
-struct RC_UE_API VTableOffsets
+struct VTableOffsets
 {
     static uint32_t PostSaveRoot;
     static uint32_t GetDetailedInfoInternal;
@@ -66,8 +66,8 @@ struct RC_UE_API VTableOffsets
     static uint32_t NeedsLoadForTargetPlatform;
     static uint32_t OverridePerObjectConfigSection;
     static uint32_t IsReadyForAsyncPostLoad;
-    static uint32_t PreDuplicate;
     static uint32_t IsDestructionThreadSafe;
+    static uint32_t PreDuplicate;
     static uint32_t GetSparseClassDataStruct;
     static uint32_t ValidateGeneratedRepEnums;
     static uint32_t SetNetPushIdDynamic;

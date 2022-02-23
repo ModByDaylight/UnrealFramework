@@ -1,0 +1,12 @@
+FField::VTableOffsets::AddReferencedObjects = 0x28;
+FField::VTableOffsets::FField_Destructor = 0x0;
+FField::VTableOffsets::GetPreloadDependencies = 0x18;
+FField::VTableOffsets::GetInnerFieldByName = 0x48;
+FField::VTableOffsets::Serialize = 0x8;
+FField::VTableOffsets::PostLoad = 0x10;
+FField::VTableOffsets::AddCppProperty = 0x30;
+FField::VTableOffsets::BeginDestroy = 0x20;
+FField::VTableOffsets::Bind = 0x38;
+FField::VTableOffsets::PostDuplicate = 0x40;
+FField::VTableOffsets::GetInnerFields = 0x50;
+FField::VTableOffsets::__vecDelDtor = 0x0;

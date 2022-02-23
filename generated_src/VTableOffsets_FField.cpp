@@ -20,6 +20,6 @@ namespace RC::Unreal
     uint32_t FField::VTableOffsets::BeginDestroy = 0;
     uint32_t FField::VTableOffsets::Bind = 0;
     uint32_t FField::VTableOffsets::PostDuplicate = 0;
-    uint32_t FField::VTableOffsets::GetInnerFields = 0;
     uint32_t FField::VTableOffsets::__vecDelDtor = 0;
+    uint32_t FField::VTableOffsets::GetInnerFields = 0;
 }

@@ -67,14 +67,14 @@ struct VTableOffsets
     static uint32_t OverridePerObjectConfigSection;
     static uint32_t IsReadyForAsyncPostLoad;
     static uint32_t IsDestructionThreadSafe;
-    static uint32_t PreDuplicate;
     static uint32_t GetSparseClassDataStruct;
     static uint32_t ValidateGeneratedRepEnums;
     static uint32_t SetNetPushIdDynamic;
     static uint32_t GetNetPushIdDynamic;
+    static uint32_t PreDuplicate;
+    static uint32_t HasNonEditorOnlyReferences;
     static uint32_t PostReinitProperties;
     static uint32_t ResolveSubobject;
-    static uint32_t HasNonEditorOnlyReferences;
     static uint32_t GetExternalActorExtendedAssetRegistryTags;
     static uint32_t OverrideConfigSection;
 };

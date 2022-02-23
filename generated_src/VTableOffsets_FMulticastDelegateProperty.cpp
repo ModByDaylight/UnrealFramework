@@ -33,7 +33,7 @@ namespace RC::Unreal
     uint32_t FMulticastDelegateProperty::VTableOffsets::RemoveDelegate = 0;
     uint32_t FMulticastDelegateProperty::VTableOffsets::ClearDelegate = 0;
     uint32_t FMulticastDelegateProperty::VTableOffsets::GetInvocationList = 0;
+    uint32_t FMulticastDelegateProperty::VTableOffsets::PostDuplicate = 0;
     uint32_t FMulticastDelegateProperty::VTableOffsets::EmitReferenceInfo = 0;
     uint32_t FMulticastDelegateProperty::VTableOffsets::AddReferencedObjects = 0;
-    uint32_t FMulticastDelegateProperty::VTableOffsets::PostDuplicate = 0;
 }

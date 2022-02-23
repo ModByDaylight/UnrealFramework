@@ -23,7 +23,7 @@ struct VTableOffsets
     static uint32_t RemoveDelegate;
     static uint32_t ClearDelegate;
     static uint32_t GetInvocationList;
+    static uint32_t PostDuplicate;
     static uint32_t EmitReferenceInfo;
     static uint32_t AddReferencedObjects;
-    static uint32_t PostDuplicate;
 };

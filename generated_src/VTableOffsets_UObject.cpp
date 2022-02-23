@@ -77,14 +77,14 @@ namespace RC::Unreal
     uint32_t UObject::VTableOffsets::OverridePerObjectConfigSection = 0;
     uint32_t UObject::VTableOffsets::IsReadyForAsyncPostLoad = 0;
     uint32_t UObject::VTableOffsets::IsDestructionThreadSafe = 0;
-    uint32_t UObject::VTableOffsets::PreDuplicate = 0;
     uint32_t UObject::VTableOffsets::GetSparseClassDataStruct = 0;
     uint32_t UObject::VTableOffsets::ValidateGeneratedRepEnums = 0;
     uint32_t UObject::VTableOffsets::SetNetPushIdDynamic = 0;
     uint32_t UObject::VTableOffsets::GetNetPushIdDynamic = 0;
+    uint32_t UObject::VTableOffsets::PreDuplicate = 0;
+    uint32_t UObject::VTableOffsets::HasNonEditorOnlyReferences = 0;
     uint32_t UObject::VTableOffsets::PostReinitProperties = 0;
     uint32_t UObject::VTableOffsets::ResolveSubobject = 0;
-    uint32_t UObject::VTableOffsets::HasNonEditorOnlyReferences = 0;
     uint32_t UObject::VTableOffsets::GetExternalActorExtendedAssetRegistryTags = 0;
     uint32_t UObject::VTableOffsets::OverrideConfigSection = 0;
 }

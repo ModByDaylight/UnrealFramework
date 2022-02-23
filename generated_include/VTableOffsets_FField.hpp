@@ -10,6 +10,6 @@ struct VTableOffsets
     static uint32_t BeginDestroy;
     static uint32_t Bind;
     static uint32_t PostDuplicate;
-    static uint32_t GetInnerFields;
     static uint32_t __vecDelDtor;
+    static uint32_t GetInnerFields;
 };

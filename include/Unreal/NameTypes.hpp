@@ -18,6 +18,7 @@ namespace RC::Unreal
     //       It shouldn't be required to use 'alignas' here to make sure it's aligned properly in containers (like TArray)
     //       I've never seen an FName not be 8-byte aligned in memory,
     //       but it is 4-byte aligned in the source so hopefully this doesn't cause any problems
+#pragma warning(disable: 4324) // Suppressing warning about struct alignment
     struct alignas(8) RC_UE_API FName
     {
     public:
@@ -149,6 +150,7 @@ namespace RC::Unreal
 #endif
         [[nodiscard]] auto get_number() const -> uint32_t { return number; }
     };
+#pragma warning(default: 4324)
 }
 
 namespace std

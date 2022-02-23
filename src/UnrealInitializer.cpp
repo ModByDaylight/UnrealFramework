@@ -338,6 +338,11 @@ namespace RC::Unreal::UnrealInitializer
                     {
                         Output::send(success_message);
                     }
+
+                    for (const auto& info_message : scan_result.info_messages)
+                    {
+                        Output::send(STR("Info: {}"), info_message);
+                    }
                 }
             };
 

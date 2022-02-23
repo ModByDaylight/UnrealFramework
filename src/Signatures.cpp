@@ -30,8 +30,12 @@ namespace RC::Unreal::Signatures
         SinglePassScanner::SignatureContainerMap signature_container_map;
         std::vector<SignatureContainer> signature_containers_coreuobject;
         std::vector<SignatureContainer> signature_containers_core;
+        std::vector<SignatureContainer> signature_containers_engine;
         std::vector<SignatureContainer> signature_containers_umg;
         std::vector<SignatureContainer> signature_containers_mainexe;
+
+        uint8_t* FNameToStringAddress{};
+        uint8_t FNameToStringNumMatches{};
 
         /*
         if (config.scan_overrides.static_find_object)
@@ -195,76 +199,63 @@ namespace RC::Unreal::Signatures
 
         if (config.scan_overrides.fname_to_string)
         {
+            // If we have an override look in the 'Core' module because that's where FName::ToString is
             config.scan_overrides.fname_to_string(signature_containers_core, scan_result);
         }
         else
         {
-            enum FNameToStringSignatureType
-            {
-                Default,
-                GoForwardsFollowCall,
-            };
+            // If we don't have an override, look in whatever module has a reference to FName::ToString
             SignatureContainer fname_to_string{
                     {
                             {
-                                    "4 8/8 9/5 C/2 4/0 8/5 5/5 6/5 7/4 8/8 3/E C/4 0/4 8/8 B/D A/4 8/8 B/E 9/E 8/? ?/? ?/? ?/? ?/4 8/8 B/F 0/4 8/8 5/C 0/7 5/6 1/4 8/8 D",
+                                    // 4.12 - 5.0 EA
+                                    "E 8/? ?/? ?/? ?/? ?/4 8/8 B/4 C/2 4/? ?/8 B/F D/4 8/8 5/C 9",
                             },
                             {
-                                    "4 8/8 9/5 C/2 4/0 8/4 8/8 9/7 4/2 4/1 0/4 8/8 9/7 C/2 4/1 8/4 1/5 6/4 8/8 3/E C/2 0/4 8/8 9/D 3/4 9/8 9/C E/E 8/? ?/? ?/? ?/? ?/4 9/8 9",
-                            },
-                            {
-                                    "4 8/8 9/5 C/2 4/1 0/4 8/8 9/6 C/2 4/1 8/4 8/8 9/7 4/2 4/2 0/5 7/4 8/8 3/E C/2 0/8 B/0 1/4 8/8 B/D A/8 B/F 8/4 4/0 F/B 7/C 0/C 1/E F/1 0/4 8/8 B/F 1/8 0/3 D/? ?/? ?/? ?/? ?/? ?/8 9/7 C/2 4/3 0",
-                            },
-                            {
-                                    // 4.22 - compiled from editor
-                                    "C 3/3 3/C 0/4 8/8 D/5 4/2 4/2 0/4 8/8 B/C F/4 8/8 9/4 4/2 4/2 0/4 8/8 9/4 4/2 4/2 8/E 8",
-                                    FNameToStringSignatureType::GoForwardsFollowCall,
-                            },
-                            {
-                                    "4 8/8 9/5 C/2 4/0 8/4 8/8 9/7 4/2 4/1 0/4 8/8 9/7 C/2 4/1 8/4 1/5 6/4 8/8 3/E C/2 0/4 8/8 B/D A/4 C/8 B/F 1/E 8/? ?/? ?/? ?/? ?/4 C/8 B/C 8/4 1",
-                            },
-                            {
-                                    "4 8/8 9/5 C/2 4/1 0/4 8/8 9/6 C/2 4/1 8/4 8/8 9/7 4/2 4/2 0/5 7/4 8/8 3/E C/2 0/8 B/0 1/4 8/8 B/D A/8 B/F 8/4 4/0 F/B 7/C 0/C 1/E F/1 0/4 8/8 B/F 1/8 0/3 D/? ?/? ?/? ?/? ?/? ?/8 9/7 C",
-                            },
-                            {
-                                    "4 8/8 9/5 C/2 4/0 8/5 7/4 8/8 3/E C/2 0/4 8/8 B/D A/4 8/8 B/F 9/E 8/? ?/? ?/? ?/? ?/4 C/8 B/C 8/8 B/0 7",
-                            },
-                            {
-                                    // 4.25 - compiled from source, WITH_CASE_PRESERVING_NAME = 1
-                                    "4 8/8 9/5 C/2 4/1 0/4 8/8 9/6 C/2 4/1 8/4 8/8 9/7 4/2 4/2 0/5 7/4 8/8 3/E C/2 0/8 B/4 1/0 4/4 8/8 B/D A/8 B/F 8"
-                            },
-                            {
-                                    // 4.25 Modularized
-                                    "4 8/8 9/5 C/2 4/1 0/5 5/5 6/5 7/4 8/8 3/E C/4 0/8 B/0 1/4 8/8 B/D A/8 B/F 8/4 4/0 F/B 7/C 0/C 1/E F/1 0/4 8/8 B/F 1",
+                                    // 4.12 - 5.0 EA, Modular games (i.e. Satisfactory)
+                                    "F F/1 5/? ?/? ?/? ?/? ?/8 0/3 D/? ?/? ?/? ?/? ?/? ?/7 2/3 A/4 4/3 9/7 4/2 4/4 8",
                             },
                     },
                     // On Match Found
                     [&](SignatureContainer& self) {
-                        const FNameToStringSignatureType signature_identifier = static_cast<FNameToStringSignatureType>(self.get_signatures()[self.get_index_into_signatures()].custom_data);
-                        if (signature_identifier == FNameToStringSignatureType::GoForwardsFollowCall)
-                        {
-                            uint8_t* a = Helper::ASM::follow_call(self.get_match_address() + self.get_match_signature_size() - 1);
-                            FName::to_string_internal.assign_address(a);
-                        }
-                        else
-                        {
-
-                            FName::to_string_internal.assign_address(self.get_match_address());
-                        }
-
-                        scan_result.success_messages.emplace_back(std::format(STR("FName::ToString address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
+                        printf_s("Found FName::ToString in Engine\n");
+                        FNameToStringAddress = Helper::ASM::follow_call(self.get_match_address());
+                        ++FNameToStringNumMatches;
                         self.get_did_succeed() = true;
                         return true;
                     },
                     // On Scan Completed
                     [&](const SignatureContainer& self) {
-                        if (!self.get_did_succeed())
-                        {
-                            scan_result.errors.emplace_back("Was unable to find AOB for 'FName::ToString'\nYou can supply your own in 'UE4SS_Signatures/FName_ToString.lua'");
-                        }
+                        printf_s("Done looking for FName::ToString in Engine\n");
                     }
             };
-            signature_containers_core.emplace_back(fname_to_string);
+            signature_containers_engine.emplace_back(fname_to_string);
+
+            SignatureContainer fname_to_string_backup{
+                    {
+                            {
+                                    // 4.25+ Backup (sometimes the first one fails)
+                                    "E 8/? ?/? ?/? ?/? ?/B D/0 1/0 0/0 0/0 0/4 1/3 9/6 E/? ?/0 F/8 E",
+                            },
+                            {
+                                    // 4.25+ Backup, Modular games (i.e. Satisfactory) (sometimes the first one fails)
+                                    "F F/1 5/? ?/? ?/? ?/? ?/4 1/B E/0 1/0 0/0 0/0 0/4 5/3 9/7 5/4 8",
+                            },
+                    },
+                    // On Match Found
+                    [&](SignatureContainer& self) {
+                        printf_s("Found FName::ToString in CoreUObject\n");
+                        FNameToStringAddress = Helper::ASM::follow_call(self.get_match_address());
+                        self.get_did_succeed() = true;
+                        ++FNameToStringNumMatches;
+                        return true;
+                    },
+                    // On Scan Completed
+                    [&](const SignatureContainer& self) {
+                        printf_s("Done looking for FName::ToString in CoreUObject\n");
+                    }
+            };
+            signature_containers_coreuobject.emplace_back(fname_to_string_backup);
         }
 
         if (config.scan_overrides.static_construct_object)
@@ -316,10 +307,28 @@ namespace RC::Unreal::Signatures
 
         signature_container_map.emplace(ScanTarget::CoreUObject, signature_containers_coreuobject);
         signature_container_map.emplace(ScanTarget::Core, signature_containers_core);
+        signature_container_map.emplace(ScanTarget::Engine, signature_containers_engine);
         signature_container_map.emplace(ScanTarget::UMG, signature_containers_umg);
         signature_container_map.emplace(ScanTarget::MainExe, signature_containers_mainexe);
 
         SinglePassScanner::start_scan(signature_container_map);
+
+        // Special error handler for FName::ToString
+        // Needed because it checks in more than one module and the scanner isn't setup for that
+        if (FNameToStringNumMatches > 1)
+        {
+            scan_result.info_messages.emplace(STR("Found FName::ToString in both Engine & CoreUObject modules, using the first match\n"));
+        }
+
+        if (FNameToStringNumMatches >= 1 && FNameToStringAddress)
+        {
+            FName::to_string_internal.assign_address(FNameToStringAddress);
+            scan_result.success_messages.emplace_back(std::format(STR("FName::ToString address: {} <- Built-in\n"), static_cast<void*>(FNameToStringAddress)));
+        }
+        else
+        {
+            scan_result.errors.emplace_back("Was unable to find AOB for 'FName::ToString'\nYou can supply your own in 'UE4SS_Signatures/FName_ToString.lua'");
+        }
 
         if (scan_result.errors.empty())
         {

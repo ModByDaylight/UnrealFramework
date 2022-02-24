@@ -1,6 +1,7 @@
 #include <Unreal/UField.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
+#include <Unreal/VersionedContainer/Container.hpp>
 
 namespace RC::Unreal
 {
@@ -20,5 +21,15 @@ namespace RC::Unreal
             throw std::runtime_error("Cannot convert UField to FField in UE versions above 4.25");
         }
         return std::bit_cast<FField*>(this);
+    }
+
+    void UField::AddCppProperty(FProperty* Property)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UField, AddCppProperty, void, PARAMS(FProperty*), ARGS(Property))
+    }
+
+    void UField::Bind()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UField, Bind, void)
     }
 }

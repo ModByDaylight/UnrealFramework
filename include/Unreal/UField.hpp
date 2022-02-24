@@ -11,6 +11,9 @@ namespace RC::Unreal
 
         friend class FField;
 
+    public:
+#include <VTableOffsets_UField.hpp>
+
     protected:
         friend class UStruct;
 
@@ -28,6 +31,11 @@ namespace RC::Unreal
          * This function will throw the exception if the UE version is above 4.25
          */
         auto as_ffield_unsafe() -> class FField*;
+
+        // Virtual Functions
+    public:
+        void AddCppProperty(FProperty* Property);
+        void Bind();
     };
 }
 

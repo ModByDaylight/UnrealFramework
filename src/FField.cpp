@@ -195,6 +195,16 @@ namespace RC::Unreal
         return std::bit_cast<UField*>(this);
     }
 
+
+    auto FField::AsUFieldUnsafe() const -> const UField*
+    {
+        if (!Version::is_below(4, 25))
+        {
+            throw std::runtime_error("FField does not inherit from UObject in UE4.25+");
+        }
+        return std::bit_cast<const UField*>(this);
+    }
+
     auto FField::GetFFieldClassUnsafe() -> FFieldClass*
     {
         if (Version::is_below(4, 25))
@@ -224,12 +234,30 @@ namespace RC::Unreal
 
     auto FField::Serialize(FArchive& Ar) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, Serialize, void, PARAMS(FArchive&), ARGS(Ar))
+        if (Version::is_atleast(4, 25))
+        {
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, Serialize, void, PARAMS(FArchive & ), ARGS(Ar))
+        }
+        else
+        {
+            // In <4.25, all FField instances in UE4SS is actually UField
+            // Since UProperty inherits from UField, we must redirect virtual calls to UField and UObject
+            AsUFieldUnsafe()->Serialize(Ar);
+        }
     }
 
     auto FField::PostLoad() -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, PostLoad, void)
+        if (Version::is_atleast(4, 25))
+        {
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, PostLoad, void)
+        }
+        else
+        {
+            // In <4.25, all FField instances in UE4SS is actually UField
+            // Since UProperty inherits from UField, we must redirect virtual calls to UField and UObject
+            AsUFieldUnsafe()->PostLoad();
+        }
     }
 
     auto FField::GetPreloadDependencies(TArray<UObject*>& OutDeps) -> void
@@ -250,12 +278,30 @@ namespace RC::Unreal
 
     auto FField::AddCppProperty(FProperty* Property) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddCppProperty, void, PARAMS(FProperty*), ARGS(Property))
+        if (Version::is_atleast(4, 25))
+        {
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddCppProperty, void, PARAMS(FProperty*), ARGS(Property))
+        }
+        else
+        {
+            // In <4.25, all FField instances in UE4SS is actually UField
+            // Since UProperty inherits from UField, we must redirect virtual calls to UField and UObject
+            AsUFieldUnsafe()->AddCppProperty(Property);
+        }
     }
 
     auto FField::Bind() -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, Bind, void)
+        if (Version::is_atleast(4, 25))
+        {
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, Bind, void)
+        }
+        else
+        {
+            // In <4.25, all FField instances in UE4SS is actually UField
+            // Since UProperty inherits from UField, we must redirect virtual calls to UField and UObject
+            AsUFieldUnsafe()->Bind();
+        }
     }
 
     auto FField::PostDuplicate(const FField& InField) -> void
@@ -272,6 +318,30 @@ namespace RC::Unreal
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetInnerFields, void, PARAMS(TArray<FField*>&), ARGS(OutFields))
     }
+
+    bool FField::NeedsLoadForClient() const
+    {
+        if (Version::is_atleast(4, 25))
+        {
+            throw std::runtime_error{"FField::NeedsLoadForClient is only allowed to be called in <4.25"};
+        }
+        else
+        {
+            return AsUFieldUnsafe()->NeedsLoadForClient();
+        }
+    };
+
+    bool FField::NeedsLoadForServer() const
+    {
+        if (Version::is_atleast(4, 25))
+        {
+            throw std::runtime_error{"FField::NeedsLoadForServer is only allowed to be called in <4.25"};
+        }
+        else
+        {
+            return AsUFieldUnsafe()->NeedsLoadForServer();
+        }
+    };
 
     auto FField::GetNextFFieldUnsafe() -> FField*
     {

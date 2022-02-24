@@ -125,6 +125,7 @@ namespace RC::Unreal
          * is called on newer UE versions it will throw exception
          */
         auto AsUFieldUnsafe() -> class UField*;
+        auto AsUFieldUnsafe() const -> const class UField*;
 
         /**
          * Retrieves the underlying FFieldClass of this field if possible
@@ -159,6 +160,11 @@ namespace RC::Unreal
         auto PostDuplicate(const FField& InField) -> void;
         auto GetInnerFieldByName(const FName& InName) -> FField*;
         auto GetInnerFields(TArray<FField*>& OutFields) -> void;
+
+        // Compatibility with <4.25
+        // Throws in 4.25+
+        bool NeedsLoadForClient() const;
+        bool NeedsLoadForServer() const;
     };
 
     /**

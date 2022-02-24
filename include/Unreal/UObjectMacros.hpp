@@ -3,7 +3,7 @@
 
 #include <Unreal/PrimitiveTypes.hpp>
 
-//#pragma clang diagnostic ignored "-Wstring-plus-int"
+#pragma clang diagnostic ignored "-Wstring-plus-int"
 
 namespace RC::Unreal {
     class UClass;

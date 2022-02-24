@@ -3,7 +3,9 @@
 
 #include <Unreal/PrimitiveTypes.hpp>
 
+#pragma warning(disable: 4068)
 #pragma clang diagnostic ignored "-Wstring-plus-int"
+#pragma warning(default: 4068)
 
 namespace RC::Unreal {
     class UClass;

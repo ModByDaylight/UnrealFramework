@@ -163,6 +163,7 @@ namespace RC::Unreal
 
         // Compatibility with <4.25
         // Throws in 4.25+
+        void PostDuplicate(bool bDuplicateForPIE);
         bool NeedsLoadForClient() const;
         bool NeedsLoadForServer() const;
     };

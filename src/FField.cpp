@@ -4,6 +4,20 @@
 #include <Unreal/FProperty.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
 
+#define IMPLEMENT_FFIELD_VIRTUAL_WRAPPER(class_name, function_name, return_type, params, args) \
+if (Version::is_below(4, 25)) \
+{ \
+    throw std::runtime_error{"FField virtual called in <4.25 and it has no equivalent virtual in <4.25"}; \
+} \
+IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(class_name, function_name, return_type, params, args)
+
+#define IMPLEMENT_FFIELD_VIRTUAL_WRAPPER_NO_PARAMS(class_name, function_name, return_type) \
+if (Version::is_below(4, 25)) \
+{ \
+    throw std::runtime_error{"FField virtual called in <4.25 and it has no equivalent virtual in <4.25"}; \
+} \
+IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(class_name, function_name, return_type)
+
 namespace RC::Unreal
 {
     IMPLEMENT_FIELD_CLASS(FField);
@@ -262,18 +276,32 @@ namespace RC::Unreal
 
     auto FField::GetPreloadDependencies(TArray<UObject*>& OutDeps) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetPreloadDependencies, void, PARAMS(TArray<UObject*>&), ARGS(OutDeps))
+        if (Version::is_atleast(4, 25))
+        {
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetPreloadDependencies, void, PARAMS(TArray<UObject*> & ), ARGS(OutDeps))
+        }
+        else
+        {
+            AsUFieldUnsafe()->GetPreloadDependencies(OutDeps);
+        }
     }
 
     auto FField::BeginDestroy() -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, BeginDestroy, void)
+        if (Version::is_atleast(4, 25))
+        {
+            IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, BeginDestroy, void)
+        }
+        else
+        {
+            AsUFieldUnsafe()->BeginDestroy();
+        }
     }
 
     using FReferenceCollector = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
     auto FField::AddReferencedObjects(FReferenceCollector& Collector) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddReferencedObjects, void, PARAMS(FReferenceCollector&), ARGS(Collector))
+        IMPLEMENT_FFIELD_VIRTUAL_WRAPPER(FField, AddReferencedObjects, void, PARAMS(FReferenceCollector&), ARGS(Collector))
     }
 
     auto FField::AddCppProperty(FProperty* Property) -> void
@@ -306,17 +334,29 @@ namespace RC::Unreal
 
     auto FField::PostDuplicate(const FField& InField) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, PostDuplicate, void, PARAMS(const FField&), ARGS(InField))
+        IMPLEMENT_FFIELD_VIRTUAL_WRAPPER(FField, PostDuplicate, void, PARAMS(const FField&), ARGS(InField))
     }
 
     auto FField::GetInnerFieldByName(const FName& InName) -> FField*
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetInnerFieldByName, FField*, PARAMS(const FName&), ARGS(InName))
+        IMPLEMENT_FFIELD_VIRTUAL_WRAPPER(FField, GetInnerFieldByName, FField*, PARAMS(const FName&), ARGS(InName))
     }
 
     auto FField::GetInnerFields(TArray<FField*>& OutFields) -> void
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetInnerFields, void, PARAMS(TArray<FField*>&), ARGS(OutFields))
+        IMPLEMENT_FFIELD_VIRTUAL_WRAPPER(FField, GetInnerFields, void, PARAMS(TArray<FField*>&), ARGS(OutFields))
+    }
+
+    void FField::PostDuplicate(bool bDuplicateForPIE)
+    {
+        if (Version::is_atleast(4, 25))
+        {
+            throw std::runtime_error{"FField::PostDuplicate overload with bool param is only allowed to be called in <4.25"};
+        }
+        else
+        {
+            AsUFieldUnsafe()->PostDuplicate(bDuplicateForPIE);
+        }
     }
 
     bool FField::NeedsLoadForClient() const

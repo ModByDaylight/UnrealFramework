@@ -1,0 +1,17 @@
+FNumericProperty::VTableOffsets::ImportText_Internal = 0x0;
+FNumericProperty::VTableOffsets::IsInteger = 0x318;
+FNumericProperty::VTableOffsets::ExportTextItem = 0x0;
+FNumericProperty::VTableOffsets::CanHoldUnsignedValueInternal = 0x378;
+FNumericProperty::VTableOffsets::GetFloatingPointPropertyValue = 0x358;
+FNumericProperty::VTableOffsets::SetNumericPropertyValueFromString = 0x340;
+FNumericProperty::VTableOffsets::IsFloatingPoint = 0x310;
+FNumericProperty::VTableOffsets::GetIntPropertyEnum = 0x320;
+FNumericProperty::VTableOffsets::SetIntPropertyValue = 0x330;
+FNumericProperty::VTableOffsets::CanHoldDoubleValueInternal = 0x368;
+FNumericProperty::VTableOffsets::SetFloatingPointPropertyValue = 0x338;
+FNumericProperty::VTableOffsets::GetSignedIntPropertyValue = 0x348;
+FNumericProperty::VTableOffsets::GetUnsignedIntPropertyValue = 0x350;
+FNumericProperty::VTableOffsets::GetNumericPropertyValueToString = 0x360;
+FNumericProperty::VTableOffsets::CanHoldSignedValueInternal = 0x370;
+FNumericProperty::VTableOffsets::UNumericProperty_Destructor = 0x0;
+FNumericProperty::VTableOffsets::__vecDelDtor = 0x0;

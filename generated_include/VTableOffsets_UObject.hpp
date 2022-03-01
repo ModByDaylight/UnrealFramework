@@ -17,6 +17,7 @@ struct VTableOffsets
     static uint32_t UObject_Destructor;
     static uint32_t PostLoadSubobjects;
     static uint32_t BeginDestroy;
+    static uint32_t NotifyObjectReferenceEliminated;
     static uint32_t BuildSubobjectMapping;
     static uint32_t PostReloadConfig;
     static uint32_t IsReadyForFinishDestroy;

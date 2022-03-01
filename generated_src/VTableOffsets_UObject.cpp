@@ -27,6 +27,7 @@ namespace RC::Unreal
     uint32_t UObject::VTableOffsets::UObject_Destructor = 0;
     uint32_t UObject::VTableOffsets::PostLoadSubobjects = 0;
     uint32_t UObject::VTableOffsets::BeginDestroy = 0;
+    uint32_t UObject::VTableOffsets::NotifyObjectReferenceEliminated = 0;
     uint32_t UObject::VTableOffsets::BuildSubobjectMapping = 0;
     uint32_t UObject::VTableOffsets::PostReloadConfig = 0;
     uint32_t UObject::VTableOffsets::IsReadyForFinishDestroy = 0;

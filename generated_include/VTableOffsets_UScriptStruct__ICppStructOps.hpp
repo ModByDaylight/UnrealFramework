@@ -33,9 +33,9 @@ struct VTableOffsets
     static uint32_t GetComputedPropertyFlags;
     static uint32_t PostScriptConstruct;
     static uint32_t IsAbstract;
-    static uint32_t HasStructuredSerializer;
-    static uint32_t HasNetSharedSerialization;
     static uint32_t HasPostScriptConstruct;
+    static uint32_t HasNetSharedSerialization;
+    static uint32_t HasStructuredSerializer;
     static uint32_t HasStructuredSerializeFromMismatchedTag;
     static uint32_t StructuredSerializeFromMismatchedTag;
     static uint32_t GetStructTypeHash;

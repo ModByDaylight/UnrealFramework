@@ -43,9 +43,9 @@ namespace RC::Unreal
     uint32_t UScriptStruct::ICppStructOps::VTableOffsets::GetComputedPropertyFlags = 0;
     uint32_t UScriptStruct::ICppStructOps::VTableOffsets::PostScriptConstruct = 0;
     uint32_t UScriptStruct::ICppStructOps::VTableOffsets::IsAbstract = 0;
-    uint32_t UScriptStruct::ICppStructOps::VTableOffsets::HasStructuredSerializer = 0;
-    uint32_t UScriptStruct::ICppStructOps::VTableOffsets::HasNetSharedSerialization = 0;
     uint32_t UScriptStruct::ICppStructOps::VTableOffsets::HasPostScriptConstruct = 0;
+    uint32_t UScriptStruct::ICppStructOps::VTableOffsets::HasNetSharedSerialization = 0;
+    uint32_t UScriptStruct::ICppStructOps::VTableOffsets::HasStructuredSerializer = 0;
     uint32_t UScriptStruct::ICppStructOps::VTableOffsets::HasStructuredSerializeFromMismatchedTag = 0;
     uint32_t UScriptStruct::ICppStructOps::VTableOffsets::StructuredSerializeFromMismatchedTag = 0;
     uint32_t UScriptStruct::ICppStructOps::VTableOffsets::GetStructTypeHash = 0;

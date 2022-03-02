@@ -218,7 +218,6 @@ namespace RC::Unreal::Signatures
                     },
                     // On Match Found
                     [&](SignatureContainer& self) {
-                        printf_s("Found FName::ToString in Engine\n");
                         FNameToStringAddress = Helper::ASM::follow_call(self.get_match_address());
                         ++FNameToStringNumMatches;
                         self.get_did_succeed() = true;
@@ -226,7 +225,6 @@ namespace RC::Unreal::Signatures
                     },
                     // On Scan Completed
                     [&](const SignatureContainer& self) {
-                        printf_s("Done looking for FName::ToString in Engine\n");
                     }
             };
             signature_containers_engine.emplace_back(fname_to_string);
@@ -244,7 +242,6 @@ namespace RC::Unreal::Signatures
                     },
                     // On Match Found
                     [&](SignatureContainer& self) {
-                        printf_s("Found FName::ToString in CoreUObject\n");
                         FNameToStringAddress = Helper::ASM::follow_call(self.get_match_address());
                         self.get_did_succeed() = true;
                         ++FNameToStringNumMatches;
@@ -252,7 +249,6 @@ namespace RC::Unreal::Signatures
                     },
                     // On Scan Completed
                     [&](const SignatureContainer& self) {
-                        printf_s("Done looking for FName::ToString in CoreUObject\n");
                     }
             };
             signature_containers_coreuobject.emplace_back(fname_to_string_backup);

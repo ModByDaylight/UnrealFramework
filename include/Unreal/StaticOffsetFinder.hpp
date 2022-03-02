@@ -81,7 +81,7 @@ namespace RC::Unreal
             {
 #define RC_UNREAL_ENUMERATE_MEMBER_OFFSET(member_offset) case MemberOffsets::member_offset: return STR(#member_offset);
                 RC_UNREAL_ENUMERATE_MEMBER_OFFSETS
-#undef RC_UNREAL_NUMERATE_MEMBER_OFFSET
+#undef RC_UNREAL_ENUMERATE_MEMBER_OFFSET
             }
 
             throw std::runtime_error{"[member_offset_to_string] member offset outside of the range of the MemberOffsets enum"};

@@ -3,6 +3,7 @@
 #include <format>
 
 #include <Unreal/StaticOffsetFinder.hpp>
+#include <Helpers/Integer.hpp>
 #include <Unreal/UObjectGlobals.hpp>
 #include <Unreal/UObject.hpp>
 #include <Unreal/UClass.hpp>
@@ -1494,7 +1495,7 @@ namespace RC::Unreal
 
         // If we made it this far then we've successfully found 'UFunction.Func'
         // This because it will throw if there's an error or if the test results are not consistent
-        add_static_offset(MemberOffsets::UFunction_Func, final_result.offset, L"UFunction_Func");
+        add_static_offset(MemberOffsets::UFunction_Func, Helper::Integer::to<int32_t>(final_result.offset), L"UFunction_Func");
         UE_BLUEPRINT_EVENTGRAPH_FASTCALLS = final_result.eventgraph_fastcalls_defined;
     }
 

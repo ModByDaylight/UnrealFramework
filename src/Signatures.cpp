@@ -37,69 +37,6 @@ namespace RC::Unreal::Signatures
         uint8_t* FNameToStringAddress{};
         uint8_t FNameToStringNumMatches{};
 
-        /*
-        if (config.scan_overrides.static_find_object)
-        {
-            config.scan_overrides.static_find_object(signature_containers_coreuobject);
-        }
-        else
-        {
-            SignatureContainer staticfindobject{
-                    {
-                            {
-                                    // 5.0 Early Access
-                                    "4 8/8 9/5 C/2 4/0 8/4 8/8 9/7 4/2 4/1 8/5 5/5 7/4 1/5 4/4 1/5 6/4 1/5 7/4 8/8 B/E C/4 8/8 3/E C/6 0/4 8/8 3/F A/F F/4 8/8 B",
-                            },
-                            {
-                                    // 4.12 to 4.26
-                                    "4 8/8 9/5 C/2 4/0 8/4 8/8 9/7 4/2 4/1 8/5 5/5 7/4 1/5 4/4 1/5 6/4 1/5 7/4 8/? ?/? ?/4 8/8 3/E C/? ?/8 0/3 D/? ?/? ?/? ?/? ?/0 0",
-                            },
-                            {
-                                    "4 8/8 9/5 C/2 4/0 8/4 8/8 9/7 4/2 4/1 8/4 8/8 9/7 C/2 4/2 0/5 5/4 1/5 4/4 1/5 5/4 1/5 6/4 1/5 7/4 8/8 B/E C/4 8/8 3/E C/6 0/8 0/3 D/4 B/F 8",
-                            },
-                            {
-                                    "4 8/8 9/5 C/2 4/0 8/4 8/8 9/6 C/2 4/1 8/4 8/8 9/7 4/2 4/2 0/5 7/4 1/5 6/4 1/5 7/4 8/8 3/E C/6 0/8 0/3 D/? ?/? ?/? ?/? ?/? ?/4 1/0 F/B 6/E 9",
-                            },
-                            {
-                                    "4 8/8 9/5 C/2 4/0 8/4 8/8 9/7 4/2 4/1 8/4 8/8 9/7 C/2 4/2 0/5 5/4 1/5 4/4 1/5 5/4 1/5 6/4 1/5 7/4 8/8 B/E C/4 8/8 3/E C/6 0/8 0/3 D/? ?/? ?/? ?/? ?/? ?/4 5/0 F/B 6",
-                            },
-                            {
-                                    "4 8/8 B/C 4/5 7/4 8/8 3/E C/7 0/8 0/3 D/? ?/? ?/? ?/? ?/? ?/4 8/8 9",
-                            },
-                            {
-                                    // 4.25 - compiled from source, WITH_CASE_PRESERVING_NAME = 1
-                                    // Needs to be replaced because it interferes with the '4.12 to 4.26' aob in some games (Ghostrunner)
-                                    // Maybe this could be an indirect scan ?
-                                    "4 8/8 9/5 C/2 4/0 8/4 8/8 9/7 4/2 4/1 8/5 5/5 7/4 1/5 4/4 1/5 6/4 1/5 7/4 8/8 B/E C/4 8/8 1/E C/8 0/0 0/0 0/0 0"
-                            },
-                            {
-                                    // 4.12, compiled from source
-                                    "4 8/8 B/C 4/5 7/4 8/8 1/E C/9 0/0 0/0 0/0 0/8 0/3 D/? ?/? ?/? ?/? ?/? ?/4 8/8 9/6 8/F 0",
-                            },
-                            {
-                                    // 4.25 Modularized
-                                    "4 8/8 9/5 C/2 4/0 8/4 8/8 9/7 4/2 4/1 8/4 8/8 9/7 C/2 4/2 0/5 5/4 1/5 4/4 1/5 5/4 1/5 6/4 1/5 7/4 8/8 B/E C/4 8/8 3/E C/7 0/8 0/3 D/? ?/? ?/? ?/? ?/? ?/4 5/0 F/B 6/F 9",
-                            },
-                    },
-                    // On Match Found
-                    [&](SignatureContainer& self) {
-                        scan_result.success_messages.emplace_back(std::format(STR("StaticFindObject address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
-                        UObjectGlobals::setup_static_find_object_address(self.get_match_address());
-                        self.get_did_succeed() = true;
-                        return true;
-                    },
-                    // On Scan Completed
-                    [&](const SignatureContainer& self) {
-                        if (!self.get_did_succeed())
-                        {
-                            scan_result.errors.emplace_back("Was unable to find AOB for 'StaticFindObject'\nYou can supply your own in 'UE4SS_Signatures/StaticFindObject.lua'");
-                        }
-                    }
-            };
-            signature_containers_coreuobject.emplace_back(staticfindobject);
-        }
-        //*/
-
         if (config.scan_overrides.version_finder)
         {
             config.scan_overrides.version_finder(signature_containers_core, scan_result);
@@ -190,7 +127,7 @@ namespace RC::Unreal::Signatures
                         {
                             Version::major = 4;
                             Version::minor = 25;
-                            auto& error = scan_result.errors.emplace_back(fmt("%S\nWas unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.", version_status.error_message.c_str()));
+                            scan_result.errors.emplace_back(fmt("%S\nWas unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.", version_status.error_message.c_str()));
                         }
                     }
             };
@@ -224,7 +161,7 @@ namespace RC::Unreal::Signatures
                         return true;
                     },
                     // On Scan Completed
-                    [&](const SignatureContainer& self) {
+                    [&]([[maybe_unused]]const SignatureContainer& self) {
                     }
             };
             signature_containers_engine.emplace_back(fname_to_string);
@@ -248,7 +185,7 @@ namespace RC::Unreal::Signatures
                         return true;
                     },
                     // On Scan Completed
-                    [&](const SignatureContainer& self) {
+                    [&]([[maybe_unused]]const SignatureContainer& self) {
                     }
             };
             signature_containers_coreuobject.emplace_back(fname_to_string_backup);

@@ -2,6 +2,7 @@
 #include <format>
 
 #include <Helpers/Casting.hpp>
+#include <Helpers/Integer.hpp>
 #include <SigScanner/SinglePassSigScanner.hpp>
 #include <DynamicOutput/DynamicOutput.hpp>
 #include <Unreal/UnrealInitializer.hpp>
@@ -161,7 +162,7 @@ namespace RC::Unreal::UnrealInitializer
     {
         auto get_module_offset = [&](ScanTarget scan_target, void* address) -> unsigned long {
             MODULEINFO module = SigScannerStaticData::m_modules_info[scan_target];
-            return reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(module.lpBaseOfDll);
+            return Helper::Integer::to<unsigned long>(reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(module.lpBaseOfDll));
         };
 
         auto serialize = [&](ScanTarget scan_target, void* address) -> void {
@@ -348,7 +349,7 @@ namespace RC::Unreal::UnrealInitializer
 
             auto do_scan = [&](auto scanner_function, SuppressScanAttemptMessage suppress_scan_attempt_message = SuppressScanAttemptMessage::No) {
                 // Modular games have much smaller binaries, therefore many scans can be completed very quickly
-                static const int num_scans_before_fatal_failure = SigScannerStaticData::m_is_modular ? config.num_scan_attempts_modular : config.num_scan_attempts_normal;
+                static const int64_t num_scans_before_fatal_failure = SigScannerStaticData::m_is_modular ? config.num_scan_attempts_modular : config.num_scan_attempts_normal;
 
                 Signatures::ScanResult scan_result{};
                 for (int i = 0; scan_result.scan_status == Signatures::ScanStatus::Failed && i < num_scans_before_fatal_failure; ++i)

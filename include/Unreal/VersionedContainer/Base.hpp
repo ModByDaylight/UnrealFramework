@@ -82,19 +82,6 @@ namespace RC::Unreal
         // Should map to UField in <4.25
         virtual auto FFieldClass_get_fname(FFieldClass* p_this) -> FName = 0;
         // FFieldClass -> END
-
-        // FProperty -> START
-
-        enum class WithSideEffects
-        {
-            Yes,
-            No
-        };
-
-        // Returns a pointer to data
-        virtual auto find_property_vc(void* uobject, const wchar_t* property_string, WithSideEffects, ExcludeSelf = ExcludeSelf::Yes) -> PropertyDataVC = 0;
-        virtual auto read_property_vc(void* uobject, const wchar_t* property_string, CustomProperty* custom_property = nullptr) -> PropertyDataVC = 0;
-        // FProperty -> END
     };
 
     class Default : public Base

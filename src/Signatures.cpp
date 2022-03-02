@@ -474,8 +474,7 @@ namespace RC::Unreal::Signatures
                     [&](const SignatureContainer& self) {
                         if (!self.get_did_succeed())
                         {
-                            auto& error = scan_result.errors.emplace_back("Was unable to find AOB for 'FMemory::Free'\nYou can supply your own in 'UE4SS_Signatures/FMemory_Free.lua");
-                            error.is_fatal = false;
+                            scan_result.errors.emplace_back("Was unable to find AOB for 'FMemory::Free'\nYou can supply your own in 'UE4SS_Signatures/FMemory_Free.lua");
                         }
                     }
             };

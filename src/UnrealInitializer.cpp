@@ -188,8 +188,6 @@ namespace RC::Unreal::UnrealInitializer
         serialize(ScanTarget::CoreUObject, PakFileTesting::Storage::static_load_object_address);
 #endif
 
-        serialize(ScanTarget::CoreUObject, UObjectGlobals::GlobalState::static_find_object_internal.get_function_address());
-
         // Version is special, it's major/minor instead of ScanTarget/ModuleOffset
         cache_info.game_exe_file.serialize_item(Version::major);
         cache_info.game_exe_file.serialize_item(Version::minor);
@@ -228,8 +226,6 @@ namespace RC::Unreal::UnrealInitializer
         PakFileTesting::Storage::static_load_object_address = deserialize();
         PakFileTesting::Storage::static_load_object_func = std::bit_cast<PakFileTesting::StaticLoadObjectFunc>(PakFileTesting::Storage::static_load_object_address);
 #endif
-
-        UObjectGlobals::setup_static_find_object_address(deserialize());
 
         // Version is special, it's major/minor instead of ScanTarget/ModuleOffset
        auto major = cache_info.game_exe_file.get_serialized_item<unsigned int>();

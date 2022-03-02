@@ -6,11 +6,6 @@
 
 namespace RC::Unreal::UObjectGlobals
 {
-    auto setup_static_find_object_address(void* function_address) -> void
-    {
-        GlobalState::static_find_object_internal.assign_address(function_address);
-    }
-
     auto setup_static_construct_object_internal_address(void* function_address) -> void
     {
         GlobalState::static_construct_object_internal.assign_address(function_address);

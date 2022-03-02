@@ -92,13 +92,11 @@ namespace RC::Unreal::UObjectGlobals
     // Internal game functions
     struct GlobalState
     {
-        static inline Function<void*(void*, void*, const wchar_t*, bool)> static_find_object_internal{};
         static inline Function<UObject*(StaticConstructObject_Internal_Params_Deprecated)> static_construct_object_internal_deprecated{};
         static inline Function<UObject*(const FStaticConstructObjectParameters&)> static_construct_object_internal{};
     };
 
     // Setup internal game functions
-    auto RC_UE_API setup_static_find_object_address(void* function_address) -> void;
     auto RC_UE_API setup_static_construct_object_internal_address(void* function_address) -> void;
 
     //Iterates object array and calls the provided function for each object

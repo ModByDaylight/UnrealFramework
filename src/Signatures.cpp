@@ -335,11 +335,23 @@ namespace RC::Unreal::Signatures
         }
         else
         {
+            enum FMemoryFreeSignatureType
+            {
+                First,
+                Second,
+            };
+
             SignatureContainer fmemory_free{
                     {
                             {
                                     // 4.12, 4.22, 4.25, 4.26
                                     "4 8/8 5/C 9/7 4/2 E/5 3/4 8/8 3/E C/2 0/4 8/8 B/D 9/4 8/8 B/? ?/? ?/? ?/? ?/? ?/4 8/8 5/C 9",
+                                    FMemoryFreeSignatureType::First,
+                            },
+                            {
+                                    // 4.21
+                                    "4 8/8 5/C 9/7 4/1 D/4 C/8 B/? ?/? ?/? ?/? ?/? ?/4 D/8 5/C 0/0 F/8 4",
+                                    FMemoryFreeSignatureType::Second,
                             },
                     },
                     // On Match Found
@@ -347,18 +359,38 @@ namespace RC::Unreal::Signatures
                         scan_result.success_messages.emplace_back(std::format(STR("FMemory::Free address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
                         self.get_did_succeed() = true;
 
-                        // Find the second MOV instruction and resolve it
-                        // Ideally a disassembler is used to guarantee that we are at the second MOV instruction
-                        // But seeing as FMemory::Free has never really changed, we can take a shortcut and just count the bytes to the second MOV instruction
-                        // 13 bytes (0xD)
-                        // This MOV instruction behaves like a LEA instruction
-                        uint8_t* mov_instruction = self.get_match_address() + 0xD;
-                        // Instruction size, including REX and ModR
-                        constexpr uint8_t instr_size = 0x7;
-                        uint8_t* next_instruction = mov_instruction + instr_size;
-                        uint32_t* offset = std::bit_cast<uint32_t*>(mov_instruction + 0x3);
-                        FMalloc::UnrealStaticGMalloc = std::bit_cast<FMalloc**>(next_instruction + *offset);
-                        GMalloc = *FMalloc::UnrealStaticGMalloc;
+                        const auto signature_identifier = static_cast<const FMemoryFreeSignatureType>(self.get_signatures()[self.get_index_into_signatures()].custom_data);
+
+                        if (signature_identifier == FMemoryFreeSignatureType::First)
+                        {
+                            // Find the second MOV instruction and resolve it
+                            // Ideally a disassembler is used to guarantee that we are at the second MOV instruction
+                            // But seeing as FMemory::Free has never really changed, we can take a shortcut and just count the bytes to the second MOV instruction
+                            // 13 bytes (0xD)
+                            // This MOV instruction behaves like a LEA instruction
+                            uint8_t* mov_instruction = self.get_match_address() + 0xD;
+                            // Instruction size, including REX and ModR
+                            constexpr uint8_t instr_size = 0x7;
+                            uint8_t* next_instruction = mov_instruction + instr_size;
+                            uint32_t* offset = std::bit_cast<uint32_t*>(mov_instruction + 0x3);
+                            FMalloc::UnrealStaticGMalloc = std::bit_cast<FMalloc**>(next_instruction + *offset);
+                            GMalloc = *FMalloc::UnrealStaticGMalloc;
+                        }
+                        else
+                        {
+                            // Find the first MOV instruction and resolve it
+                            // Ideally a disassembler is used to guarantee that we are at the second MOV instruction
+                            // But seeing as FMemory::Free has never really changed, we can take a shortcut and just count the bytes to the second MOV instruction
+                            // 5 bytes
+                            // This MOV instruction behaves like a LEA instruction
+                            uint8_t* mov_instruction = self.get_match_address() + 0x5;
+                            // Instruction size, including REX and ModR
+                            constexpr uint8_t instr_size = 0x7;
+                            uint8_t* next_instruction = mov_instruction + instr_size;
+                            uint32_t* offset = std::bit_cast<uint32_t*>(mov_instruction + 0x3);
+                            FMalloc::UnrealStaticGMalloc = std::bit_cast<FMalloc**>(next_instruction + *offset);
+                            GMalloc = *FMalloc::UnrealStaticGMalloc;
+                        }
 
                         return true;
                     },

@@ -412,24 +412,27 @@ namespace RC::Unreal::Signatures
         else
         {
             SignatureContainer guobjectarray = [&]() -> SignatureContainer {
-                if (Version::is_atmost(4, 12))
+                // Custom AOBs for specific games
+                if (config.game_exe.filename() == STR("FactoryGame-Win64-Shipping.exe") && Version::is_atleast(4, 26))
                 {
+                    // Satisfactory is special, maybe it's because it's modular ?
                     return {
                             {
                                     {
-                                            "8 B/5 1/0 4/8 5/D 2/7 4/5 A/4 8/6 3/0 1/8 5/C 0/7 8/5 3/4 4/8 B/? ?/? ?/? ?/? ?/? ?/4 1/3 B/C 0/7 D/4 7/4 C/8 B",
+                                            "4 8/8 3/C 4/3 8/C 3/4 8/8 B/D 1/4 8/8 D",
                                     },
                             },
                             [&](SignatureContainer& self) {
-                                uint8_t* mov_from = Helper::ASM::resolve_mov<uint8_t*>(static_cast<uint8_t*>(self.get_match_address()) + 0x1A);
-                                if (!mov_from)
+                                void* guobjectarray = Helper::ASM::resolve_lea<uint8_t*>(self.get_match_address() + self.get_match_signature_size() - 1);
+
+                                if (!guobjectarray)
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: mov source is nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: LEA instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                     return true;
                                 }
 
-                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} [sig#: {}] <- Built-in\n"), (void*)(mov_from - 0x10), self.get_index_into_signatures() + 1));
-                                UObjectArray::setup_guobjectarray_address(mov_from - 0x10);
+                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"), guobjectarray));
+                                UObjectArray::setup_guobjectarray_address(guobjectarray);
 
                                 self.get_did_succeed() = true;
                                 return true;
@@ -442,27 +445,122 @@ namespace RC::Unreal::Signatures
                             }
                     };
                 }
-                else if (Version::is_atmost(4, 18))
+                // Default AOBs that work for most games
+                else if (Version::is_atmost(4, 12))
                 {
                     return {
                             {
                                     {
-                                            "4 8/8 9/5 C/2 4/0 8/4 8/8 9/7 4/2 4/1 0/5 7/4 8/8 3/E C/2 0/3 3/F 6/C 7/4 1/0 4/F F/F F/F F/F F/8 9",
+                                            "4 8/0 3/? ?/? ?/? ?/? ?/? ?/4 8/8 B/1 0/4 8/8 5/D 2/7 4/0 7",
                                     },
                             },
                             [&](SignatureContainer& self) {
-                                // Note that the 0x8C offset is only accurate in some games
-                                // I've found that in certain games (for example using engine 4.22) the offset may be 0x94
-                                // This particular aob may not be great to use
-                                uint8_t* lea_from = Helper::ASM::resolve_lea<uint8_t*>(static_cast<uint8_t*>(self.get_match_address()) + 0x8C);
-                                if (!lea_from)
+                                uint8_t* add_instr = static_cast<uint8_t*>(self.get_match_address());
+                                uint8_t* next_instr = add_instr + 0x7;
+                                uint32_t offset = Helper::Casting::ptr_cast_deref<uint32_t>(add_instr, 0x3);
+                                void* guobjectarray = next_instr + offset - 0x10;
+
+                                if (!guobjectarray)
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: lea source is nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: ADD instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                     return true;
                                 }
 
-                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} [sig#: {}] <- Built-in\n"), (void*)(lea_from - 0x10), self.get_index_into_signatures() + 1));
-                                UObjectArray::setup_guobjectarray_address(lea_from - 0x10);
+                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"),  guobjectarray));
+                                UObjectArray::setup_guobjectarray_address(guobjectarray);
+
+                                self.get_did_succeed() = true;
+                                return true;
+                            },
+                            [&](const SignatureContainer& self) {
+                                if (!self.get_did_succeed())
+                                {
+                                    scan_result.errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                }
+                            }
+                    };
+                }
+                else if (Version::is_atmost(4, 13))
+                {
+                    return {
+                            {
+                                    {
+                                            "4 8/8 3/7 9/1 0/0 0/7 4/F 6/4 8/8 B/D 1/4 8/8 D",
+                                    },
+                            },
+                            [&](SignatureContainer& self) {
+                                void* guobjectarray = Helper::ASM::resolve_lea<void*>(self.get_match_address() + self.get_match_signature_size() - 1);
+
+                                if (!guobjectarray)
+                                {
+                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: LEA instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    return true;
+                                }
+
+                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"),  guobjectarray));
+                                UObjectArray::setup_guobjectarray_address(guobjectarray);
+
+                                self.get_did_succeed() = true;
+                                return true;
+                            },
+                            [&](const SignatureContainer& self) {
+                                if (!self.get_did_succeed())
+                                {
+                                    scan_result.errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                }
+                            }
+                    };
+                }
+                else if (Version::is_atmost(4, 19))
+                {
+                    return {
+                            {
+                                    {
+                                            "4 8/8 B/? ?/? ?/? ?/? ?/? ?/4 C/8 B/0 4/C 8/4 D/8 5/C 0/7 4/0 7",
+                                    },
+                            },
+                            [&](SignatureContainer& self) {
+                                void* guobjectarray = Helper::ASM::resolve_mov<uint8_t*>(self.get_match_address()) - 0x10;
+
+                                if (!guobjectarray)
+                                {
+                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: MOV instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    return true;
+                                }
+
+                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"),  guobjectarray));
+                                UObjectArray::setup_guobjectarray_address(guobjectarray);
+
+                                self.get_did_succeed() = true;
+                                return true;
+                            },
+                            [&](const SignatureContainer& self) {
+                                if (!self.get_did_succeed())
+                                {
+                                    scan_result.errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                }
+                            }
+                    };
+                }
+                else if (Version::is_atleast(4, 20))
+                {
+                    return {
+                            {
+                                    {
+                                            "4 8/8 B/? ?/? ?/? ?/? ?/? ?/4 8/8 B/0 C/C 8/? ?/8 B/0 4/? ?/4 8/8 5/C 0",
+                                    },
+                            },
+                            [&](SignatureContainer& self) {
+                                void* guobjectarray = Helper::ASM::resolve_mov<uint8_t*>(self.get_match_address()) - 0x10;
+
+                                if (!guobjectarray)
+                                {
+                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: MOV instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    return true;
+                                }
+
+                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"),  guobjectarray));
+                                UObjectArray::setup_guobjectarray_address(guobjectarray);
 
                                 self.get_did_succeed() = true;
                                 return true;
@@ -477,29 +575,7 @@ namespace RC::Unreal::Signatures
                 }
                 else
                 {
-                    return {
-                            {
-                                    {
-                                            "? ?/? ?/0 ?/0 0/? ?/? ?/? ?/? ?/? ?/? ?/0 ?/0 0/0 0/0 0/0 0/0 0/? ?/? ?/? ?/? ?/? ?/? ?/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/? 0/2 ?/0 0/? ?/? ?/? ?/0 0/2 ?/0 0/0 0/0 0/0 ?/0 0/0 0/0 0/F F/F F/F F/F F/F F/F F/F F/F F/F F",
-                                    },
-                                    {
-                                            "5 9/D C/0 0/0 0/5 8/D C/0 0/0 0/5 9/D C/0 0/0 0/0 0/0 0/0 0/0 0/A 0/1 2/? ?/? ?/? ?/? ?/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/0 0/2 1/0 0/? ?/? ?/? ?/0 0/2 1/0 0/0 0/0 0/? ?/0 0/0 0/0 0",
-                                    },
-                            },
-                            [&](SignatureContainer& self) {
-                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} [sig#: {}] <- Built-in\n"), (void*)self.get_match_address(), self.get_index_into_signatures() + 1));
-                                UObjectArray::setup_guobjectarray_address(self.get_match_address());
-
-                                self.get_did_succeed() = true;
-                                return true;
-                            },
-                            [&](const SignatureContainer& self) {
-                                if (!self.get_did_succeed())
-                                {
-                                    scan_result.errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
-                                }
-                            }
-                    };
+                    throw std::runtime_error{std::format("GUObjectArray Finder: Unsupported engine version '{}.{}'", Version::major, Version::minor)};
                 }
             }();
 

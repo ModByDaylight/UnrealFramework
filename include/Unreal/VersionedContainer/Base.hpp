@@ -232,7 +232,6 @@ namespace RC::Unreal
         {
             using TUObjectArray = FChunkedFixedUObjectArray;
 
-
             int32_t obj_first_gc_index;
             int32_t obj_last_non_gc_index;
             int32_t max_objects_not_considered_by_gc;

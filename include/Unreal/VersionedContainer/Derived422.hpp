@@ -1,16 +1,13 @@
 #ifndef RC_UNREAL_DERIVED422_HPP
 #define RC_UNREAL_DERIVED422_HPP
 
-#include <Unreal/VersionedContainer/Base.hpp>
+#include <Unreal/VersionedContainer/Derived420.hpp>
 
 namespace RC::Unreal
 {
-    class Derived422 : public Default
+    class Derived422 : public Derived420
     {
     public:
-        auto Field_get_type_fname(FField* p_this) -> FName override;
-        auto Field_get_ffield_owner([[maybe_unused]]FField* p_this) -> void* override;
-        auto FFieldClass_get_fname(FFieldClass* p_this) -> FName override;
     };
 }
 

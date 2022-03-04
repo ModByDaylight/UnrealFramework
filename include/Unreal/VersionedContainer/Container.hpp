@@ -5,15 +5,7 @@
 
 #include <Unreal/Common.hpp>
 #include <Unreal/VersionedContainer/Base.hpp>
-#include <Unreal/VersionedContainer/Derived412.hpp>
-#include <Unreal/VersionedContainer/Derived415.hpp>
-#include <Unreal/VersionedContainer/Derived422.hpp>
-#include <Unreal/VersionedContainer/Derived425.hpp>
 #include <Unreal/VersionedContainer/UObjectBaseVC.hpp>
-#include <Unreal/VersionedContainer/UObject412.hpp>
-#include <Unreal/VersionedContainer/UObject415.hpp>
-#include <Unreal/VersionedContainer/UObject422.hpp>
-#include <Unreal/VersionedContainer/UObject425.hpp>
 #include <Unreal/VersionedContainer/UnrealVirtualImpl/UnrealVirtualBaseVC.hpp>
 
 namespace RC::Unreal

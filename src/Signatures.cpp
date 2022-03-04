@@ -64,7 +64,8 @@ namespace RC::Unreal::Signatures
                     [&]([[maybe_unused]]SignatureContainer& self) {
                         if (version_status.status_code != VersionStatus::SUCCESS)
                         {
-                            scan_result.errors.emplace_back(std::format("{}\nWas unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.", to_string(version_status.error_message)));
+                            // We're not including the error message from VersionStatus here because it's inaccurate
+                            scan_result.errors.emplace_back("Was unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.");
                         }
                     }
             };

@@ -37,8 +37,9 @@ namespace RC::Unreal
         }
 
         auto branch_view = File::StringViewType{branch};
-        if (!branch_view.starts_with(STR("++")) &&
-            !branch_view.starts_with(STR("UE4")))
+        if (!branch_view.starts_with(STR("++")) && // Occurs in most games
+            !branch_view.starts_with(STR("main")) && // Occurs in Dead Rock Galactic
+            !branch_view.starts_with(STR("UE4"))) // Occurs in the 4.12 demo game
         {
             return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: 'Branch' member variable FString does not start with '++'"))};
         }

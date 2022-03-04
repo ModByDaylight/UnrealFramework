@@ -43,91 +43,28 @@ namespace RC::Unreal::Signatures
         }
         else
         {
-            enum UnrealVersionFinderSignatureType
-            {
-                Newest,
-                Compat,
-                Oldest,
-                Dbd,
-            };
             VersionStatus version_status{};
             SignatureContainer unreal_version_finder{
                     {
                             {
-                                    // Newer version (added in 4.24 or 4.25)
-                                    "E 8/? ?/? ?/? ?/? ?/E 8/? ?/? ?/? ?/? ?/4 ?/8 ?/C 0/4 8/8 D/? ?/? ?/? ?/? ?/? ?/4 8/8 D/4 D/? ?/E 8/? ?/? ?/? ?/? ?/8 3",
-                                    UnrealVersionFinderSignatureType::Newest,
+                                    // 4.x.x
+                                    "0 4/0 0/? ?/0 0/? ?/0 0/0 0/0 0/? ?/? ?/? ?/? ?/0 0/0 0/0 0/0 0/? ?/? ?/? ?/? ?/? ?/? ?/0 0/0 0/? ?/0 0/0 0/0 0/? ?/0 0/0 0/0 0/0 4/0 0/? ?/0 0/? ?/0 0/0 0/0 0",
                             },
                             {
-                                    // 4.24/4.25+ compat
-                                    "E 8/? ?/? ?/? ?/? ?/E 8/? ?/? ?/? ?/? ?/4 C/8 B/C 0/4 8/8 D/? ?/? ?/? ?/? ?/? ?/4 8/8 D/4 C/2 4/5 0/E 8",
-                                    UnrealVersionFinderSignatureType::Compat,
-                            },
-                            {
-                                    // 4.25 w/ 4.26 features - Dead By Daylight, modded client, WITH_CASE_PRESERVING_NAME = 1
-                                    "4 1/C 7/? ?/? ?/? ?/? ?/? ?/? ?/B 9/0 1/0 0/0 0/0 0",
-                                    UnrealVersionFinderSignatureType::Dbd,
-                            },
-                            {
-                                    // Older version
-                                    "C 7/0 5/? ?/? ?/? ?/? ?/0 4/0 0/? ?/0 0/6 6",
-                                    UnrealVersionFinderSignatureType::Oldest,
+                                    // 5.x.x
+                                    "0 5/0 0/? ?/0 0/? ?/0 0/0 0/0 0/? ?/? ?/? ?/? ?/0 0/0 0/0 0/0 0/? ?/? ?/? ?/? ?/? ?/? ?/0 0/0 0/? ?/0 0/0 0/0 0/? ?/0 0/0 0/0 0/0 4/0 0/? ?/0 0/? ?/0 0/0 0/0 0",
                             },
                     },
                     // On Match Found
-                    [&](SignatureContainer& self) {
-                        if (uint8_t* match_address = self.get_match_address(); match_address)
-                        {
-                            const int32_t custom_data = self.get_signatures()[self.get_index_into_signatures()].custom_data;
-                            const UnrealVersionFinderSignatureType signature_identifier = static_cast<UnrealVersionFinderSignatureType>(custom_data);
-
-                            switch (signature_identifier)
-                            {
-                                case Newest:
-                                case Compat:
-                                    version_status = Unreal::Version::setup(match_address, Unreal::Version::VersionType::NEW);
-                                    break;
-                                case Oldest:
-                                    version_status = Unreal::Version::setup(match_address, Unreal::Version::VersionType::OLD);
-                                    break;
-                                case Dbd:
-                                    version_status = Unreal::Version::setup(match_address - 2, Unreal::Version::VersionType::OLD);
-                                    break;
-                            }
-
-                            if (version_status.status_code != VersionStatus::SUCCESS) { return false; }
-
-                            if (!Version::is_atleast(4, 12))
-                            {
-                                // Minimum supported version is 4.12 so we'll just go onto the next aob match if less than that was detected
-                                return false;
-                            }
-                            else if (Version::is_above(5, 40))
-                            {
-                                // Arbitrary version UE 5.40 is the maximum... increase this if Unreal Engine ever gets close to this version
-                                // If this or a greater number is found then it's assumed to be invalid do we go onto the next aob match
-                                return false;
-                            }
-                            else
-                            {
-                                scan_result.success_messages.emplace_back(std::format(STR("Detected Unreal Engine version: {}.{} (Method: {})\n"),
-                                             Version::major, Version::minor,
-                                             (self.get_index_into_signatures() < self.get_signatures().size() ? STR("NEW") : STR("OLD"))
-                                ));
-                                self.get_did_succeed() = true;
-                                return true;
-                            }
-                        }
-
-                        return false;
+                    [&]([[maybe_unused]]SignatureContainer& self) {
+                        version_status = Unreal::Version::setup(config, self.get_match_address());
+                        return version_status.status_code == VersionStatus::SUCCESS;
                     },
                     // On Scan Completed
                     [&]([[maybe_unused]]SignatureContainer& self) {
-                        if (!self.get_did_succeed())
+                        if (version_status.status_code != VersionStatus::SUCCESS)
                         {
-                            Version::major = 4;
-                            Version::minor = 25;
-                            scan_result.errors.emplace_back(fmt("%S\nWas unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.", version_status.error_message.c_str()));
+                            scan_result.errors.emplace_back(std::format("{}\nWas unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.", to_string(version_status.error_message)));
                         }
                     }
             };

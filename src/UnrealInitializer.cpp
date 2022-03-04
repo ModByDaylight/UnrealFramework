@@ -268,9 +268,14 @@ namespace RC::Unreal::UnrealInitializer
             Output::send(STR("Post-initialization: GMalloc: {} -> {}\n"), (void*)FMalloc::UnrealStaticGMalloc, (void*)GMalloc);
         }
 
-        if (FAssetData::FAssetDataAssumedStaticSize < FAssetData::StaticSize())
+        // FAssetData was not reflected before 4.17
+        // We'll need to manually add FAssetData for every engine version eventually
+        if (Version::is_atleast(4, 17))
         {
-            throw std::runtime_error{"Tell a developer: FAssetData::StaticSize is too small to hold the entire struct"};
+            if (FAssetData::FAssetDataAssumedStaticSize < FAssetData::StaticSize())
+            {
+                throw std::runtime_error{"Tell a developer: FAssetData::StaticSize is too small to hold the entire struct"};
+            }
         }
     }
 

@@ -134,19 +134,42 @@ namespace RC::Unreal::Signatures
         }
         else
         {
+            enum StaticConstructObjectSignatureType
+            {
+                GroupOneIndirect,
+                GroupTwoIndirect,
+            };
             SignatureContainer static_construct_object{
                     {
                             {
                                     "C 0/E 9/0 2/3 2/8 8/? ?/? ?/? ?/? ?/8 0/E 1/0 1/3 0/8 8/? ?/? ?/? ?/? ?/4 8",
+                                    StaticConstructObjectSignatureType::GroupOneIndirect,
                             },
                             {
                                     // 4.12 (FirstPerson C++)
                                     "8 9/8 E/C 8/0 3/0 0/0 0/3 B/8 E/C C/0 3/0 0/0 0/7 E/0 F/4 1/8 B/D 6/4 8/8 D/8 E/C 0/0 3/0 0/0 0",
+                                    StaticConstructObjectSignatureType::GroupOneIndirect,
+                            },
+                            {
+                                    // 4.16, 4.19
+                                    "E 8/? ?/? ?/? ?/? ?/0 F/B 6/8 F/? ?/0 1/0 0/0 0/4 8/8 9/8 7/? ?/0 1/0 0/0 0",
+                                    StaticConstructObjectSignatureType::GroupTwoIndirect,
                             },
                     },
                     // On Match Found
                     [&](SignatureContainer& self) {
-                        uint8_t* call_instr = static_cast<uint8_t*>(self.get_match_address()) - 0x13;
+                        const auto signature_identifier = static_cast<const StaticConstructObjectSignatureType>(self.get_signatures()[self.get_index_into_signatures()].custom_data);
+
+                        uint8_t* call_instr{};
+                        if (signature_identifier == StaticConstructObjectSignatureType::GroupOneIndirect)
+                        {
+                            call_instr = static_cast<uint8_t*>(self.get_match_address()) - 0x13;
+                        }
+                        else
+                        {
+                            call_instr = self.get_match_address();
+                        }
+
                         uint8_t* callee = Helper::ASM::follow_call(call_instr);
 
                         // If no callee, try go back one more byte, the call instruction might be prefixed with 0xFF
@@ -162,7 +185,6 @@ namespace RC::Unreal::Signatures
                         UObjectGlobals::setup_static_construct_object_internal_address(callee);
                         self.get_did_succeed() = true;
                         return true;
-
                     },
                     // On Scan Completed
                     [&](const SignatureContainer& self) {

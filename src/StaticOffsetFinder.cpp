@@ -2111,8 +2111,8 @@ namespace RC::Unreal
             return;
         }
 
-        FProperty* setproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.AudioComponent", L"ConcurrencySet"));
-        FName element_property_name = FName(STR("ConcurrencySet"));
+        FProperty* setproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.LevelCollection", L"Levels"));
+        FName element_property_name = FName(STR("Levels"));
 
         if (!setproperty || element_property_name == FName(STR("None")))
         {

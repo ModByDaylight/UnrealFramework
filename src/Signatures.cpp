@@ -58,6 +58,12 @@ namespace RC::Unreal::Signatures
                     // On Match Found
                     [&]([[maybe_unused]]SignatureContainer& self) {
                         version_status = Unreal::Version::setup(config, self.get_match_address());
+
+                        if (version_status.status_code == VersionStatus::SUCCESS)
+                        {
+                            scan_result.success_messages.emplace_back(std::format(STR("Engine Version: {}.{} <- Built-in\n"), Version::major, Version::minor));
+                        }
+
                         return version_status.status_code == VersionStatus::SUCCESS;
                     },
                     // On Scan Completed

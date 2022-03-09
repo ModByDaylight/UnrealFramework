@@ -993,7 +993,7 @@ namespace RC::Unreal
 
     auto StaticOffsetFinder::find_property_flags() -> void
     {
-        if (retrieve_static_offset(MemberOffsets::Property_PropertyFlags) != -1)
+        if (retrieve_static_offset(MemberOffsets::Property_PropertyFlags) != -1) { return; }
 
         if (retrieve_static_offset(MemberOffsets::XField_ChildProperties) == -1)
         {

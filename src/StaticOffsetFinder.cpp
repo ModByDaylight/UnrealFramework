@@ -2111,8 +2111,22 @@ namespace RC::Unreal
             return;
         }
 
-        FProperty* setproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.LevelCollection", L"Levels"));
-        FName element_property_name = FName(STR("Levels"));
+        FProperty* setproperty{};
+        FName element_property_name{};
+
+        if (Version::is_equal(4, 13))
+        {
+            // In 4.13, 'LandscapeInfo:Proxies' is the only SetProperty that exists
+            // So we use 'LandscapeInfo:Proxies' in 4.13 (SetProperty doesn't exist in <4.13)
+            setproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Landscape.LandscapeInfo", L"Proxies"));
+            element_property_name = FName(STR("Proxies"));
+        }
+        else
+        {
+            // In 4.24, 'LandscapeInfo:Proxies' was changed from a SetProperty to an ArrayProperty, so we use a different property
+            setproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.LevelCollection", L"Levels"));
+            element_property_name = FName(STR("Levels"));
+        }
 
         if (!setproperty || element_property_name == FName(STR("None")))
         {

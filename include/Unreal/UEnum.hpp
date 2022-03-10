@@ -12,114 +12,81 @@
 
 namespace RC::Unreal
 {
-    using EnumNamesPair = TPair<FName, int64_t>;
-    using EnumNamesArray = TArray<EnumNamesPair>;
+    // The "UEnum::Names" pair is "TPair<FName, uint8>" in earlier engine versions
+    // This can cause a problem, therefore, you should be careful when using this pair
+    // This is a case where we perhaps should abstract this array and deny direct access to the TArray
+    using FEnumNamePair = TPair<FName, int64_t>;
+    using FEnumNameArray = TArray<FEnumNamePair>;
 
     class RC_UE_API UEnum : public UField
     {
-    private:
-        static inline class UClass* m_static_obj{};
-
-    public:
-        // DO NOT USE... MEANT FOR INTERNAL USE ONLY
-        auto static set_static_obj_ptr(class UClass* ptr)
-        {
-            m_static_obj = ptr;
-        }
-
-        auto static static_class() -> class UClass*
-        {
-            if (!m_static_obj) { throw std::runtime_error{"[UEnum::get_static_obj_ptr] m_static_obj is nullptr"}; }
-
-            return m_static_obj;
-        }
-
+        DECLARE_EXTERNAL_OBJECT_CLASS(UEnum, CoreUObject)
     public:
         enum class ECppForm
         {
+            /**
+             * Regular enums are declared using the normal enum keyword
+             * Their constants are unscoped and usually prefixed with enum name
+             */
             Regular,
+            /**
+             * Namespaced enums use the namespace for enum name + enum keyword for type
+             * They are scoped to their namespace
+             */
             Namespaced,
+            /**
+             * Enum classes are C++11 enum class enumerations that are properly scoped
+             * They can also specify any integral underlying type
+             */
             EnumClass
         };
 
-        // EEnumFlags, up-to-date with UE 5.0 EA
+        /** EEnumFlags, up-to-date with UE 5.0 EA */
         enum class EEnumFlags
         {
             None,
+            /**
+             * Enumeration represents a set of bitflags
+             */
             Flags = 0x00000001,
+            /**
+             * There's a newer version of this UUserDefinedEnum available
+             * in the engine and this one is obsolete
+             */
             NewerVersionExists = 0x00000002,
         };
-
     public:
-        auto get_enum_names() -> EnumNamesArray
-        {
-            return Helper::Casting::offset_deref<EnumNamesArray>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UEnum_Names));
-        }
+        /**
+         * Returns the array of enumeration constants and their values
+         * Keep in mind that enumeration can have gaps as well as negative values
+         * The last entry of the array will always be a _MAX constant
+         */
+        auto get_enum_names() -> FEnumNameArray&;
 
-        auto get_cpp_form() -> ECppForm
-        {
-            // The offset of 'Names' + the size of 'Names' = offset of 'CppForm'
-            return Helper::Casting::offset_deref<ECppForm>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UEnum_Names) + sizeof(EnumNamesArray));
-        }
+        /**
+         * Returns the C++ form using which the enum has been originally declared
+         * See ECppForm for possible values
+         */
+        auto get_cpp_form() -> ECppForm;
 
-        auto get_enum_flags() -> EEnumFlags
-        {
-            if (Version::is_below(4, 26))
-            {
-                // EEnumFlags was added in 4.26
-                // Let's assume the 'None' flag is valid for whatever code calls this function in <4.26
-                return EEnumFlags::None;
-            }
-            else
-            {
-                // The offset of 'Names' + the size of 'Names' + the size of 'CppForm' = offset of 'EnumFlags'
-                return Helper::Casting::offset_deref<EEnumFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UEnum_Names) + sizeof(EnumNamesArray) + sizeof(ECppForm));
-            }
-        }
+        /**
+         * Returns the flags set on the enumeration object
+         * Will return EEnumFlags::None on older UE versions
+         */
+        auto get_enum_flags() -> EEnumFlags;
 
-    public:
-        auto static to_string(void* p_this, std::wstring& out_line) -> void
-        {
-            trivial_dump_to_string(p_this, out_line);
+        /**
+         * Retrieves the enumeration index associated with the provided enum name
+         * Returns INDEX_NONE if there is no enumeration constant with the provided name
+         */
+        auto get_index_by_name(const std::wstring& name) -> int32_t;
 
-            auto* typed_this = static_cast<UEnum*>(p_this);
-
-            auto enum_names = typed_this->get_enum_names();
-            enum_names.for_each([&](EnumNamesPair* elem) {
-                out_line.append(std::format(L"\n[{:016X}] {} [n: {:X}] [v: {}]", reinterpret_cast<uintptr_t>(elem), elem->key.to_string(), elem->key.get_comparison_index(), static_cast<uint8_t>(elem->value)));
-                return LoopAction::Continue;
-            });
-        }
+        auto get_value_by_name(const std::wstring& name) -> int64_t;
     };
 
     class RC_UE_API UUserDefinedEnum : public UEnum
     {
-    private:
-        static inline class UClass* m_static_obj{};
-
-    public:
-        // DO NOT USE... MEANT FOR INTERNAL USE ONLY
-        auto static set_static_obj_ptr(class UClass* ptr)
-        {
-            m_static_obj = ptr;
-        }
-
-        auto static static_class() -> class UClass*
-        {
-            if (!m_static_obj) { throw std::runtime_error{"[UUserDefinedEnum::get_static_obj_ptr] m_static_obj is nullptr"}; }
-
-            return m_static_obj;
-        }
-    };
-
-    template<typename InnerType>
-    class TUEnum : public UEnum
-    {
-    public:
-        auto static read_data(const PropertyDataVC& data) -> InnerType*
-        {
-            return static_cast<InnerType*>(data.data_ptr);
-        }
+        DECLARE_EXTERNAL_OBJECT_CLASS(UUserDefinedEnum, Engine);
     };
 }
 

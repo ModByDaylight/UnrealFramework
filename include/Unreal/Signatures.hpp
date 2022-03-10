@@ -2,6 +2,7 @@
 #define RC_UNREAL_SIGNATURES_HPP
 
 #include <string>
+#include <unordered_set>
 
 #include <Unreal/Common.hpp>
 #include <Unreal/UnrealInitializer.hpp>
@@ -25,6 +26,7 @@ namespace RC::Unreal::Signatures
     struct RC_UE_API ScanResult
     {
         std::vector<std::wstring> success_messages{};
+        std::unordered_set<std::wstring> info_messages{};
         std::vector<ScanError> errors;
         ScanStatus scan_status{ScanStatus::Failed};
     };

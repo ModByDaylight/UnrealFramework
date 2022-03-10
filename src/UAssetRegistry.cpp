@@ -4,6 +4,7 @@
 #include <Unreal/UAssetRegistryHelpers.hpp>
 #include <Unreal/UObjectArray.hpp>
 #include <Unreal/UObjectGlobals.hpp>
+#include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
 #include <Unreal/UScriptStruct.hpp>
 
@@ -29,7 +30,7 @@ namespace RC::Unreal
     {
         set_assets_are_loading(true);
 
-        UAssetRegistry* asset_registry = UAssetRegistryHelpers::GetAssetRegistry();
+        UAssetRegistry* asset_registry = static_cast<UAssetRegistry*>(UAssetRegistryHelpers::GetAssetRegistry().ObjectPointer);
         if (!asset_registry)
         {
             Output::send(STR("Did not load assets because asset_registry was nullptr\n"));

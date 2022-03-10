@@ -6,7 +6,7 @@
 #include <Unreal/Common.hpp>
 #include <Unreal/TypeChecker.hpp>
 #include <Unreal/VersionedContainer/Base.hpp>
-#include <Unreal/Property/XMapProperty.hpp>
+#include <Unreal/Property/FMapProperty.hpp>
 
 namespace RC::Unreal
 {
@@ -33,17 +33,6 @@ namespace RC::Unreal
 
     public:
         TMap(MapElement* elements_ptr, int32_t current_size, int32_t capacity) : elements(elements_ptr), map_num(current_size), map_max(capacity) {}
-
-    public:
-        auto static read_data(PropertyDataVC data) -> TMap<MapInnerKeyType, MapInnerValueType>
-        {
-            MapData map_data = XMapProperty::read_data(data);
-            return TMap<MapInnerKeyType, MapInnerValueType>(
-                    static_cast<MapElement*>(map_data.elements_ptr),
-                    map_data.num_elements,
-                    map_data.max_elements
-            );
-        }
 
     protected:
         template<typename Callable>

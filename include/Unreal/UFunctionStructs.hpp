@@ -2,9 +2,9 @@
 #define RC_UNREAL_UFUNCTIONSTRUCTS_HPP
 
 #include <functional>
-
 #include <Unreal/Common.hpp>
 #include <Unreal/FFrame.hpp>
+#include <map>
 
 namespace RC::Unreal
 {
@@ -12,11 +12,14 @@ namespace RC::Unreal
 
     using UnrealScriptFunction = void(*)(UObject* context, FFrame& the_stack, void* result_decl);
 
-    struct RC_UE_API UnrealScriptFunctionCallableContextParam
+    class RC_UE_API UnrealScriptFunctionCallableContext
     {
+    public:
         UObject* context;
         FFrame& the_stack;
         void* result_decl;
+
+        UnrealScriptFunctionCallableContext(UObject* context, FFrame& the_stack, void* result_decl);
 
         template<typename ReturnType>
         auto set_return_value(ReturnType new_value) -> void
@@ -30,32 +33,42 @@ namespace RC::Unreal
             return *static_cast<ParamStruct*>(static_cast<void*>(the_stack.Locals));
         }
     };
-    using UnrealScriptFunctionCallable = std::function<void(UnrealScriptFunctionCallableContextParam context, void* custom_data)>;
+    using UnrealScriptFunctionCallable = std::function<void(UnrealScriptFunctionCallableContext& context, void* custom_data)>;
+    using CallbackId = int32_t;
 
-    struct RC_UE_API UnrealScriptFunctionPreCallback
+    struct UnrealScriptCallbackData
     {
         UnrealScriptFunctionCallable callable;
-
-        // The hooked-function must cast before using the 'custom_data' pointer
-        // This pointer should be passed to the hooked function as the last parameter
-        void* custom_data{};
+        void* custom_data;
     };
 
-    struct RC_UE_API UnrealScriptFunctionPostCallback
+    class RC_UE_API UnrealScriptFunctionData
     {
-        UnrealScriptFunctionCallable callable;
-
-        // The hooked-function must cast before using the 'custom_data' pointer
-        // This pointer should be passed to the hooked function as the last parameter
-        void* custom_data{};
-    };
-
-    struct RC_UE_API UnrealScriptFunctionData
-    {
+    private:
         UnrealScriptFunction original_func;
-        std::vector<UnrealScriptFunctionPreCallback> pre_callbacks{};
-        std::vector<UnrealScriptFunctionPostCallback> post_callbacks{};
+        CallbackId hook_index_counter;
+        std::map<int32_t, UnrealScriptCallbackData> pre_callbacks;
+        std::map<int32_t, UnrealScriptCallbackData> post_callbacks;
+    public:
+        UnrealScriptFunctionData(UnrealScriptFunction original_func_ptr);
+        inline auto get_original_func_ptr() const -> UnrealScriptFunction { return original_func; }
+
+        CallbackId add_pre_callback(const UnrealScriptFunctionCallable& callable, void* custom_data = nullptr);
+        CallbackId add_post_callback(const UnrealScriptFunctionCallable& callable, void* custom_data = nullptr);
+        bool remove_callback(CallbackId callback_id);
+
+        void remove_all_callbacks();
+
+        void fire_pre_callbacks(UnrealScriptFunctionCallableContext& context) const;
+        void fire_post_callbacks(UnrealScriptFunctionCallableContext& context) const;
     };
+
+    namespace Internal {
+        using HookedUFunctionMap = std::unordered_map<const UFunction*, UnrealScriptFunctionData>;
+        auto RC_UE_API get_hooked_functions_map() -> HookedUFunctionMap&;
+
+        auto unreal_script_function_hook(UObject *context, FFrame &the_stack, void *result_decl) -> void;
+    }
 }
 
 #endif //RC_UNREAL_UFUNCTIONSTRUCTS_HPP

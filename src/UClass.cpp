@@ -1,16 +1,12 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/TArray.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/FProperty.hpp>
 
 namespace RC::Unreal
 {
-    auto UClass::to_string(void* p_this, std::wstring& out_line) -> void
-    {
-        UClass* typed_this = static_cast<UClass*>(p_this);
-
-        trivial_dump_to_string(p_this, out_line);
-        out_line.append(std::format(L" [sps: {:016X}]", reinterpret_cast<uintptr_t>(typed_this->get_super_struct())));
-    }
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UClass)
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UBlueprintGeneratedClass)
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UAnimBlueprintGeneratedClass)
 
     auto UClass::has_any_class_flags(EClassFlags flags_to_check) -> bool
     {
@@ -42,8 +38,9 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_ClassDefaultObject));
     }
 
-    auto UClass::get_interfaces() -> TArray<FImplementedInterface>
+    auto UClass::get_interfaces() -> TArray<FImplementedInterface>&
     {
-        return Helper::Casting::offset_deref<TArray<FImplementedInterface>>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_Interfaces));
+        //return Helper::Casting::offset_deref<TArray<FImplementedInterface>>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_Interfaces));
+        return *Helper::Casting::ptr_cast<TArray<FImplementedInterface>*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_Interfaces));
     }
 }

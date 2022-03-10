@@ -4,26 +4,28 @@
 
 namespace RC::Unreal
 {
-    auto UObject425::UObject_get_flags(const void* p_this) const -> int32_t
+    auto UObject425::UObject_clear_flags(void* p_this, const EObjectFlags flags_to_clear) -> void
     {
-        return static_cast<int32_t>(Flags::get_flags<Flags425::EObjectFlags_Impl>(p_this));
+        Flags::clear_flags(p_this, Flags425::to_impl_flags(flags_to_clear));
     }
 
-    auto UObject425::UObject_set_flags(void* p_this, const std::array<EObjectFlags, EObjectFlags_Max>& new_flags) -> void
+    auto UObject425::UObject_set_flags_to(void* p_this, EObjectFlags new_flags) -> void
     {
-        Flags425::EObjectFlags_Impl new_impl_flags = Flags425::to_impl_flags(new_flags);
-        Flags::set_flags(p_this, new_impl_flags);
+        Flags::set_flags_to(p_this, Flags425::to_impl_flags(new_flags));
     }
 
-    auto UObject425::UObject_has_any_flag(void* p_this, const std::array<EObjectFlags, EObjectFlags_Max>& flags_to_check) -> bool
+    auto UObject425::UObject_set_flags(void* p_this, const EObjectFlags new_flags) -> void
     {
-        Flags425::EObjectFlags_Impl impl_flags_to_check = Flags425::to_impl_flags(flags_to_check);
-        return Flags::has_any_flag(p_this, impl_flags_to_check);
+        Flags::set_flags(p_this, Flags425::to_impl_flags(new_flags));
     }
 
-    auto UObject425::UObject_has_all_flags(void* p_this, const std::array<EObjectFlags, EObjectFlags_Max>& flags_to_check) -> bool
+    auto UObject425::UObject_has_any_flag(void* p_this, const EObjectFlags flags_to_check) -> bool
     {
-        Flags425::EObjectFlags_Impl impl_flags_to_check = Flags425::to_impl_flags(flags_to_check);
-        return Flags::has_all_flags(p_this, impl_flags_to_check);
+        return Flags::has_any_flag(p_this, Flags425::to_impl_flags(flags_to_check));
+    }
+
+    auto UObject425::UObject_has_all_flags(void* p_this, const EObjectFlags flags_to_check) -> bool
+    {
+        return Flags::has_all_flags(p_this, Flags425::to_impl_flags(flags_to_check));
     }
 }

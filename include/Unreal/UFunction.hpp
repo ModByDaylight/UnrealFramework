@@ -9,78 +9,74 @@ namespace RC::Unreal
 {
     struct FFrame;
 
-    class RC_UE_API UFunction : public UStruct
+    class RC_UE_API  UFunction : public UStruct
     {
-    private:
-        static inline class UClass* m_static_obj{};
-
+        DECLARE_EXTERNAL_OBJECT_CLASS(UFunction, CoreUObject)
     public:
-        // DO NOT USE... MEANT FOR INTERNAL USE ONLY
-        auto static set_static_obj_ptr(class UClass* ptr)
-        {
-            m_static_obj = ptr;
-        }
-
-        auto static static_class() -> class UClass*
-        {
-            if (!m_static_obj) { throw std::runtime_error{"[UFunction::get_static_obj_ptr] m_static_obj is nullptr"}; }
-
-            return m_static_obj;
-        }
-
-    public:
+        /**
+         * Retrieves the flag set on this function object
+         * Function calls define their type, metadata, access and additional attributes
+         */
         auto get_function_flags() -> EFunctionFlags;
+
+        /**
+         * Checks if function has any of the flags specified
+         * Returns true if either of the provided flags are set on the function
+         */
+        inline auto has_any_function_flags(EFunctionFlags function_flags) -> bool
+        {
+            return (get_function_flags() & function_flags) != 0;
+        }
+
+        /**
+         * Checks if function has all of the specified flags
+         * Returns true only if all of the provided flags are set on the function
+         */
+        inline auto has_all_function_flags(EFunctionFlags function_flags) -> bool
+        {
+            return (get_function_flags() & function_flags) == function_flags;
+        }
+
+        /**
+         * Returns amount of parameters of the function, including
+         * output parameters and the return value if it is defined for the function
+         */
         auto get_num_parms() -> uint8_t;
-        auto get_return_value_offset() -> uint16_t;
-        auto get_func_ptr() -> void*;
-        auto set_func_ptr(UnrealScriptFunction) -> void;
-        auto get_return_property() -> XProperty*;
 
-        template<typename Callback, typename ReturnValueSetterCallback, typename CustomDataType = void>
-        auto register_hook(const Callback& callback, const ReturnValueSetterCallback& return_value_setter_callback, CustomDataType* custom_data = nullptr) -> void
-        {
-            void* untyped_custom_data = static_cast<void*>(custom_data);
+        uint16 GetReturnValueOffset();
 
-            auto add_callbacks = [&](UnrealScriptFunctionData& hook_data){
-                hook_data.pre_callbacks.emplace_back(UnrealScriptFunctionPreCallback{
-                        .callable = callback,
-                        .custom_data = untyped_custom_data,
-                });
-                hook_data.post_callbacks.emplace_back(UnrealScriptFunctionPostCallback{
-                        .callable = return_value_setter_callback,
-                        .custom_data = untyped_custom_data
-                });
-            };
+        /**
+         * Returns the total size of the function params used by the function
+         * Keep in mind that this value is different from properties size, as it includes
+         * only function parameters and does not include other local variables
+         */
+        auto get_parms_size() -> int32_t;
 
-            HookedUFunctionMap& hooked_functions = get_hooked_functions_map();
-            if (hooked_functions.contains(this))
-            {
-                // If the UFunction has already been hooked then all we need to do is add the callback to the vector of callbacks
-                auto& hook_data = hooked_functions.at(this);
+        /**
+         * Retrieves the return property of the function, or returns nullptr
+         * if the function does not have a return value
+         */
+        auto get_return_property() -> FProperty*;
 
-                add_callbacks(hook_data);
-            }
-            else
-            {
-                // If the UFunction hasn't been hooked yet, then we add the callback to the vector of callbacks and then hook the UFunction
-                auto& hook_data = hooked_functions.emplace(this, UnrealScriptFunctionData{
-                        .original_func = reinterpret_cast<UnrealScriptFunction>(get_func_ptr()),
-                }).first->second;
+        /**
+         * Retrieves the pointer to the underlying native function
+         * For script functions that would point to UObject::ProcessInternal, which handles
+         * execution of the Blueprint VM bytecode, otherwise it would point to the actual native function
+         */
+        auto get_func_ptr() -> UnrealScriptFunction;
 
-                add_callbacks(hook_data);
+        /**
+         * Updates function pointer to the new value
+         * The provided function will be executed when this UFunction object is called
+         */
+        auto set_func_ptr(UnrealScriptFunction new_func_ptr) -> void;
 
-                // The UFunction has to be hooked _after_ data has been inserted into the hooked functions map
-                set_func_ptr(&unreal_script_function_hook);
-            }
-        }
-
-        auto unhook_all() -> void;
-
-    public:
-        static auto to_string(void* p_this, std::wstring& out_line) -> void
-        {
-            UObject::trivial_dump_to_string(p_this, out_line, L":");
-        }
+        auto register_pre_hook(const UnrealScriptFunctionCallable& pre_callback, void* custom_data = nullptr) -> CallbackId;
+        auto register_post_hook(const UnrealScriptFunctionCallable& post_callback, void* custom_data = nullptr) -> CallbackId;
+        auto unregister_hook(CallbackId callback_id) -> bool;
+        auto unregister_all_hooks() -> void;
+    protected:
+        auto get_function_hook_data() -> UnrealScriptFunctionData&;
     };
 }
 

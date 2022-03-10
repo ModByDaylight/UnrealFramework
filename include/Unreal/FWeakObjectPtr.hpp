@@ -10,7 +10,8 @@ namespace RC::Unreal
     struct RC_UE_API FWeakObjectPtr
     {
     private:
-        constexpr static int32_t INDEX_NONE = -1;
+        // Why does this case this error: "error C2059: syntax error: '-'"
+        //constexpr static int32_t INDEX_NONE = -1;
 
         int32_t object_index;
         int32_t object_serial_number;

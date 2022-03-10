@@ -1,250 +1,293 @@
 #ifndef RC_UNREAL_UOBJECT_HPP
 #define RC_UNREAL_UOBJECT_HPP
 
-#include <array>
 #include <stdexcept>
 
-#include <Helpers/Casting.hpp>
-#include <Helpers/Format.hpp>
-
+#include <File/File.hpp>
+#include <Function/Function.hpp>
 #include <Unreal/Common.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
-#include <Unreal/StaticOffsetFinder.hpp>
-#include <Unreal/UObjectBaseUtility.hpp>
 #include <Unreal/NameTypes.hpp>
+#include <Unreal/FString.hpp>
 #include <Unreal/UnrealFlags.hpp>
-#include <Unreal/PropertyReaders.hpp>
 #include <Unreal/TypeChecker.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
+#include <Unreal/UObjectMacros.hpp>
+
+#define SUBOBJECT_DELIMITER_CHAR ':'
 
 namespace RC::Unreal
 {
-    class UClass;
-    class XStructData;
-    class UEnum;
-    template<typename InnerType>
-    class TUEnum;
+    class UObject;
+    struct FFrame;
 
-    // Temporary location for the FVector & FRotator structs
-    struct RC_UE_API FVector
+    namespace UnrealInitializer
     {
-        float X;
-        float Y;
-        float Z;
-    };
+        struct CacheInfo;
+        auto create_cache(CacheInfo&) -> void;
+        auto load_cache(CacheInfo&) -> void;
+    }
 
-    struct RC_UE_API FRotator
-    {
-        float Pitch;
-        float Yaw;
-        float Roll;
-    };
+    // Placeholder types for virtual functions
+    // TODO: Remove when they are implemented
+    using FRestoreForUObjectOverwrite = void*;
+    using FArchive = void*;
+    using FObjectDuplicationParameters = void*;
+    using FFeedbackContext = void*;
+    using FResourceSizeEx = void*;
+    using FAssetRegistryTag = void*;
+    using FPrimaryAssetId = void*;
 
-    // TODO: Replace this enum with actual types
-    // These types are used when speed is important
-    // To remain sane I will only add core types such as U/FProperty, IntProperty, ObjectProperty, etc
-    enum class EUObjectType
-    {
-        Default,
-        TestOne,
-        TestTwo,
-        TestThree,
-    };
+    template<typename Key, typename Value>
+    class TMap;
 
-    class RC_UE_API UObjectType
-    {
-    private:
-        class UObject* m_object{};
-
-    public:
-        explicit UObjectType(class UObject* object) : m_object(object) {};
-
-        [[nodiscard]] auto as_string() -> std::wstring;
-        [[nodiscard]] auto as_enum() -> EUObjectType;
-        [[nodiscard]] auto as_fname() -> FName;
-    };
-
-    class RC_UE_API UObject : public UObjectBaseUtility
+    class RC_UE_API UObjectBase
     {
     public:
-        using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
-        using ProcessEventSignature = void(*)(UObject* p_this, class UFunction*, void* parms);
-    private:
-        static inline class UClass* m_static_obj{};
+#include <VTableOffsets_UObjectBase.hpp>
 
     public:
-        // DO NOT USE... MEANT FOR INTERNAL USE ONLY
-        auto static set_static_obj_ptr(class UClass* ptr)
-        {
-            m_static_obj = ptr;
-        }
+        // Wrappers for virtual engine functions
+        auto register_dependencies() -> void;
+        auto deferred_register(class UClass* UClassStaticClass, const File::CharType* PackageName, const File::CharType* Name) -> void;
+    };
 
-        auto static static_class() -> class UClass*
-        {
-            if (!m_static_obj) { throw std::runtime_error{"[UObject::get_static_obj_ptr] m_static_obj is nullptr"}; }
-
-            return m_static_obj;
-        }
+    class RC_UE_API UObjectBaseUtility : public UObjectBase
+    {
+    public:
+#include <VTableOffsets_UObjectBaseUtility.hpp>
 
     public:
-        auto get_internal_index() -> uint32_t
-        {
-            // TODO: Automate this offset
-            return Helper::Casting::offset_deref<uint32_t>(this, 0xC);
-        }
+        // Wrappers for virtual engine functions
+        auto CanBeClusterRoot() const -> bool;
+        auto CanBeInCluster() const -> bool;
+        auto CreateCluster() -> void;
+        auto OnClusterMarkedAsPendingKill() -> void;
+    };
 
-        [[nodiscard]] auto get_uclass() const -> UClass*;
+    class RC_UE_API UObject
+    {
+        DECLARE_EXTERNAL_OBJECT_CLASS(UObject, CoreUObject);
 
-        auto get_outer() -> UObject*;
-        auto get_outer() const -> UObject*;
-        auto get_fname() -> FName;
-        auto get_fname() const -> FName;
-        auto get_type() -> UObjectType;
-        auto get_name() -> std::wstring;
-        auto get_name() const -> std::wstring;
-        auto is_a(UClass* uclass) -> bool;
+    public:
+        using ProcessEventSignature = void(UObject* context, class UFunction* function, void* params);
+        static Function<ProcessEventSignature> process_event_internal;
 
-        auto get_flags() const -> int32_t;
-        auto set_flags(const EObjectFlags new_flag) -> void;
-        auto set_flags(const std::array<EObjectFlags, EObjectFlags_Max>& new_flags) -> void;
-        auto has_any_flag(const EObjectFlags flags_to_check) -> bool;
-        auto has_any_flag(const std::array<EObjectFlags, EObjectFlags_Max>& flags_to_check) -> bool;
-        auto has_all_flags(const EObjectFlags flags_to_check) -> bool;
-        auto has_all_flags(const std::array<EObjectFlags, EObjectFlags_Max>& flags_to_check) -> bool;
+    protected:
+        friend void UnrealInitializer::create_cache(UnrealInitializer::CacheInfo&);
+        friend void UnrealInitializer::load_cache(UnrealInitializer::CacheInfo&);
+        friend void hook_process_event();
+        friend struct FWeakObjectPtr;
+        friend class AActor;
+        friend class UAssetRegistry;
 
+        auto get_internal_index() -> uint32_t;
         auto get_object_item() -> struct FUObjectItem*;
 
-        auto is_function() -> bool;
-        auto is_derived_from_struct() -> bool;
-        auto is_script_struct() -> bool;
-        auto is_actor() -> bool;
-        auto is_widget() -> bool;
-        auto is_class() -> bool;
-        auto is_any_class() -> bool;
-        auto is_enum() -> bool;
-        auto get_name_prefix() -> File::StringType;
+    public:
+#include <VTableOffsets_UObject.hpp>
 
-        template<UObjectGlobals::UObjectDerivative UObjectDerivedType>
-        auto is_a() -> bool
+        // Wrappers for virtual engine functions
+        FString GetDetailedInfoInternal() const;
+        void PostInitProperties();
+        void PostCDOContruct();
+        bool PreSaveRoot(const TCHAR* Filename);
+        void PostSaveRoot(bool bCleanupIsRequired);
+        void PreSave(const class ITargetPlatform* TargetPlatform);
+        bool IsReadyForAsyncPostLoad() const;
+        void PostLoad();
+        void PostLoadSubobjects(FObjectInstancingGraph* OuterInstanceGraph);
+        void BeginDestroy();
+        bool IsReadyForFinishDestroy();
+        void FinishDestroy();
+        void Serialize(FArchive& Ar);
+        // Implement this when the vtable offset generator supports multiple functions with the same name
+        //void Serialize(FStructuredArchive::FRecord Record);
+        void ShutdownAfterError();
+        void PostInterpChange(class FProperty* PropertyThatChanged);
+        void PostRename(UObject* OldOuter, const FName OldName);
+        void PreDuplicate(FObjectDuplicationParameters& DupParams);
+        void PostDuplicate(bool bDuplicateForPIE);
+        // Implement this when the vtable offset generator supports multiple functions with the same name
+        //void PostDuplicate(EDuplicateMode::Type DuplicateMode);
+        bool NeedsLoadForClient() const;
+        bool NeedsLoadForServer() const;
+        bool NeedsLoadForTargetPlatform(const class ITargetPlatform* TargetPlatform) const;
+        bool NeedsLoadForEditorGame() const;
+        bool IsEditorOnly() const;
+        bool IsPostLoadThreadSafe() const;
+        bool IsDestructionThreadSafe() const;
+        void GetPreloadDependencies(TArray<UObject*>& OutDeps);
+        void GetPrestreamPackages(TArray<UObject*>& OutPrestream);
+        void ExportCustomProperties(FOutputDevice& Out, uint32 Indent);
+        void ImportCustomProperties(const TCHAR* SourceText, FFeedbackContext* Warn);
+        void PostEditImport();
+        void PostReloadConfig(class FProperty* PropertyThatWasLoaded);
+        bool Rename(const TCHAR* NewName=nullptr, UObject* NewOuter=nullptr, ERenameFlags Flags=REN_None);
+        FString GetDesc();
+        class UScriptStruct* GetSparseClassDataStruct() const;
+        class UWorld* GetWorld() const;
+        bool GetNativePropertyValues(TMap<FString, FString>& out_PropertyValues, uint32 ExportFlags=0) const;
+        void GetResourceSizeEx(FResourceSizeEx& CumulativeResourceSize);
+        FName GetExporterName();
+        FRestoreForUObjectOverwrite* GetRestoreForUObjectOverwrite();
+        bool AreNativePropertiesIdenticalTo(UObject* Other) const;
+        void GetAssetRegistryTags(TArray<FAssetRegistryTag>& OutTags) const;
+        bool IsAsset() const;
+        FPrimaryAssetId GetPrimaryAssetId() const;
+        bool IsLocalizedResource() const;
+        bool IsSafeForRootSet() const;
+        void TagSubobjects(EObjectFlags NewFlags);
+        void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const;
+        bool IsNameStableForNetworking() const;
+        bool IsFullNameStableForNetworking() const;
+        bool IsSupportedForNetworking() const;
+        void GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList);
+        void PreNetReceive();
+        void PostNetReceive();
+        void PostRepNotifies();
+        void PreDestroyFromReplication();
+        void BuildSubobjectMapping(UObject* OtherObject, TMap<UObject*, UObject*>& ObjectMapping) const;
+        const TCHAR* GetConfigOverridePlatform() const;
+        void OverridePerObjectConfigSection(FString& SectionName);
+        void ProcessEvent(UFunction* Function, void* Parms);
+        int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack);
+        bool CallRemoteFunction(UFunction* Function, void* Parms, struct FOutParmRec* OutParms, FFrame* Stack);
+        bool ProcessConsoleExec(const TCHAR* Cmd, FOutputDevice& Ar, UObject* Executor);
+        UClass* RegenerateClass(UClass* ClassToRegenerate, UObject* PreviousCDO);
+        void MarkAsEditorOnlySubobject();
+        bool CheckDefaultSubobjectsInternal() const;
+        void ValidateGeneratedRepEnums(const TArray<struct FRepRecord>& ClassReps) const;
+        void SetNetPushIdDynamic(const int32 NewNetPushId);
+        int32 GetNetPushIdDynamic() const;
+
+    public:
+        /**
+         * Returns the Class of the object
+         */
+        auto get_uclass() const -> UClass*;
+
+        /**
+         * Returns the object acting as the outer of this object
+         * Every object must have a valid outer, with the exclusion of UPackage objects
+         */
+        auto get_outer() -> UObject*;
+
+        /**
+         * Returns name of the object as the instance of FName
+         * Names of the objects are unique inside their relevant outers
+         */
+        auto get_fname() -> FName;
+
+        /**
+         * Updates the flags currently set on the object to the provided ones
+         * This function overwrites the flags completely, use set_flags or clear_flags to
+         * add or remove flags instead
+         */
+        auto set_flags_to(EObjectFlags new_flags) -> void;
+
+        /**
+         * Returns the name of this object, as string
+         */
+        inline auto get_name() -> std::wstring
         {
-            return is_a(UObjectDerivedType::static_class());
-        }
-
-        auto get_outermost() -> UObject*
-        {
-            UObject* current_object = this;
-            while (current_object->get_outer())
-            {
-                current_object = current_object->get_outer();
-            }
-            return current_object;
-        }
-
-        template<typename Callable>
-        auto static for_each_uobject(Callable callable) -> void
-        {
-            Container::m_unreal_vc_base->UObjectArray_for_each_uobject(callable);
-        }
-
-        auto static is_real_object(const void* p_this) -> bool
-        {
-            bool object_was_found{};
-
-            for_each_uobject([&](void* obj, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t obj_index) {
-                if (p_this == obj)
-                {
-                    object_was_found = true;
-                    return LoopAction::Break;
-                }
-
-                return LoopAction::Continue;
-            });
-
-            return object_was_found;
-        }
-
-        auto get_property_data_ptr(const wchar_t* property_string) -> void*
-        {
-            PropertyDataVC data = Container::m_unreal_vc_base->read_property_vc(this, property_string);
-            return data.data_ptr;
+            return get_fname().to_string();
         }
 
         /**
-         * Attempts to find a property
-         * Can have the side effect of setting up 'get_property()'
-         * This is useful if you want the XProperty* but also want to rely on the system to get the value
-         * @param property_name
-         * @param with_side_effects Whether or not you want side effects (No by default & is recommended)
-         * @return Pointer to property or nullptr
+         * Checks whenever this object is an instance of the specified class
          */
-        auto find_property(FName, Base::WithSideEffects = Base::WithSideEffects::No, ExcludeSelf = ExcludeSelf::Yes) -> XProperty*;
+        auto is_a(UClass* uclass) -> bool;
 
-        auto get_property_internal(const wchar_t* property_string, class CustomProperty* custom_property = nullptr) -> PropertyDataVC;
-
-        template<typename PropertyType>
-        auto get_property(const wchar_t* property_string, class CustomProperty* custom_property = nullptr) -> auto
+        /**
+         * Adds new flags to the object
+         */
+        inline auto set_flags(EObjectFlags new_flags) -> void
         {
-            // TODO: Get XStructData working properly
-            // For now you'll have to use 'XStructProperty' instead of 'XStructData' when calling 'get_property'
-            // The problem is that 'XStructData' is incomplete in UObject.hpp and it cannot be included due to circ-inclusion
-
-            if constexpr (std::is_same_v<PropertyType, class XStructProperty>)
-            {
-                return PropertyType::read_data(get_property_internal(property_string, custom_property));
-            }
-            else if constexpr (std::is_enum_v<PropertyType>)
-            {
-                return TUEnum<PropertyType>::read_data(get_property_internal(property_string, custom_property));
-            }
-            else if constexpr (PropertyType::internal_type == InternalType::Map ||
-                               PropertyType::internal_type == InternalType::Array)
-            {
-                return PropertyType::read_data(get_property_internal(property_string, custom_property));
-            }
-            else
-            {
-                static_assert(false, "never hit");
-            }
+            Container::m_unreal_object_base->UObject_set_flags(this, new_flags);
         }
 
-        // Specializations for different property types
-        // Used to translate a standard type to XProperty so that the correct "read_data" function can be called
-        // This enables this syntax: get_property<int32_t>(L"SomeIntVar")
-        // You still have to use the old syntax for StructProperty: get_property<XStructProperty>(L"SomeStructVar")
-        REGISTER_ALL_PROPERTY_READERS(get_property, REGISTER_UOBJECT_PROPERTY_READER)
-
-        // To be used for any non-trivial properties that don't have their own special setter (for example operator[])
-        // For trivial properties simply deref and set normally
-        template<typename PropertyType>
-        auto set_property_value(const wchar_t* property_string, typename PropertyType::InnerType new_data) -> void
+        /**
+         * Removes the provided flags from the object
+         */
+        inline auto clear_flags(EObjectFlags clear_flags) -> void
         {
-            if (PropertyType::is_trivial)
-            {
-                throw std::runtime_error{
-                        "[UObjectImpl::write_property_data_impl] Tried to use 'write_property_data_impl' for a trivial property."};
-            }
-
-            PropertyDataVC data = Container::m_unreal_vc_base->read_property_vc(this, property_string);
-
-            if (!data.data_ptr) { throw std::runtime_error{"[UObjectImpl::write_property_data_impl] Data pointer is nullptr"}; }
-
-            PropertyType::write_data(data, new_data);
+            Container::m_unreal_object_base->UObject_clear_flags(this, clear_flags);
         }
 
-        template<typename PropertyType>
-        auto get_property_object(const wchar_t* property_string) -> void*
+        /**
+         * Checks whenever the object has any of the provided flags set
+         */
+        inline auto has_any_flag(EObjectFlags flags_to_check) -> bool
         {
-            return Container::m_unreal_vc_base->read_property_vc(this, property_string).property_ptr;
+            return Container::m_unreal_object_base->UObject_has_any_flag(this, flags_to_check);
         }
 
-        static inline Function<void(UObject* p_this, class UFunction*, void* parms)> process_event_internal;
-        auto process_event(class UFunction*, void* parms) -> void;
+        /**
+         * Checks whenever the object has all of the flags specified
+         */
+        auto has_all_flags(EObjectFlags flags_to_check) -> bool
+        {
+            return Container::m_unreal_object_base->UObject_has_all_flags(this, flags_to_check);
+        }
 
-        static auto trivial_dump_to_string(void* p_this, std::wstring& out_line, const wchar_t* post_delimiter = L".") -> void;
-        static auto to_string(void* p_this, std::wstring& out_line) -> void;
+        /**
+         * Templated version of the IsA(UClass*) function
+         */
+        template<UObjectDerivative T>
+        inline auto is_a() -> bool
+        {
+            return is_a(T::static_class());
+        }
+
+        /**
+         * Returns the outermost object for this object, normally the returned
+         * object will always represent the UPackage instance
+         */
+        auto get_outermost() -> UObject*;
+
+        /**
+         * Returns the first outer of the object that is a subclass of the provided type
+         */
+        auto get_typed_outer(UClass* outer_type) -> UObject*;
+
+         /**
+          * Templated version of the get_typed_outer function above,
+          * returns the object already casted to the provided type too
+          */
+         template<UObjectDerivative T>
+         auto get_typed_outer() -> T*
+         {
+              return cast_object<T>(get_typed_outer(T::static_class()));
+         }
+
+        /**
+         * Executes the ProcessEvent on this object with the provided function,
+         * which practically means calling the provided function with passed parameters struct
+         * and object as it's context argument
+         */
+        auto process_event(UFunction* function, void* params) -> void;
+
+        /**
+         * Returns the full path to the object in form of Package.Outer:ObjectName
+         * Safe to call on the NULL objects and will return None in that case
+         */
+        auto get_path_name(UObject* stop_outer = nullptr) -> std::wstring;
+
+        /**
+         * Returns the full name of the object in form Class Package.Outer:ObjectName
+         */
+        auto get_full_name(UObject* stop_outer = nullptr) -> std::wstring;
+
+        auto get_path_name(UObject* stop_outer, std::wstring& result_name) -> void;
+
+        size_t HashObject();
+
+        static bool is_real(const void* p_this);
     };
 
-    template<UObjectGlobals::UObjectDerivative CastResultType>
-    auto cast_uobject(UObject* object) -> CastResultType*
+    template<UObjectDerivative CastResultType>
+    auto cast_object(UObject* object) -> CastResultType*
     {
         return object != nullptr && object->is_a<CastResultType>() ? static_cast<CastResultType*>(object) : nullptr;
     }

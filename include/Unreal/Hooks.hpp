@@ -70,10 +70,6 @@ namespace RC::Unreal
         auto RC_UE_API register_process_event_post_callback(ProcessEventCallback) -> void;
     }
 
-    using HookedUFunctionMap = std::unordered_map<const UFunction*, UnrealScriptFunctionData>;
-    auto RC_UE_API get_hooked_functions_map() -> HookedUFunctionMap&;
-    auto RC_UE_API unreal_script_function_hook(UObject* context, FFrame& the_stack, void* result_decl) -> void;
-
     auto RC_UE_API hook_static_construct_object() -> void;
     auto RC_UE_API hook_process_event() -> void;
 

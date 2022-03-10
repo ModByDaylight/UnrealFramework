@@ -13,14 +13,16 @@ namespace RC::Unreal
     protected:
         class UFunction* m_function{nullptr};
         const File::CharType* m_function_name{};
+        int32 ReturnValueOffset{};
 
     public:
         ReflectedFunctionBase(const File::CharType* function_name) : m_function(nullptr), m_function_name(function_name) {}
 
     public:
         auto get_name() const -> const File::CharType* { return m_function_name; }
-        auto assign_function(UFunction* function) -> void { m_function = function; }
+        auto assign_function(UFunction* function) -> void;
         auto is_valid() -> bool;
+        int32 GetReturnValueOffset() { return ReturnValueOffset; }
     };
 
     template<typename Owner>

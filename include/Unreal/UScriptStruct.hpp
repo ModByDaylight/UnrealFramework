@@ -3,52 +3,54 @@
 
 #include <Helpers/Casting.hpp>
 
-#include <Unreal/UStruct.hpp>
 #include <Unreal/StaticOffsetFinder.hpp>
+#include <Unreal/UStruct.hpp>
 #include <Unreal/TypeChecker.hpp>
 
 namespace RC::Unreal
 {
     class RC_UE_API UScriptStruct : public UStruct
     {
-    private:
-        static inline class UClass* m_static_obj{};
+        DECLARE_EXTERNAL_OBJECT_CLASS(UScriptStruct, CoreUObject);
 
     public:
-        // DO NOT USE... MEANT FOR INTERNAL USE ONLY
-        auto static set_static_obj_ptr(class UClass* ptr)
+        struct RC_UE_API ICppStructOps
         {
-            m_static_obj = ptr;
-        }
-
-        auto static static_class() -> class UClass*
-        {
-            if (!m_static_obj) { throw std::runtime_error{"[UScriptStruct::get_static_obj_ptr] m_static_obj is nullptr"}; }
-
-            return m_static_obj;
-        }
+#include <VTableOffsets_UScriptStruct__ICppStructOps.hpp>
+        };
 
     public:
-        auto get_size() -> int32_t
-        {
-            return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_PropertiesSize));
-        }
+        int32 GetSize();
 
-        auto get_super_script_struct() -> UScriptStruct* {
-            return static_cast<UScriptStruct*>(get_super_struct());
-        }
+        /**
+         * Returns the struct acting as a parent to this struct
+         * Can totally return nullptr since most structs do not have a parent struct
+         */
+        auto get_super_script_struct() -> UScriptStruct*;
 
-        auto has_any_struct_flags(EStructFlags flags_to_check);
-        auto has_all_struct_flags(EStructFlags flags_to_check);
+        /**
+         * Returns the flags set on the struct
+         * Some of the returned flags are determined automatically in runtime, others are saved
+         */
         auto get_struct_flags() -> EStructFlags;
 
-        // Intentionally hides a non-virtual function
-        // For this variant, there could be properties that belong to this object
-        // As opposed to UObject that cannot have any properties itself
-        auto find_property(FName property_name, Base::WithSideEffects with_side_effects = Base::WithSideEffects::No, ExcludeSelf = ExcludeSelf::No) -> XProperty*;
+        /**
+         * Checks if the struct has any of the provided flags set
+         * Returns true if at least one of the provided struct flags is set
+         */
+        inline auto has_any_struct_flags(EStructFlags flags_to_check)
+        {
+            return (get_struct_flags() & flags_to_check) != 0;
+        }
 
-    public:
-        static auto to_string_complex(void* p_this, std::wstring& out_line, TypeChecker::ObjectToStringComplexDeclCallable callable) -> void;
+        /**
+         * Checks if the struct has all of the provided flags set
+         * Returns true only if all of the provided struct flags are set
+         */
+        inline auto has_all_struct_flags(EStructFlags flags_to_check)
+        {
+            return (get_struct_flags() & flags_to_check) == flags_to_check;
+        }
     };
 }
 

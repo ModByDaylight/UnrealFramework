@@ -2,24 +2,47 @@
 #include <Unreal/UObject.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UScriptStruct.hpp>
+#include <Unreal/VersionedContainer/Container.hpp>
+#include <Unreal/UPackage.hpp>
+#include <Unreal/TMap.hpp>
+#include <Unreal/UFunction.hpp>
 
 namespace RC::Unreal
 {
-    auto UObject::trivial_dump_to_string(void* p_this, std::wstring& out_line, const wchar_t* post_delimiter) -> void
-    {
-        UObject* p_typed_this = static_cast<UObject*>(p_this);
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UObject);
 
-        out_line.append(std::format(L"[{:016X}] ", reinterpret_cast<uintptr_t>(p_this)));
-        p_typed_this->get_full_name(out_line);
-        out_line.append(std::format(L" [n: {:X}] [c: {:016X}] [or: {:016X}]",
-                                    p_typed_this->get_fname().get_comparison_index(),
-                                    reinterpret_cast<uintptr_t>(p_typed_this->get_uclass()),
-                                    reinterpret_cast<uintptr_t>(p_typed_this->get_outer())));
+    using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
+
+    Function<UObject::ProcessEventSignature> UObject::process_event_internal;
+
+    auto UObjectBase::register_dependencies() -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBase, RegisterDependencies, void)
     }
 
-    auto UObject::to_string(void* p_this, std::wstring& out_line) -> void
+    auto UObjectBase::deferred_register(class UClass* UClassStaticClass, const File::CharType* PackageName, const File::CharType* Name) -> void
     {
-        trivial_dump_to_string(p_this, out_line);
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObjectBase, DeferredRegister, void, PARAMS(const UClass*, const File::CharType*, const File::CharType*), ARGS(UClassStaticClass, PackageName, Name))
+    }
+
+    auto UObjectBaseUtility::CanBeClusterRoot() const -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, CanBeClusterRoot, bool)
+    }
+
+    auto UObjectBaseUtility::CanBeInCluster() const -> bool
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, CanBeInCluster, bool)
+    }
+
+    auto UObjectBaseUtility::CreateCluster() -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, CreateCluster, void)
+    }
+
+    auto UObjectBaseUtility::OnClusterMarkedAsPendingKill() -> void
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, OnClusterMarkedAsPendingKill, void)
     }
 
     auto UObject::get_uclass() const -> UClass*
@@ -31,70 +54,20 @@ namespace RC::Unreal
     {
         return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_OuterPrivate));
     }
-    auto UObject::get_outer() const -> UObject*
-    {
-        return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_OuterPrivate));
-    }
 
     auto UObject::get_fname() -> FName
     {
         return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_NamePrivate));
     }
 
-    auto UObject::get_fname() const -> FName
+    auto UObject::set_flags_to(EObjectFlags new_flags) -> void
     {
-        return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_NamePrivate));
+        Container::m_unreal_object_base->UObject_set_flags_to(this, new_flags);
     }
 
-    auto UObject::get_type() -> UObjectType
+    auto UObject::get_internal_index() -> uint32_t
     {
-        return UObjectType{this};
-    }
-
-    auto UObject::get_name() -> std::wstring
-    {
-        return get_fname().to_string();
-    }
-
-    auto UObject::get_name() const -> std::wstring
-    {
-        return get_fname().to_string();
-    }
-
-    auto UObject::get_flags() const -> int32_t
-    {
-        // TODO: Hard-coding this for now. Consider not hard-coding this.
-        return Container::m_unreal_object_base->UObject_get_flags(this);
-    }
-
-    auto UObject::set_flags(const EObjectFlags new_flag) -> void
-    {
-        Container::m_unreal_object_base->UObject_set_flags(this, {new_flag});
-    }
-
-    auto UObject::set_flags(const std::array<EObjectFlags, EObjectFlags_Max>& new_flags) -> void
-    {
-        Container::m_unreal_object_base->UObject_set_flags(this, new_flags);
-    }
-
-    auto UObject::has_any_flag(const EObjectFlags flags_to_check) -> bool
-    {
-        return Container::m_unreal_object_base->UObject_has_any_flag(this, {flags_to_check});
-    }
-
-    auto UObject::has_any_flag(const std::array<EObjectFlags, EObjectFlags_Max>& flags_to_check) -> bool
-    {
-        return Container::m_unreal_object_base->UObject_has_any_flag(this, flags_to_check);
-    }
-
-    auto UObject::has_all_flags(const EObjectFlags flags_to_check) -> bool
-    {
-        return Container::m_unreal_object_base->UObject_has_all_flags(this, {flags_to_check});
-    }
-
-    auto UObject::has_all_flags(const std::array<EObjectFlags, EObjectFlags_Max>& flags_to_check) -> bool
-    {
-        return Container::m_unreal_object_base->UObject_has_all_flags(this, flags_to_check);
+        return Container::m_unreal_object_base->UObject_get_internal_index(this);
     }
 
     auto UObject::get_object_item() -> FUObjectItem*
@@ -102,171 +75,477 @@ namespace RC::Unreal
         return static_cast<FUObjectItem*>(Container::m_unreal_vc_base->UObjectArray_index_to_object(get_internal_index()));
     }
 
-    auto UObject::is_function() -> bool
+    FString UObject::GetDetailedInfoInternal() const
     {
-        return get_uclass()->get_fname() == TypeChecker::get_fname(L"Function");
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetDetailedInfoInternal, FString)
     }
 
-    auto UObject::is_derived_from_struct() -> bool
+    void UObject::PostInitProperties()
     {
-        for (UStruct* obj = get_uclass(); obj; obj = obj->get_super_struct())
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, PostInitProperties, void)
+    }
+
+    void UObject::PostCDOContruct()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, PostCDOContruct, void)
+    }
+
+    bool UObject::PreSaveRoot(const TCHAR* Filename)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PreSaveRoot, bool, PARAMS(const TCHAR*), ARGS(Filename))
+    }
+
+    void UObject::PostSaveRoot(bool bCleanupIsRequired)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PostSaveRoot, void, PARAMS(bool), ARGS(bCleanupIsRequired))
+    }
+
+    void UObject::PreSave(const ITargetPlatform* TargetPlatform)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PreSave, void, PARAMS(const ITargetPlatform*), ARGS(TargetPlatform))
+    }
+
+    bool UObject::IsReadyForAsyncPostLoad() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsReadyForAsyncPostLoad, bool)
+    }
+
+    void UObject::PostLoad()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, PostLoad, void)
+    }
+
+    void UObject::PostLoadSubobjects(FObjectInstancingGraph* OuterInstanceGraph)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PostLoadSubobjects, void, PARAMS(FObjectInstancingGraph*), ARGS(OuterInstanceGraph))
+    }
+
+    void UObject::BeginDestroy()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, BeginDestroy, void)
+    }
+
+    bool UObject::IsReadyForFinishDestroy()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsReadyForFinishDestroy, bool)
+    }
+
+    void UObject::FinishDestroy()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, FinishDestroy, void)
+    }
+
+    void UObject::Serialize(FArchive& Ar)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, Serialize, void, PARAMS(FArchive&), ARGS(Ar))
+    }
+
+    void UObject::ShutdownAfterError()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, ShutdownAfterError, void)
+    }
+
+    void UObject::PostInterpChange(FProperty* PropertyThatChanged)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PostInterpChange, void, PARAMS(FProperty*), ARGS(PropertyThatChanged))
+    }
+
+    void UObject::PostRename(UObject* OldOuter, const FName OldName)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PostRename, void, PARAMS(UObject*, const FName), ARGS(OldOuter, OldName))
+    }
+
+    void UObject::PreDuplicate(FObjectDuplicationParameters& DupParams)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PreDuplicate, void, PARAMS(FObjectDuplicationParameters&), ARGS(DupParams))
+    }
+
+    void UObject::PostDuplicate(bool bDuplicateForPIE)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PostDuplicate, void, PARAMS(bool), ARGS(bDuplicateForPIE))
+    }
+
+    bool UObject::NeedsLoadForClient() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, NeedsLoadForClient, bool)
+    }
+
+    bool UObject::NeedsLoadForServer() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, NeedsLoadForServer, bool)
+    }
+
+    bool UObject::NeedsLoadForTargetPlatform(const ITargetPlatform* TargetPlatform) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, NeedsLoadForTargetPlatform, bool, PARAMS(const ITargetPlatform*), ARGS(TargetPlatform))
+    }
+
+    bool UObject::NeedsLoadForEditorGame() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, NeedsLoadForEditorGame, bool)
+    }
+
+    bool UObject::IsEditorOnly() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsEditorOnly, bool)
+    }
+
+    bool UObject::IsPostLoadThreadSafe() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsPostLoadThreadSafe, bool)
+    }
+
+    bool UObject::IsDestructionThreadSafe() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsDestructionThreadSafe, bool)
+    }
+
+    void UObject::GetPreloadDependencies(TArray<UObject*>& OutDeps)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, GetPreloadDependencies, void, PARAMS(TArray<UObject*>&), ARGS(OutDeps))
+    }
+
+    void UObject::GetPrestreamPackages(TArray<UObject*>& OutPrestream)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, GetPrestreamPackages, void, PARAMS(TArray<UObject*>&), ARGS(OutPrestream))
+    }
+
+    void UObject::ExportCustomProperties(FOutputDevice& Out, uint32 Indent)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, ExportCustomProperties, void, PARAMS(FOutputDevice&, uint32), ARGS(Out, Indent))
+    }
+
+    void UObject::ImportCustomProperties(const TCHAR* SourceText, FFeedbackContext* Warn)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, ImportCustomProperties, void, PARAMS(const TCHAR*, FFeedbackContext*), ARGS(SourceText, Warn))
+    }
+
+    void UObject::PostEditImport()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, PostEditImport, void)
+    }
+
+    void UObject::PostReloadConfig(FProperty* PropertyThatWasLoaded)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, PostReloadConfig, void, PARAMS(FProperty*), ARGS(PropertyThatWasLoaded))
+    }
+
+    bool UObject::Rename(const TCHAR* NewName, UObject* NewOuter, ERenameFlags Flags)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject,
+                                         Rename,
+                                         bool,
+                                         PARAMS(const TCHAR*, UObject*, ERenameFlags),
+                                         ARGS(NewName, NewOuter, Flags))
+    }
+
+    FString UObject::GetDesc()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetDesc, FString)
+    }
+
+    UScriptStruct* UObject::GetSparseClassDataStruct() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetSparseClassDataStruct, UScriptStruct*)
+    }
+
+    UWorld* UObject::GetWorld() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetWorld, UWorld*)
+    }
+
+    bool UObject::GetNativePropertyValues(TMap<FString, FString>& out_PropertyValues, uint32 ExportFlags) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject,
+                                         GetNativePropertyValues,
+                                         bool,
+                                         PARAMS(TMap<FString, FString>&, uint32),
+                                         ARGS(out_PropertyValues, ExportFlags))
+    }
+
+    void UObject::GetResourceSizeEx(FResourceSizeEx& CumulativeResourceSize)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, GetResourceSizeEx, void, PARAMS(FResourceSizeEx&), ARGS(CumulativeResourceSize))
+    }
+
+    FName UObject::GetExporterName()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetExporterName, FName)
+    }
+
+    FRestoreForUObjectOverwrite* UObject::GetRestoreForUObjectOverwrite()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetRestoreForUObjectOverwrite, FRestoreForUObjectOverwrite*)
+    }
+
+    bool UObject::AreNativePropertiesIdenticalTo(UObject* Other) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, AreNativePropertiesIdenticalTo, bool, PARAMS(UObject*), ARGS(Other))
+    }
+
+    void UObject::GetAssetRegistryTags(TArray<FAssetRegistryTag>& OutTags) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, GetAssetRegistryTags, void, PARAMS(TArray<FAssetRegistryTag>&), ARGS(OutTags))
+    }
+
+    bool UObject::IsAsset() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsAsset, bool)
+    }
+
+    FPrimaryAssetId UObject::GetPrimaryAssetId() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetPrimaryAssetId, FPrimaryAssetId)
+    }
+
+    bool UObject::IsLocalizedResource() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsLocalizedResource, bool)
+    }
+
+    bool UObject::IsSafeForRootSet() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsSafeForRootSet, bool)
+    }
+
+    void UObject::TagSubobjects(EObjectFlags NewFlags)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, TagSubobjects, void, PARAMS(EObjectFlags), ARGS(NewFlags))
+    }
+
+    void UObject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, GetLifetimeReplicatedProps, void, PARAMS(TArray<FLifetimeProperty>&), ARGS(OutLifetimeProps))
+    }
+
+    bool UObject::IsNameStableForNetworking() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsNameStableForNetworking, bool)
+    }
+
+    bool UObject::IsFullNameStableForNetworking() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsFullNameStableForNetworking, bool)
+    }
+
+    bool UObject::IsSupportedForNetworking() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, IsSupportedForNetworking, bool)
+    }
+
+    void UObject::GetSubobjectsWithStableNamesForNetworking(TArray<UObject*>& ObjList)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject,
+                                         GetSubobjectsWithStableNamesForNetworking,
+                                         void,
+                                         PARAMS(TArray<UObject*>&),
+                                         ARGS(ObjList))
+    }
+
+    void UObject::PreNetReceive()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, PreNetReceive, void)
+    }
+
+    void UObject::PostNetReceive()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, PostNetReceive, void)
+    }
+
+    void UObject::PostRepNotifies()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, PostRepNotifies, void)
+    }
+
+    void UObject::PreDestroyFromReplication()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, PreDestroyFromReplication, void)
+    }
+
+    void UObject::BuildSubobjectMapping(UObject* OtherObject, TMap<UObject*, UObject*>& ObjectMapping) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject,
+                                         BuildSubobjectMapping,
+                                         void,
+                                         PARAMS(UObject*, TMap<UObject*, UObject*>&),
+                                         ARGS(OtherObject, ObjectMapping))
+    }
+
+    const TCHAR* UObject::GetConfigOverridePlatform() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetConfigOverridePlatform, TCHAR*)
+    }
+
+    void UObject::OverridePerObjectConfigSection(FString& SectionName)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, OverridePerObjectConfigSection, void, PARAMS(FString&), ARGS(SectionName))
+    }
+
+    void UObject::ProcessEvent(UFunction* Function, void* Parms)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, ProcessEvent, void, PARAMS(UFunction*, void*), ARGS(Function, Parms))
+    }
+
+    int32 UObject::GetFunctionCallspace(UFunction* Function, FFrame* Stack)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, GetFunctionCallspace, int32, PARAMS(UFunction*, FFrame*), ARGS(Function, Stack))
+    }
+
+    bool UObject::CallRemoteFunction(UFunction* Function, void* Parms, struct FOutParmRec* OutParms, FFrame* Stack)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject,
+                                         CallRemoteFunction,
+                                         bool,
+                                         PARAMS(UFunction*, void*, FOutParmRec*, FFrame*),
+                                         ARGS(Function, Parms, OutParms, Stack))
+    }
+
+    bool UObject::ProcessConsoleExec(const TCHAR* Cmd, FOutputDevice& Ar, UObject* Executor)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject,
+                                         ProcessConsoleExec,
+                                         bool,
+                                         PARAMS(const TCHAR*, FOutputDevice&, UObject*),
+                                         ARGS(Cmd, Ar, Executor))
+    }
+
+    UClass* UObject::RegenerateClass(UClass* ClassToRegenerate, UObject* PreviousCDO)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, RegenerateClass, UClass*, PARAMS(UClass*, UObject*), ARGS(ClassToRegenerate, PreviousCDO))
+    }
+
+    void UObject::MarkAsEditorOnlySubobject()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, MarkAsEditorOnlySubobject, void)
+    }
+
+    bool UObject::CheckDefaultSubobjectsInternal() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, CheckDefaultSubobjectsInternal, bool)
+    }
+
+    void UObject::ValidateGeneratedRepEnums(const TArray<struct FRepRecord>& ClassReps) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, ValidateGeneratedRepEnums, void, PARAMS(const TArray<FRepRecord>&), ARGS(ClassReps))
+    }
+
+    void UObject::SetNetPushIdDynamic(const int32 NewNetPushId)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, SetNetPushIdDynamic, void, PARAMS(const int32), ARGS(NewNetPushId))
+    }
+
+    int32 UObject::GetNetPushIdDynamic() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetNetPushIdDynamic, int32)
+    }
+
+    auto UObject::process_event(UFunction* function, void* params) -> void
+    {
+        process_event_internal(this, function, params);
+    }
+
+    auto UObject::get_outermost() -> UObject*
+    {
+        UObject* current_object = this;
+        while (current_object->get_outer())
         {
-            if (obj == UStruct::static_class()) { return true; }
+            current_object = current_object->get_outer();
         }
-
-        return false;
+        return current_object;
     }
 
-    auto UObject::is_script_struct() -> bool
+    auto UObject::get_typed_outer(UClass* outer_type) -> UObject*
     {
-        return get_uclass() == UScriptStruct::static_class();
-    }
-
-    auto UObject::is_actor() -> bool
-    {
-        UClass* obj_class = get_uclass();
-        if (!obj_class) { return false; }
-
-        FName actor_name = TypeChecker::get_fname(L"Actor");
-
-        if (get_fname().equals(actor_name)) { return true; }
-
-        if (is_any_class())
+        UObject* current_outer = get_outer();
+        while (current_outer != nullptr)
         {
-            UStruct* object_super_struct = static_cast<UClass*>(this)->get_super_struct();
-            if (object_super_struct && object_super_struct->get_fname().equals(actor_name)) { return true; }
-        }
-
-        if (obj_class->get_fname().equals(actor_name)) { return true; }
-
-        UStruct* super_struct = obj_class->get_super_struct();
-        while (super_struct)
-        {
-            if (super_struct->get_fname().equals(actor_name))
+            if (current_outer->is_a(outer_type))
             {
-                return true;
+                return current_outer;
             }
-
-            super_struct = super_struct->get_super_struct();
+            current_outer = current_outer->get_outer();
         }
-
-        return false;
+        return nullptr;
     }
 
-    auto UObject::is_widget() -> bool
-    {
-        UClass* obj_class = get_uclass();
-        if (!obj_class) { return false; }
-
-        FName widget_name = TypeChecker::get_fname(L"Widget");
-
-        if (obj_class->get_fname() == widget_name) { return true; }
-
-        UStruct* super_struct = obj_class->get_super_struct();
-        while (super_struct)
-        {
-            if (super_struct->get_fname() == widget_name)
-            {
-                return true;
-            }
-
-            super_struct = super_struct->get_super_struct();
-        }
-
-        return false;
-    }
-
-    auto UObject::is_class() -> bool
-    {
-        return get_uclass()->get_fname() == TypeChecker::get_fname(L"Class");
-    }
-
-    auto UObject::is_any_class() -> bool
-    {
-        FName obj_name = get_uclass()->get_fname();
-        if (obj_name == TypeChecker::get_fname(L"Class")) { return true; }
-        if (obj_name == TypeChecker::get_fname(L"BlueprintGeneratedClass")) { return true; }
-        if (obj_name == TypeChecker::get_fname(L"AnimBlueprintGeneratedClass")) { return true; }
-        if (obj_name == TypeChecker::get_fname(L"DynamicClass")) { return true; }
-        if (obj_name == TypeChecker::get_fname(L"LinkerPlaceholderClass")) { return true; }
-        if (obj_name == TypeChecker::get_fname(L"AsyncActionLoadPrimaryAssetClass")) { return true; }
-        if (obj_name == TypeChecker::get_fname(L"SoundClass")) { return true; }
-        if (obj_name == TypeChecker::get_fname(L"SoundNodeSoundClass")) { return true; }
-        if (obj_name == TypeChecker::get_fname(L"WidgetBlueprintGeneratedClass")) { return true; }
-
-        return false;
-    }
-
-    auto UObject::is_enum() -> bool
-    {
-        return get_uclass()->get_fname() == TypeChecker::m_core_enum_name;
-    }
-
-    auto UObject::get_name_prefix() -> File::StringType
-    {
-        if (is_actor())
-        {
-            return STR("A");
-        }
-        else if (is_widget())
-        {
-            return STR("S");
-        }
-        else if (is_script_struct())
-        {
-            return STR("F");
-        }
-        else
-        {
-            return STR("U");
-        }
-    }
-
-    auto UObject::find_property(FName property_name, Base::WithSideEffects with_side_effects, ExcludeSelf exclude_self) -> XProperty*
-    {
-        PropertyDataVC data = Container::m_unreal_vc_base->find_property_vc(this, property_name.to_string().c_str(), with_side_effects, exclude_self);
-        return static_cast<XProperty*>(data.property_ptr);
-    }
-
-    auto UObject::get_property_internal(const wchar_t* property_string, class CustomProperty* custom_property) -> PropertyDataVC
-    {
-        PropertyDataVC data = Container::m_unreal_vc_base->read_property_vc(this, property_string, custom_property);
-
-        return data;
-    }
-
-    auto UObject::process_event(UFunction* function, void* parms) -> void
-    {
-        process_event_internal(this, function, parms);
-    }
-
-    auto UObject::is_a(UClass* uclass) -> bool
-    {
+    auto UObject::is_a(UClass* uclass) -> bool {
         return get_uclass()->is_child_of(uclass);
     }
 
-    auto UObjectType::as_string() -> std::wstring
+    auto UObject::get_path_name(UObject *stop_outer) -> std::wstring
     {
-        return m_object->get_uclass()->get_fname().to_string();
+        std::wstring result_name;
+        get_path_name(stop_outer, result_name);
+        return result_name;
     }
 
-    auto UObjectType::as_enum() -> EUObjectType
+    auto UObject::get_path_name(UObject* stop_outer, std::wstring& result_string) -> void
     {
-        // TODO: implement enum-based type values
-        // This will use either the fname or pointer of known core objects such as IntProperty
-        // Pros of using fname:
-        // * It's fast as it only compares two integers (possibly four when you account for both comparisonindex and number)
-        // * While I'm fairly sure that these known objects don't get reallocated (which means new pointers)
-        //   I also am not completely sure.
-        //   Using fname should make it less likely to break as the fname won't change even if the pointer changes
-        //
-        // Pros of using pointer:
-        // * It 's fast as it only compares two pointers
-        return EUObjectType::Default;
+        if(this != stop_outer && this != nullptr)
+        {
+            UObject* outer = get_outer();
+
+            if (outer && outer != stop_outer)
+            {
+                outer->get_path_name(stop_outer, result_string);
+
+                // SUBOBJECT_DELIMITER_CHAR is used to indicate that this object's outer is not a UPackage
+                // We use the name of UPackage here instead of StaticClass because StaticClass has not yet been initialized,
+                // and it cannot be initialized until after a bunch of GetPathName calls has already happened
+                if (outer->get_uclass()
+                    && outer->get_uclass()->get_fname() != TypeChecker::m_core_package_name
+                    && outer->get_outer()
+                    && outer->get_outer()->get_uclass()->get_fname() == TypeChecker::m_core_package_name)
+                {
+                    result_string.push_back(SUBOBJECT_DELIMITER_CHAR);
+                }
+                else
+                {
+                    result_string.append(STR("."));
+                }
+            }
+            result_string.append(get_name());
+        }
+        else
+        {
+            result_string.append(STR("None"));
+        }
     }
 
-    auto UObjectType::as_fname() -> FName
+    size_t UObject::HashObject()
     {
-        return m_object->get_uclass()->get_fname();
+        return reinterpret_cast<size_t>(this);
+    }
+
+    auto UObject::get_full_name(UObject* stop_outer) -> std::wstring
+    {
+        if (this == nullptr)
+        {
+            return STR("None");
+        }
+        else
+        {
+            std::wstring out_name;
+            out_name.append(get_uclass()->get_name() + STR(" "));
+            get_path_name(stop_outer, out_name);
+            return out_name;
+        }
+    }
+
+    bool UObject::is_real(const void* p_this)
+    {
+        bool ObjectWasFound{};
+
+        UObjectGlobals::ForEachUObject([&](void* obj, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t obj_index) {
+            if (p_this == obj)
+            {
+                ObjectWasFound = true;
+                return LoopAction::Break;
+            }
+
+            return LoopAction::Continue;
+        });
+
+        return ObjectWasFound;
     }
 }

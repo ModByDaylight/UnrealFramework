@@ -4,112 +4,300 @@
 #include <functional>
 #include <stdexcept>
 #include <type_traits>
+#include <unordered_set>
 
 #include <Constructs/Loop.hpp>
 #include <Helpers/Format.hpp>
-
 #include <Unreal/Common.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
+#include <Unreal/ChooseClass.hpp>
+#include <Unreal/ContainersFwd.hpp>
+#include <Unreal/ContainerAllocationPolicies.hpp>
+#include <Unreal/FMemory.hpp>
 #include <Unreal/VersionedContainer/Base.hpp>
-#include <Unreal/Property/XArrayProperty.hpp>
-#include <Unreal/Property/XStructProperty.hpp>
+#include <Unreal/TypeChecker.hpp>
+
+//#include <Unreal/Property/FArrayProperty.hpp>
+//#include <Unreal/Property/FStructProperty.hpp>
 
 namespace RC::Unreal
 {
     class XStructData;
 
+    // Redo or remove this, need to think about it
     template<typename ArrayInnerType>
     constexpr bool ArraySizeIsImplicit = !(std::is_same_v<ArrayInnerType, struct FAssetData>);
 
     auto RC_UE_API get_struct_data_at(void* data_param, size_t index) -> XStructData*;
 
-    template<typename ArrayInnerType>
+    /*
+     * Problems with TArray:
+     *
+     * The TArray destructor doesn't call element destructors.
+     *
+     * You can't create a new TArray in the games memory.
+     */
+    template<typename InElementType, typename InAllocator>
     class TArray
     {
     public:
         constexpr static inline InternalType internal_type = InternalType::Array;
+        using SizeType = typename InAllocator::SizeType;
+        using ElementType = InElementType;
+        using Allocator = InAllocator;
+
+        typedef typename TChooseClass<
+                Allocator::NeedsElementType,
+                typename Allocator::template ForElementType<ElementType>,
+                typename Allocator::ForAnyElementType
+        >::Result ElementAllocatorType;
 
     protected:
-        ArrayInnerType* data{};
-        int32_t array_num{};
-        int32_t array_max{};
+        ElementAllocatorType AllocatorInstance{};
+        int32 ArrayNum{};
+        int32 ArrayMax{};
 
     public:
-        TArray(ArrayInnerType* data_ptr, int32_t current_size, int32_t capacity) : data(data_ptr), array_num(current_size),
-                                                                                   array_max(capacity) {}
+        // Custom constructor for when we already have a TArray in memory, and we'd just like to take it over
+        //TArray(ArrayInnerType* data_ptr, int32_t current_size, int32_t capacity) : data(data_ptr), ArrayNum(current_size),
+        //                                                                           ArrayMax(capacity) {}
 
-    public:
-        auto static read_data(PropertyDataVC data) -> TArray<ArrayInnerType>
+        TArray([[maybe_unused]]InElementType* data_ptr, int32_t current_size, int32_t capacity) : ArrayNum(current_size), ArrayMax(capacity)
         {
-            UntypedTArray untyped_array = XArrayProperty::read_data(data);
+            //AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(data_ptr);
+        }
 
-            if constexpr (std::is_same_v<ArrayInnerType, XStructData>)
+        // Constructor for when we want to allocate a new TArray in the games memory
+        // The TArray itself is on the stack (or local heap) but the data pointer will be in the games own heap
+        TArray() = default;
+
+        // Problems with this copying:
+        // The underlying data might get deallocated from the original TArray going out of scope
+        // At that point, any access to the copied TArray is undefined
+        // For now, delete the copy constructor & copy assignment operator to disallow copying
+        TArray(const TArray& Other)
+        {
+            CopyFrom_Helper(Other);
+        }
+
+        TArray& operator=(const TArray& Other)
+        {
+            if (this != &Other)
             {
-                // Doing some cheating here, we're storing an XStructData object here instead of an actual data ptr
-                // The data ptr can be found inside the XStructData object
+                CopyFrom_Helper(Other);
+            }
 
-                XProperty* inner = XArrayProperty::get_inner(data);
-                if (!inner)
-                {
-                    throw std::runtime_error{"[TArray::read_data] Inner is nullptr"};
-                }
+            return *this;
+        }
 
-                return TArray<ArrayInnerType>(
-                        XStructProperty::construct(data, inner, untyped_array.elements_ptr),
-                        untyped_array.num_elements,
-                        untyped_array.max_elements
-                );
+        TArray& operator=(TArray& Other)
+        {
+            if (this != &Other)
+            {
+                CopyFrom_Helper(Other);
+            }
+
+            return *this;
+        }
+
+        ~TArray()
+        {
+            // TODO: Call destructors
+        }
+
+        // Memory related -> START
+    private:
+        SizeType GetElementSize()
+        {
+            if constexpr (std::is_same_v<ElementType, struct FAssetData>)
+            {
+                // Structs where the size is unknown to the compiler
+                // This happens when a struct has had layout changes and now has different sizes in different engine versions
+                return ElementType::StaticSize();
             }
             else
             {
-                return TArray<ArrayInnerType>(
-                        static_cast<ArrayInnerType*>(untyped_array.elements_ptr),
-                        untyped_array.num_elements,
-                        untyped_array.max_elements
-                );
+                // Structs where the size is known to the compiler
+                return sizeof(ElementType);
             }
         }
 
-        auto get_data_ptr() const -> ArrayInnerType*
+        SizeType GetElementSize() const
         {
-            return data;
+            if constexpr (std::is_same_v<ElementType, struct FAssetData>)
+            {
+                // Structs where the size is unknown to the compiler
+                // This happens when a struct has had layout changes and now has different sizes in different engine versions
+                return ElementType::StaticSize();
+            }
+            else
+            {
+                // Structs where the size is known to the compiler
+                return sizeof(ElementType);
+            }
         }
 
-        auto set_data_ptr(ArrayInnerType* new_data_ptr) -> void
+        void CopyFrom_Helper(const TArray& Other)
         {
-            data = new_data_ptr;
+            if constexpr (IsTInlineAllocator<InAllocator>)
+            {
+                std::memcpy(&AllocatorInstance, &Other.AllocatorInstance, Other.AllocatorInstance.GetInitialCapacity() * GetElementSize());
+
+                if (auto AllocatedSize = Other.AllocatorInstance.GetAllocatedSize(Other.ArrayNum, Other.GetElementSize()); AllocatedSize > 0)
+                {
+                    AllocatorInstance.SecondaryData.Data = static_cast<FScriptContainerElement*>(FMemory::Malloc(Other.ArrayMax * GetElementSize()));
+                    std::memcpy(AllocatorInstance.SecondaryData.Data, Other.AllocatorInstance.SecondaryData.Data, AllocatedSize);
+                }
+                else
+                {
+                    AllocatorInstance.SecondaryData.Data = nullptr;
+                }
+
+                ArrayNum = Other.ArrayNum;
+                ArrayMax = Other.ArrayMax;
+            }
+            else
+            {
+                if (Other.AllocatorInstance.GetAllocation())
+                {
+                    AllocatorInstance.Data = static_cast<FScriptContainerElement*>(FMemory::Malloc(Other.ArrayMax * GetElementSize()));
+                    std::memcpy(AllocatorInstance.Data, Other.AllocatorInstance.Data, Other.ArrayNum * GetElementSize());
+                    ArrayNum = Other.ArrayNum;
+                    ArrayMax = Other.ArrayMax;
+                }
+                else
+                {
+                    AllocatorInstance.Data = nullptr;
+                    ArrayNum = 0;
+                    ArrayMax = 0;
+                }
+            }
         }
 
+    public:
+        void Reserve(SizeType Number)
+        {
+            if (Number <= 0) { throw std::runtime_error{"TArray::Reserve called with a Number <= 0"}; }
+
+            if (Number > ArrayMax)
+            {
+                ResizeTo(Number);
+            }
+        }
+
+        void ResizeTo(SizeType NewMax)
+        {
+            if (NewMax)
+            {
+                NewMax = AllocatorInstance.CalculateSlackReserve(NewMax, GetElementSize());
+            }
+
+            if (NewMax != ArrayMax)
+            {
+                ArrayMax = NewMax;
+                AllocatorInstance.ResizeAllocation(ArrayNum, ArrayMax, GetElementSize());
+            }
+        }
+
+        SizeType AddUninitialized(SizeType Count = 1)
+        {
+            const SizeType OldNum = ArrayNum;
+            if ((ArrayNum += Count) > ArrayMax)
+            {
+                ResizeGrow(OldNum);
+            }
+            return OldNum;
+        }
+
+        SizeType AddZeroed(SizeType Count = 1)
+        {
+            const SizeType Index = AddUninitialized(Count);
+            FMemory::Memzero((uint8*)AllocatorInstance.GetAllocation() + Index*GetElementSize(), Count*GetElementSize());
+            return Index;
+        }
+
+        void ResizeGrow(SizeType OldNum)
+        {
+            ArrayMax = AllocatorInstance.CalculateSlackGrow(ArrayNum, ArrayMax, GetElementSize());
+            AllocatorInstance.ResizeAllocation(OldNum, ArrayMax, GetElementSize());
+        }
+        // Memory related -> END
+
+    public:
+        auto get_data_ptr() const -> InElementType*
+        {
+            return std::bit_cast<InElementType*>(AllocatorInstance.GetAllocation());
+        }
+
+        auto set_data_ptr(InElementType* new_data_ptr) -> void
+        {
+            if constexpr (IsTInlineAllocator<InAllocator>)
+            {
+                static_assert(false, "TArray::set_data_ptr cannot be used with TInlineAllocator");
+            }
+            else
+            {
+                AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(new_data_ptr);
+            }
+        }
+
+        // Temporary function to keep compatibility with UE4SS before UE4SS is fully updated
         auto get_array_num() const -> int32_t
         {
-            return array_num;
+            return ArrayNum;
+        }
+
+        SizeType Num() const
+        {
+            return ArrayNum;
         }
 
         auto set_array_num(int32_t new_array_num) -> void
         {
-            array_num = new_array_num;
+            ArrayNum = new_array_num;
         }
 
+        // Temporary function to keep compatibility with UE4SS before UE4SS is fully updated
         auto get_array_max() const -> int32_t
         {
-            return array_max;
+            return ArrayMax;
+        }
+
+        SizeType Max() const
+        {
+            return ArrayMax;
         }
 
         auto set_array_max(int32_t new_array_max) -> void
         {
-            array_max = new_array_max;
+            ArrayMax = new_array_max;
         }
 
-        auto copy_fast(const TArray<ArrayInnerType>& other) -> void
+        // Temporary function
+        // Transfers ownership of another data ptr to this instance of TArray
+        // The 'other' TArray becomes zeroed
+        auto copy_fast(TArray<InElementType, Allocator>& other) -> void
         {
-            data = other.data;
-            array_num = other.array_num;
-            array_max = other.array_max;
+            if constexpr (IsTInlineAllocator<InAllocator>)
+            {
+                static_assert(false, "TArray::copy_fast cannot be used with TInlineAllocator");
+            }
+
+            AllocatorInstance.Data = other.AllocatorInstance.GetAllocation();
+            ArrayNum = other.ArrayNum;
+            ArrayMax = other.ArrayMax;
+
+            // Hack to prevent deallocation when 'other' goes out of scope
+            other.AllocatorInstance.Data = nullptr;
+            other.ArrayNum = 0;
+            other.ArrayMax = 0;
         }
 
-        auto at(size_t index) -> ArrayInnerType*
+        auto at(size_t index) -> InElementType*
         {
             // Index is zero-based and the stored max is one-based
-            if (get_array_num() == 0 || index > get_array_num() - 1)
+            // Anything after ArrayMax is uninitialized, but it must succeed still so that operator[] can be used to initialize the element
+            if (get_array_max() == 0 || index > get_array_max() - 1)
             {
                 throw std::runtime_error{fmt("[TArrayImpl::at] out of range (num elements: %d | requested elem: %d)", (get_array_num() - 1 < 0 ? 0 : get_array_num() - 1), index)};
             }
@@ -117,30 +305,19 @@ namespace RC::Unreal
             // Need to know the type here so that we can calculate the location of each array element
             // TODO: Come up with a better solution. TArray shouldn't need to know about StructProperty or XStructData.
             // I've hardcoded the StructProperty implementation for now but at least it's constexpr.
-            if constexpr (std::is_same_v<ArrayInnerType, class XStructData>)
+            if constexpr (std::is_same_v<InElementType, class XStructData>)
             {
                 return get_struct_data_at(get_data_ptr(), index);
             }
             else
             {
-                if constexpr (ArraySizeIsImplicit<ArrayInnerType>)
-                {
-                    // This is for trivial types
-                    // The data ptr for trivial types is directly mapped to the game memory
-                    // The type is also exactly ArrayInnerType so it's safe to use operator[]
-                    return &data[index];
-                }
-                else
-                {
-                    // This is for non-trivial types
-                    return reinterpret_cast<ArrayInnerType*>(reinterpret_cast<uintptr_t>(data) + (index * ArrayInnerType::static_class()->get_size()));
-                }
+                return std::bit_cast<InElementType*>(&AllocatorInstance.GetAllocation()[index * GetElementSize()]);
             }
         }
 
-        auto operator[](size_t index) -> ArrayInnerType*
+        auto operator[](size_t index) -> InElementType&
         {
-            return static_cast<ArrayInnerType*>(at(index));
+            return *static_cast<InElementType*>(at(index));
         }
 
     private:
@@ -154,7 +331,7 @@ namespace RC::Unreal
         }
 
     public:
-        using TArrayForEachCallableAllParamsImpl = const std::function<LoopAction(ArrayInnerType*, size_t)>&;
+        using TArrayForEachCallableAllParamsImpl = const std::function<LoopAction(InElementType*, size_t)>&;
         auto for_each(TArrayForEachCallableAllParamsImpl callable) -> void
         {
             for_each_internal([&](auto elem, auto index) {
@@ -162,7 +339,7 @@ namespace RC::Unreal
             });
         }
 
-        using TArrayForEachCallableParamElemOnlyImpl = const std::function<LoopAction(ArrayInnerType*)>&;
+        using TArrayForEachCallableParamElemOnlyImpl = const std::function<LoopAction(InElementType*)>&;
         auto for_each(TArrayForEachCallableParamElemOnlyImpl callable) -> void
         {
             for_each_internal([&](auto elem, [[maybe_unused]]auto index) {

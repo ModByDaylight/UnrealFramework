@@ -47,14 +47,13 @@ namespace RC::Unreal
         };
         using EObjectFlagsType = std::underlying_type_t<EObjectFlags_Impl>;
 
-    private:
-        static std::unordered_map<EObjectFlags, EObjectFlags_Impl> object_flags_converter;
-
     public:
         // Converts the flags to the implementation flags
         // If a flag doesn't exist in this implementation then that flag will be ignored (not converted)
-        auto static to_impl_flags(const std::array<EObjectFlags, EObjectFlags_Max>& flags) -> EObjectFlags_Impl;
+        auto static to_impl_flags(const EObjectFlags flags) -> EObjectFlags_Impl;
     };
+
+    ENUM_CLASS_FLAGS(Flags415::EObjectFlags_Impl);
 }
 
 

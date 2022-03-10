@@ -15,7 +15,7 @@ namespace RC::Unreal
     class CustomProperty;
     class FField;
     class FFieldClass;
-    class XProperty;
+    class FProperty;
 
     struct RC_UE_API PropertyDataVC
     {
@@ -35,7 +35,7 @@ namespace RC::Unreal
     {
     protected:
         using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
-        class XProperty* m_current_property{};
+        class FProperty* m_current_property{};
 
     public:
         virtual ~Base() = default; // Virtual Destructor
@@ -74,27 +74,14 @@ namespace RC::Unreal
         // GUObjectArray -> END
 
         // FField -> START
-        virtual auto Field_get_type_fname(const FField* p_this) -> FName = 0;
-        virtual auto Field_get_ffield_owner(const FField* p_this) -> void* = 0;
+        virtual auto Field_get_type_fname(FField* p_this) -> FName = 0;
+        virtual auto Field_get_ffield_owner(FField* p_this) -> void* = 0;
         // FField -> END
 
         // FFieldClass -> START
         // Should map to UField in <4.25
-        virtual auto FFieldClass_get_fname(const FFieldClass* p_this) -> FName = 0;
+        virtual auto FFieldClass_get_fname(FFieldClass* p_this) -> FName = 0;
         // FFieldClass -> END
-
-        // XProperty -> START
-
-        enum class WithSideEffects
-        {
-            Yes,
-            No
-        };
-
-        // Returns a pointer to data
-        virtual auto find_property_vc(void* uobject, const wchar_t* property_string, WithSideEffects, ExcludeSelf = ExcludeSelf::Yes) -> PropertyDataVC = 0;
-        virtual auto read_property_vc(void* uobject, const wchar_t* property_string, CustomProperty* custom_property = nullptr) -> PropertyDataVC = 0;
-        // XProperty -> END
     };
 
     class Default : public Base
@@ -244,7 +231,6 @@ namespace RC::Unreal
         struct FUObjectArray
         {
             using TUObjectArray = FChunkedFixedUObjectArray;
-
 
             int32_t obj_first_gc_index;
             int32_t obj_last_non_gc_index;

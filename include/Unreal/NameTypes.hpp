@@ -3,8 +3,8 @@
 
 #include <string>
 
+#include <Function/Function.hpp>
 #include <Unreal/Common.hpp>
-#include <Unreal/UObjectBaseUtility.hpp>
 
 namespace RC::Unreal
 {
@@ -14,7 +14,12 @@ namespace RC::Unreal
         RC_UE_API auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
     }
 
-    struct RC_UE_API FName
+    // TODO: Figure out what's going on here
+    //       It shouldn't be required to use 'alignas' here to make sure it's aligned properly in containers (like TArray)
+    //       I've never seen an FName not be 8-byte aligned in memory,
+    //       but it is 4-byte aligned in the source so hopefully this doesn't cause any problems
+#pragma warning(disable: 4324) // Suppressing warning about struct alignment
+    struct alignas(8) RC_UE_API FName
     {
     public:
         enum class EFindName
@@ -34,7 +39,7 @@ namespace RC::Unreal
         uint32_t number{};
 
     public:
-        static inline Function<void(FName*, FStringOut&)> to_string_internal{};
+        static inline Function<void(FName*, class FStringOut&)> to_string_internal{};
         static inline Function<FName(const wchar_t*, EFindName)> constructor_internal{};
 
     private:
@@ -145,6 +150,7 @@ namespace RC::Unreal
 #endif
         [[nodiscard]] auto get_number() const -> uint32_t { return number; }
     };
+#pragma warning(default: 4324)
 }
 
 namespace std

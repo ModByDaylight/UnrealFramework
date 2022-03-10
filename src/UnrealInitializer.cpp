@@ -1,14 +1,20 @@
 #include <stdexcept>
+#include <format>
+
 #include <Helpers/Casting.hpp>
+#include <Helpers/Integer.hpp>
 #include <SigScanner/SinglePassSigScanner.hpp>
 #include <DynamicOutput/DynamicOutput.hpp>
 #include <Unreal/UnrealInitializer.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
+#include <Unreal/VersionedContainer/UnrealVirtualImpl/UnrealVirtualBaseVC.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/Signatures.hpp>
 #include <Unreal/Hooks.hpp>
+#include <Unreal/UObject.hpp>
 #include <Unreal/FString.hpp>
 #include <Unreal/FMemory.hpp>
+#include <Unreal/FAssetData.hpp>
 
 
 namespace RC::Unreal::UnrealInitializer
@@ -156,7 +162,7 @@ namespace RC::Unreal::UnrealInitializer
     {
         auto get_module_offset = [&](ScanTarget scan_target, void* address) -> unsigned long {
             MODULEINFO module = SigScannerStaticData::m_modules_info[scan_target];
-            return reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(module.lpBaseOfDll);
+            return Helper::Integer::to<unsigned long>(reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(module.lpBaseOfDll));
         };
 
         auto serialize = [&](ScanTarget scan_target, void* address) -> void {
@@ -182,17 +188,14 @@ namespace RC::Unreal::UnrealInitializer
         serialize(ScanTarget::CoreUObject, PakFileTesting::Storage::static_load_object_address);
 #endif
 
-        serialize(ScanTarget::CoreUObject, UObjectGlobals::GlobalState::static_find_object_internal.get_function_address());
-
         // Version is special, it's major/minor instead of ScanTarget/ModuleOffset
         cache_info.game_exe_file.serialize_item(Version::major);
         cache_info.game_exe_file.serialize_item(Version::minor);
 
         serialize(ScanTarget::Core, FName::to_string_internal.get_function_address());
         serialize(ScanTarget::Core, FName::constructor_internal.get_function_address());
-        serialize(ScanTarget::Core, FMemory::free.get_function_address());
-        serialize(ScanTarget::CoreUObject, UObject::process_event_internal.get_function_address());
         serialize(ScanTarget::CoreUObject, UObjectGlobals::GlobalState::static_construct_object_internal.get_function_address());
+        serialize(ScanTarget::Core, FMalloc::UnrealStaticGMalloc);
     }
 
     auto load_cache(CacheInfo& cache_info) -> void
@@ -224,8 +227,6 @@ namespace RC::Unreal::UnrealInitializer
         PakFileTesting::Storage::static_load_object_func = std::bit_cast<PakFileTesting::StaticLoadObjectFunc>(PakFileTesting::Storage::static_load_object_address);
 #endif
 
-        UObjectGlobals::setup_static_find_object_address(deserialize());
-
         // Version is special, it's major/minor instead of ScanTarget/ModuleOffset
        auto major = cache_info.game_exe_file.get_serialized_item<unsigned int>();
        auto minor = cache_info.game_exe_file.get_serialized_item<unsigned int>();
@@ -241,55 +242,40 @@ namespace RC::Unreal::UnrealInitializer
 
         FName::to_string_internal.assign_address(deserialize());
         FName::constructor_internal.assign_address(deserialize());
-        FMemory::free.assign_address(deserialize());
-        UObject::process_event_internal.assign_address(deserialize());
         void* static_construct_object_address = deserialize();
         UObjectGlobals::GlobalState::static_construct_object_internal.assign_address(static_construct_object_address);
         UObjectGlobals::GlobalState::static_construct_object_internal_deprecated.assign_address(static_construct_object_address);
+        FMalloc::UnrealStaticGMalloc = static_cast<FMalloc**>(deserialize());
+        GMalloc = *FMalloc::UnrealStaticGMalloc;
+
+        Output::send(STR("Deserialized FName::ToString address: {}\n"), FName::to_string_internal.get_function_address());
+        Output::send(STR("Deserialized StaticConstructObject_Internal address: {}\n"), static_construct_object_address);
+        Output::send(STR("Deserialized FName::FName address: {}\n"), FName::constructor_internal.get_function_address());
+        Output::send(STR("Deserialized GUObjectArray address: {}\n"), guobjectarray);
+        Output::send(STR("Deserialized GMalloc address: {}\n"), static_cast<void*>(GMalloc));
     }
 
     auto initialize_versioned_container() -> void
     {
-        // Even though this is the dynamic version that uses offsets it's still necessary to use a VersionedContainer sometimes.
-        // The reason is because it's supposed to be faster and more convenient.
-        // When there are differences in the implementation between different UE versions we use a VersionedContainer.
-        // That way we can simply call 'our_object->get_<whatever>()'.
-        // It'll automatically apply the correct offset for the detected version of Unreal Engine.
+        Container::set_derived_base_objects();
+    }
 
-        if (Version::major < 4)
+    auto static post_initialize() -> void
+    {
+        if (!GMalloc && FMalloc::UnrealStaticGMalloc)
         {
-            throw std::runtime_error{"UnrealInitializerImpl: Unreal Engine version of <4.0 is not supported"};
+            GMalloc = *FMalloc::UnrealStaticGMalloc;
+            Output::send(STR("Post-initialization: GMalloc: {} -> {}\n"), (void*)FMalloc::UnrealStaticGMalloc, (void*)GMalloc);
         }
 
-        if (Version::is_atmost(4, 12))
+        // FAssetData was not reflected before 4.17
+        // We'll need to manually add FAssetData for every engine version eventually
+        if (Version::is_atleast(4, 17))
         {
-            Container::set_to_derived<EngineVersion::UE4_12>();
-        }
-        else if (Version::is_atmost(4, 15))
-        {
-            Container::set_to_derived<EngineVersion::UE4_15>();
-        }
-        else if (Version::is_atmost(4, 18))
-        {
-            // TODO: Add support for 4.18
-            // Using 4.22 for now but that will break a soon as GUObjectArray is used
-            //Container::set_to_derived<Derived417>();
-            // Using 4.12 since it seems to have the correct GUObjectArray definition
-            Container::set_to_derived<EngineVersion::UE4_12>();
-        }
-        else if (Version::is_atmost(4, 24))
-        {
-            Container::set_to_derived<EngineVersion::UE4_22>();
-        }
-        else if (Version::is_atmost(4, 25))
-        {
-            Container::set_to_derived<EngineVersion::UE4_25>();
-        }
-        else
-        {
-            // If this code is ever reached then the version isn't explicitly supported
-            // Using 4.25 as a long-shot, sometimes this will work but in the future it's likely that this will break
-            Container::set_to_derived<EngineVersion::UE4_25>();
+            if (FAssetData::FAssetDataAssumedStaticSize < FAssetData::StaticSize())
+            {
+                throw std::runtime_error{"Tell a developer: FAssetData::StaticSize is too small to hold the entire struct"};
+            }
         }
     }
 
@@ -354,12 +340,17 @@ namespace RC::Unreal::UnrealInitializer
                     {
                         Output::send(success_message);
                     }
+
+                    for (const auto& info_message : scan_result.info_messages)
+                    {
+                        Output::send(STR("Info: {}"), info_message);
+                    }
                 }
             };
 
             auto do_scan = [&](auto scanner_function, SuppressScanAttemptMessage suppress_scan_attempt_message = SuppressScanAttemptMessage::No) {
                 // Modular games have much smaller binaries, therefore many scans can be completed very quickly
-                static const int num_scans_before_fatal_failure = SigScannerStaticData::m_is_modular ? config.num_scan_attempts_modular : config.num_scan_attempts_normal;
+                static const int64_t num_scans_before_fatal_failure = SigScannerStaticData::m_is_modular ? config.num_scan_attempts_modular : config.num_scan_attempts_normal;
 
                 Signatures::ScanResult scan_result{};
                 for (int i = 0; scan_result.scan_status == Signatures::ScanStatus::Failed && i < num_scans_before_fatal_failure; ++i)
@@ -430,7 +421,6 @@ namespace RC::Unreal::UnrealInitializer
         Hook::add_required_object(STR("/Script/CoreUObject.DynamicClass"));
 
         hook_static_construct_object();
-        hook_process_event();
 
         for (int32_t i = 0; i < 2000 && !Hook::StaticStorage::all_required_objects_constructed; ++i)
         {
@@ -441,6 +431,17 @@ namespace RC::Unreal::UnrealInitializer
             // It will also prevent unnecessarily high CPU usage
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
+
+        Container::m_unreal_virtual_base->set_virtual_offsets();
+
+        auto* object = UObjectGlobals::static_find_object(nullptr, nullptr, STR("/Script/CoreUObject.Default__Object"));
+        if (!object)
+        {
+            throw std::runtime_error{"Post-initialization: Was unable to find 'CoreUObject.Default__Object' to use to retrieve the address of ProcessEvent"};
+        }
+
+        UObject::process_event_internal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessEvent, object));
+        hook_process_event();
 
         TypeChecker::store_all_object_names();
 
@@ -459,7 +460,9 @@ namespace RC::Unreal::UnrealInitializer
         StaticOffsetFinder::find_offsets(config.process_handle);
         StaticOffsetFinder::output_all_member_offsets();
 
+        FMalloc::IsInitialized = true;
         StaticStorage::is_initialized = true;
 
+        post_initialize();
     }
 }

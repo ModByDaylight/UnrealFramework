@@ -1,69 +1,35 @@
 #include <Unreal/UField.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
-#include <Unreal/XProperty.hpp>
+#include <Unreal/VersionedContainer/Container.hpp>
 
 namespace RC::Unreal
 {
-    auto UField::for_each_function(ForEachChildCallable<UFunction*> callable) -> LoopAction
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UField);
+
+    using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
+
+    auto UField::get_next_ufield() -> UField*
     {
-        UFunction* function = get_children<UFunction*>();
-        if (!function) { return LoopAction::Continue; }
-
-        bool is_below_425 = Version::is_below(4, 25);
-        LoopAction loop_action{};
-
-        do
-        {
-            if (loop_action == LoopAction::Break) { return LoopAction::Break; }
-
-            if (is_below_425)
-            {
-                // In <4.25, the linked list contains both properties and functions
-                // We must filter out all non-functions
-                if (!function->get_uclass()->is_child_of<UFunction>())
-                {
-                    function = function->get_next_child<UFunction*>();
-                    continue;
-                }
-            }
-
-            loop_action = callable(function);
-
-            function = function->get_next_child<UFunction*>();
-        } while (function);
-
-        return loop_action;
+        return Helper::Casting::offset_deref<UField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UField_Next));
     }
 
-    auto UField::for_each_property(std::function<LoopAction(XProperty*)> callable) -> LoopAction
+    auto UField::as_ffield_unsafe() -> FField*
     {
-        XProperty* child = get_childproperties<XProperty*>();
-        if (!child) { return LoopAction::Continue; }
-
-        bool is_below_425 = Version::is_below(4, 25);
-        LoopAction loop_action{};
-
-        do
+        if (!Version::is_below(4, 25))
         {
-            if (loop_action == LoopAction::Break) { return LoopAction::Break; }
+            throw std::runtime_error("Cannot convert UField to FField in UE versions above 4.25");
+        }
+        return std::bit_cast<FField*>(this);
+    }
 
-            if (is_below_425)
-            {
-                // In <4.25, the linked list contains both properties and functions
-                // We must filter out all functions
-                if (child->as_object()->get_uclass()->is_child_of<UFunction>())
-                {
-                    child = child->get_next<XProperty*>();
-                    continue;
-                }
-            }
+    void UField::AddCppProperty(FProperty* Property)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UField, AddCppProperty, void, PARAMS(FProperty*), ARGS(Property))
+    }
 
-            loop_action = callable(child);
-
-            child = child->get_next<XProperty*>();
-        } while (child);
-
-        return loop_action;
+    void UField::Bind()
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UField, Bind, void)
     }
 }

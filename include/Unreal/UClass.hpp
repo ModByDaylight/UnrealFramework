@@ -13,10 +13,7 @@
 
 namespace RC::Unreal
 {
-    template<typename ArrayInnerType>
-    class TArray;
 
-    // TODO: Move to a more appropriate place ?
     struct RC_UE_API FImplementedInterface
     {
         UClass* Class;
@@ -26,23 +23,7 @@ namespace RC::Unreal
 
     class RC_UE_API UClass : public UStruct
     {
-    private:
-        static inline class UClass* m_static_obj{};
-
-    public:
-        // DO NOT USE... MEANT FOR INTERNAL USE ONLY
-        auto static set_static_obj_ptr(class UClass* ptr)
-        {
-            m_static_obj = ptr;
-        }
-
-        auto static static_class() -> class UClass*
-        {
-            if (!m_static_obj) { throw std::runtime_error{"[UClass::get_static_obj_ptr] m_static_obj is nullptr"}; }
-
-            return m_static_obj;
-        }
-
+        DECLARE_EXTERNAL_OBJECT_CLASS(UClass, CoreUObject);
     public:
         struct Offset
         {
@@ -70,7 +51,6 @@ namespace RC::Unreal
             //*/
             static inline int32_t class_config_name;
         };
-
     public:
         auto has_any_class_flags(EClassFlags flags_to_check) -> bool;
         auto has_all_class_flags(EClassFlags flags_to_check) -> bool;
@@ -78,54 +58,22 @@ namespace RC::Unreal
         auto get_class_within() -> UClass*;
         auto get_class_config_name() -> FName;
         auto get_class_default_object() -> UObject*;
-        auto get_interfaces() -> TArray<FImplementedInterface>;
+        auto get_interfaces() -> TArray<FImplementedInterface>&;
 
         auto get_super_class() -> UClass*
         {
             return reinterpret_cast<UClass*>(get_super_struct());
         }
-
-        static auto to_string(void* p_this, std::wstring& out_line) -> void;
     };
 
     class RC_UE_API UBlueprintGeneratedClass : public UClass
     {
-    private:
-        static inline class UClass* m_static_obj{};
-
-    public:
-        // DO NOT USE... MEANT FOR INTERNAL USE ONLY
-        auto static set_static_obj_ptr(class UClass* ptr)
-        {
-            m_static_obj = ptr;
-        }
-
-        auto static static_class() -> class UClass*
-        {
-            if (!m_static_obj) { throw std::runtime_error{"[UBlueprintGeneratedClass::get_static_obj_ptr] m_static_obj is nullptr"}; }
-
-            return m_static_obj;
-        }
+        DECLARE_EXTERNAL_OBJECT_CLASS(UBlueprintGeneratedClass, Engine);
     };
 
     class RC_UE_API UAnimBlueprintGeneratedClass : public UClass
     {
-    private:
-        static inline class UClass* m_static_obj{};
-
-    public:
-        // DO NOT USE... MEANT FOR INTERNAL USE ONLY
-        auto static set_static_obj_ptr(class UClass* ptr)
-        {
-            m_static_obj = ptr;
-        }
-
-        auto static static_class() -> class UClass*
-        {
-            if (!m_static_obj) { throw std::runtime_error{"[UAnimBlueprintGeneratedClass::get_static_obj_ptr] m_static_obj is nullptr"}; }
-
-            return m_static_obj;
-        }
+        DECLARE_EXTERNAL_OBJECT_CLASS(UAnimBlueprintGeneratedClass, Engine);
     };
 }
 

@@ -39,9 +39,6 @@ namespace RC::Unreal
         FStringOut(const FStringOut&); // Copy constructor
         FStringOut(FStringOut&&) noexcept;  // Move constructor
         ~FStringOut();
-
-    protected:
-        auto unreal_destruct_impl() -> void;
     };
 
 }

@@ -8,7 +8,7 @@ namespace RC::Unreal
     class UObject;
     class UProperty;
     class UField;
-    class FOutParmRec;
+    struct FOutParmRec;
     class UFunction;
 
     using FlowStackType = uint8_t[0x30];

@@ -5,6 +5,8 @@
 
 namespace RC::Unreal
 {
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(AActor)
+
     auto AActor::get_level() -> UObject*
     {
         UObject* outer = get_outer();

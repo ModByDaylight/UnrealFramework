@@ -24,81 +24,16 @@ set(TARGET Unreal)
 project(${TARGET})
 
 include(${RC_COMMON_CMAKE_FILE})
-
-set(SOURCES
-        "src/StaticOffsetFinder.cpp"
-        "src/Signatures.cpp"
-        "src/VersionedContainer/Derived412.cpp"
-        "src/VersionedContainer/UObject412.cpp"
-        "src/VersionedContainer/Flags412.cpp"
-        "src/VersionedContainer/Derived415.cpp"
-        "src/VersionedContainer/UObject415.cpp"
-        "src/VersionedContainer/Flags415.cpp"
-        "src/VersionedContainer/Derived422.cpp"
-        "src/VersionedContainer/UObject422.cpp"
-        "src/VersionedContainer/Flags422.cpp"
-        "src/VersionedContainer/Derived425.cpp"
-        "src/VersionedContainer/UObject425.cpp"
-        "src/VersionedContainer/Flags425.cpp"
-        "src/NameTypes.cpp"
-        "src/UnrealVersion.cpp"
-        "src/UObjectArray.cpp"
-        "src/UObjectGlobals.cpp"
-        "src/UObjectBaseUtility.cpp"
-        "src/UObject.cpp"
-        "src/UPackage.cpp"
-        "src/UFunction.cpp"
-        "src/AActor.cpp"
-        "src/UClass.cpp"
-        "src/FField.cpp"
-        "src/UField.cpp"
-        "src/UStruct.cpp"
-        "src/UScriptStruct.cpp"
-        "src/UnrealInitializer.cpp"
-        "src/TypeChecker.cpp"
-        "src/XProperty.cpp"
-        "src/TArray.cpp"
-        "src/UEnum.cpp"
-        "src/XStructData.cpp"
-        "src/FWeakObjectPtr.cpp"
-        "src/FText.cpp"
-        "src/FString.cpp"
-        "src/CustomType.cpp"
-        "src/PropertyReaders.cpp"
-        "src/Property/XNumericProperty.cpp"
-        "src/Property/XArrayProperty.cpp"
-        "src/Property/XStructProperty.cpp"
-        "src/Property/XObjectProperty.cpp"
-        "src/Property/XWeakObjectProperty.cpp"
-        "src/Property/XLazyObjectProperty.cpp"
-        "src/Property/XSoftObjectProperty.cpp"
-        "src/Property/XClassProperty.cpp"
-        "src/Property/XSoftClassProperty.cpp"
-        "src/Property/XByteProperty.cpp"
-        "src/Property/XEnumProperty.cpp"
-        "src/Property/XMapProperty.cpp"
-        "src/Property/XTextProperty.cpp"
-        "src/Property/XStrProperty.cpp"
-        "src/Property/XDelegateProperty.cpp"
-        "src/Property/XMulticastInlineDelegateProperty.cpp"
-        "src/Property/XMulticastSparseDelegateProperty.cpp"
-        "src/Property/XInterfaceProperty.cpp"
-        "src/Property/XFieldPathProperty.cpp"
-        "src/Property/XSetProperty.cpp"
-        "src/Hooks.cpp"
-        "src/ReflectedFunction.cpp"
-        "src/UAssetRegistry.cpp"
-        "src/UAssetRegistryHelpers.cpp"
-        "src/FMemory.cpp"
-        )
+file(GLOB_RECURSE SOURCES src/**.cpp)
+file(GLOB_RECURSE GENERATED_SOURCES generated_src/**.cpp)
 
 if (${RC_UNREAL_SHARED_LIBS} EQUAL 1)
     message("Creating shared ${TARGET} library")
-    add_library(${TARGET} SHARED ${SOURCES})
+    add_library(${TARGET} SHARED ${SOURCES} ${GENERATED_SOURCES})
     target_compile_definitions(${TARGET} PRIVATE RC_EXPORT)
 else ()
     message("Creating static ${TARGET} library")
-    add_library(${TARGET} OBJECT ${SOURCES})
+    add_library(${TARGET} OBJECT ${SOURCES} ${GENERATED_SOURCES} include/Unreal/TProperty.hpp include/Unreal/Property/FNumericProperty.hpp)
     target_compile_definitions(${TARGET} PUBLIC RC_UNREAL_BUILD_STATIC)
     target_compile_options(${TARGET} PUBLIC /MT$<$<CONFIG:DEBUG>:d>)
     target_link_options(${TARGET} PUBLIC /NODEFAULTLIB:MSVCRT)
@@ -114,7 +49,8 @@ add_rc_dependency_to_target(${TARGET} ScopedTimer)
 add_rc_dependency_to_target(${TARGET} DynamicOutput)
 
 target_include_directories(${TARGET} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_compile_options(${TARGET} PRIVATE /MP $<$<CONFIG:RELEASE>:/Zi> /W4)
+target_include_directories(${TARGET} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/generated_include>)
+target_compile_options(${TARGET} PRIVATE /MP $<$<CONFIG:RELEASE>:/Zi> /W4 /wd4005)
 target_link_options(${TARGET} PRIVATE /DEBUG:FULL)
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 

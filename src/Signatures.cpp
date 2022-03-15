@@ -219,14 +219,17 @@ namespace RC::Unreal::Signatures
             scan_result.info_messages.emplace(STR("Found FName::ToString in both Engine & CoreUObject modules, using the first match\n"));
         }
 
-        if (FNameToStringNumMatches >= 1 && FNameToStringAddress)
+        if (!config.scan_overrides.fname_to_string)
         {
-            FName::to_string_internal.assign_address(FNameToStringAddress);
-            scan_result.success_messages.emplace_back(std::format(STR("FName::ToString address: {} <- Built-in\n"), static_cast<void*>(FNameToStringAddress)));
-        }
-        else
-        {
-            scan_result.errors.emplace_back("Was unable to find AOB for 'FName::ToString'\nYou can supply your own in 'UE4SS_Signatures/FName_ToString.lua'");
+            if (FNameToStringNumMatches >= 1 && FNameToStringAddress)
+            {
+                FName::to_string_internal.assign_address(FNameToStringAddress);
+                scan_result.success_messages.emplace_back(std::format(STR("FName::ToString address: {} <- Built-in\n"), static_cast<void*>(FNameToStringAddress)));
+            }
+            else
+            {
+                scan_result.errors.emplace_back("Was unable to find AOB for 'FName::ToString'\nYou can supply your own in 'UE4SS_Signatures/FName_ToString.lua'");
+            }
         }
 
         if (scan_result.errors.empty())

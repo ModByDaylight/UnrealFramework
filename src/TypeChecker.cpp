@@ -508,6 +508,8 @@ namespace RC::Unreal
             find_all_property_types(L"/Script/Engine.AudioComponent");
             // MulticastInlineDelegate, Interface
             find_all_property_types(L"/Script/MovieScene.MovieSceneSequencePlayer");
+            // Delegate
+            find_all_property_types(L"/Script/UMG.Widget");
             // SoftObject
             find_all_property_types(L"/Script/Engine.LevelStreaming");
             // SoftClass

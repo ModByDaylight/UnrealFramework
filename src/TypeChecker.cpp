@@ -13,6 +13,7 @@
 #include <Unreal/FAssetData.hpp>
 #include <Unreal/UInterface.hpp>
 #include <Unreal/UActorComponent.hpp>
+#include <Unreal/UGameViewportClient.hpp>
 #include <Unreal/UPackage.hpp>
 #include <Unreal/Property/FNumericProperty.hpp>
 #include <Unreal/Property/NumericPropertyTypes.hpp>
@@ -187,6 +188,7 @@ namespace RC::Unreal
         UInterface::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Interface");
         UActorComponent::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.ActorComponent");
         USceneComponent::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.SceneComponent");
+        UGameViewportClient::m_static_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.GameViewportClient");
 
         auto register_function_derivative = [](const wchar_t* function_object_string) -> UClass* {
             UClass* ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, function_object_string);

@@ -14,6 +14,7 @@ namespace RC::Unreal
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
     Function<UObject::ProcessEventSignature> UObject::process_event_internal;
+    Function<UObject::ProcessConsoleExecSignature> UObject::ProcessConsoleExecInternal;
 
     auto UObjectBase::register_dependencies() -> void
     {

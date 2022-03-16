@@ -73,6 +73,9 @@ namespace RC::Unreal
         using ProcessEventSignature = void(UObject* context, class UFunction* function, void* params);
         static Function<ProcessEventSignature> process_event_internal;
 
+        using ProcessConsoleExecSignature = bool(UObject* Context, const TCHAR* Cmd, FOutputDevice& Ar, UObject* Executor);
+        static Function<ProcessConsoleExecSignature> ProcessConsoleExecInternal;
+
     protected:
         friend void UnrealInitializer::create_cache(UnrealInitializer::CacheInfo&);
         friend void UnrealInitializer::load_cache(UnrealInitializer::CacheInfo&);

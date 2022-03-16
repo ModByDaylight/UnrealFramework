@@ -6,6 +6,7 @@
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/UAssetRegistry.hpp>
+#include <Unreal/UGameViewportClient.hpp>
 // TODO: Uncomment when Lua & Unreal have been decoupled
 //#include <LuaType/LuaUObject.hpp>
 // TODO: Uncomment when UE4SS & Unreal have been decoupled
@@ -18,6 +19,7 @@ namespace RC::Unreal
 {
     uint64_t hook_trampoline_process_event = NULL;
     uint64_t hook_trampoline_static_construct_object = NULL;
+    uint64_t HookTrampolineProcessConsoleExec = NULL;
 
     auto Hook::add_required_object(const std::wstring& object_full_typeless_name) -> void
     {
@@ -55,6 +57,11 @@ namespace RC::Unreal
     auto Hook::register_process_event_post_callback(ProcessEventCallback callback) -> void
     {
         StaticStorage::process_event_post_callbacks.emplace_back(callback);
+    }
+
+    auto RC_UE_API Hook::RegisterProcessConsoleExecCallback(ProcessConsoleExecCallback callback) -> void
+    {
+        StaticStorage::ProcessConsoleExecCallbacks.emplace_back(callback);
     }
 
     auto hooked_static_construct_object_pre(const FStaticConstructObjectParameters& params) -> UObject*
@@ -169,6 +176,21 @@ namespace RC::Unreal
         }
     }
 
+    auto HookedProcessConsoleExec(UObject* Context, const TCHAR* Cmd, FOutputDevice& Ar, UObject* Executor) -> bool
+    {
+        bool return_value = PLH::FnCast(HookTrampolineProcessConsoleExec, UObject::ProcessConsoleExecInternal.get_function_pointer())(Context, Cmd, Ar, Executor);
+
+        if (cast_object<UGameViewportClient>(Context))
+        {
+            for (const auto& callback : Hook::StaticStorage::ProcessConsoleExecCallbacks)
+            {
+                return_value = callback(Context, Cmd, Ar, Executor);
+            }
+        }
+
+        return return_value;
+    }
+
     auto hook_static_construct_object() -> void
     {
         PLH::ZydisDisassembler dis(PLH::Mode::x64);
@@ -203,5 +225,19 @@ namespace RC::Unreal
                 dis);
 
         Hook::StaticStorage::process_event_detour->hook();
+    }
+
+    auto RC_UE_API HookProcessConsoleExec() -> void
+    {
+        Output::send(STR("Hooking UObject::ProcessConsoleExec\n"));
+        PLH::ZydisDisassembler dis(PLH::Mode::x64);
+        Hook::StaticStorage::ProcessConsoleExecDetour = std::make_unique<PLH::x64Detour>(
+                static_cast<char*>(UObject::ProcessConsoleExecInternal.get_function_address()),
+                std::bit_cast<char*>(&HookedProcessConsoleExec),
+                &HookTrampolineProcessConsoleExec,
+                dis);
+
+        Hook::StaticStorage::ProcessConsoleExecDetour->hook();
+        Output::send(STR("UObject::ProcessConsoleExec hooked\n"));
     }
 }

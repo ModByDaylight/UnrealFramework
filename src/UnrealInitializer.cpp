@@ -441,7 +441,9 @@ namespace RC::Unreal::UnrealInitializer
         }
 
         UObject::process_event_internal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessEvent, object));
+        UObject::ProcessConsoleExecInternal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessConsoleExec, object));
         hook_process_event();
+        HookProcessConsoleExec();
 
         TypeChecker::store_all_object_names();
 

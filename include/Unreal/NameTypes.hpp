@@ -19,7 +19,11 @@ namespace RC::Unreal
     //       I've never seen an FName not be 8-byte aligned in memory,
     //       but it is 4-byte aligned in the source so hopefully this doesn't cause any problems
 #pragma warning(disable: 4324) // Suppressing warning about struct alignment
+#ifdef WITH_CASE_PRESERVING_NAME
+    struct alignas(4) RC_UE_API FName
+#else
     struct alignas(8) RC_UE_API FName
+#endif
     {
     public:
         enum class EFindName

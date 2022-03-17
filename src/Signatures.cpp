@@ -268,7 +268,7 @@ namespace RC::Unreal::Signatures
 
                 if (!destination) { return false; }
 
-                FName name = FName(L"bCanBeDamaged", destination);
+                FName name = FName(L"bCanBeDamaged", FNAME_Find, destination);
 
                 if (name == L"bCanBeDamaged")
                 {

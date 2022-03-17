@@ -14,10 +14,18 @@ namespace RC::Unreal
         RC_UE_API auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
     }
 
-    // TODO: Figure out what's going on here
-    //       It shouldn't be required to use 'alignas' here to make sure it's aligned properly in containers (like TArray)
-    //       I've never seen an FName not be 8-byte aligned in memory,
-    //       but it is 4-byte aligned in the source so hopefully this doesn't cause any problems
+    enum EFindName
+    {
+        FNAME_Find,
+        FNAME_Add,
+        FNAME_Replace_Not_Safe_For_Threading
+    };
+
+    // TODO:   Figure out what's going on here
+    //         It shouldn't be required to use 'alignas' here to make sure it's aligned properly in containers (like TArray)
+    //         I've never seen an FName not be 8-byte aligned in memory,
+    //         but it is 4-byte aligned in the source so hopefully this doesn't cause any problems
+    // UPDATE: This matters in the UE VM, when ElementSize is 0xC in memory for case-preserving games, it must be aligned by 0x4 in that case
 #pragma warning(disable: 4324) // Suppressing warning about struct alignment
 #ifdef WITH_CASE_PRESERVING_NAME
     struct alignas(4) RC_UE_API FName
@@ -25,14 +33,6 @@ namespace RC::Unreal
     struct alignas(8) RC_UE_API FName
 #endif
     {
-    public:
-        enum class EFindName
-        {
-            FNAME_Find,
-            FNAME_Add,
-            FNAME_Replace_Not_Safe_For_Threading
-        };
-
     private:
         friend auto UnrealInitializer::create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
 
@@ -47,14 +47,14 @@ namespace RC::Unreal
         static inline Function<FName(const wchar_t*, EFindName)> constructor_internal{};
 
     private:
-        auto construct_with_string(const wchar_t* str_name, void* function_address_override) -> void
+        auto construct_with_string(const wchar_t* str_name, EFindName FindType, void* function_address_override) -> void
         {
             if (!constructor_internal.is_ready() && !function_address_override) { return; }
 
             // Assign the temporary address if one exists
             if (function_address_override) { constructor_internal.assign_temp_address(function_address_override); }
 
-            FName name = constructor_internal(str_name, EFindName::FNAME_Find);
+            FName name = constructor_internal(str_name, FindType);
             comparison_index = name.comparison_index;
 #ifdef WITH_CASE_PRESERVING_NAME
             display_index = name.display_index;
@@ -108,14 +108,14 @@ namespace RC::Unreal
         // Lookup & create from an existing FName
         // Not safe to pass to Unreal Engine internals
         // Safe to use for return values from Unreal Engine internals
-        explicit FName(const wchar_t* str_name, void* function_address_override = nullptr)
+        explicit FName(const wchar_t* str_name, EFindName FindType = FNAME_Find, void* function_address_override = nullptr)
         {
-            construct_with_string(str_name, function_address_override);
+            construct_with_string(str_name, FindType, function_address_override);
         }
 
-        explicit FName(std::wstring_view str_name, void* function_address_override = nullptr)
+        explicit FName(std::wstring_view str_name, EFindName FindType = FNAME_Find, void* function_address_override = nullptr)
         {
-            construct_with_string(str_name.data(), function_address_override);
+            construct_with_string(str_name.data(), FindType, function_address_override);
         }
 
         auto inline operator==(FName other) const -> bool

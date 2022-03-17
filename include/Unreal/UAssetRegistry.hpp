@@ -4,6 +4,7 @@
 #include <Unreal/Common.hpp>
 #include <Unreal/ReflectedFunction.hpp>
 #include <Unreal/UObject.hpp>
+#include <Unreal/UFunction.hpp>
 #include <Unreal/TArray.hpp>
 #include <Unreal/FAssetData.hpp>
 
@@ -15,6 +16,8 @@ namespace RC::Unreal
         struct Functions
         {
             static inline InstancedReflectedFunction get_all_assets{STR("/Script/AssetRegistry.AssetRegistry:GetAllAssets")};
+            static inline InstancedReflectedFunction GetAssetByObjectPath{STR("/Script/AssetRegistry.AssetRegistry:GetAssetByObjectPath")};
+            static inline InstancedReflectedFunction GetAssetsByClass{STR("/Script/AssetRegistry.AssetRegistry:GetAssetsByClass")};
         };
 
     public:
@@ -23,6 +26,22 @@ namespace RC::Unreal
             TArray<FAssetData> OutAssetData; // 0x0 // Out-param
             bool bIncludeOnlyOnDiskAssets; // 0x10
             bool ReturnValue; // 0x11
+        };
+
+        struct GetAssetByObjectPath_Params
+        {
+            FName ObjectPath{}; // 0x0
+            bool32 bIncludeOnlyOnDiskAssets{}; // 0x8
+            uint32 padding; // Alignment to make 'ReturnValue' be at its proper offset of 0x10
+            FAssetData ReturnValue{}; // 0x10
+        };
+
+        struct GetAssetsByClass_Params
+        {
+            FName ClassName; // 0x0
+            TArray<FAssetData> OutAssetData; // 0x8 // Out-param
+            bool bSearchSubClasses; // 0x18
+            bool ReturnValue; // 0x19
         };
 
     private:
@@ -35,6 +54,8 @@ namespace RC::Unreal
 
     public:
         auto GetAllAssets(TArray<FAssetData>& OutAssetData, bool bIncludeOnlyOnDiskAssets) -> bool;
+        FAssetData GetAssetByObjectPath(const FName ObjectPath, bool bIncludeOnlyOnDiskAssets = false);
+        bool GetAssetsByClass(FName ClassName, TArray<FAssetData>& OutAssetData, bool bSearchSubClasses = false);
 
         // Custom functions -> START
         auto static assets_are_loading() -> bool { return StaticStorage::assets_are_loading; }

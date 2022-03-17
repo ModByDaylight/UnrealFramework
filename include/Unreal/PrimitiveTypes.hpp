@@ -21,6 +21,10 @@ namespace RC::Unreal
 
     using TCHAR = File::CharType;
     using SIZE_T = size_t;
+
+    // Custom primitives that don't exist in the UE source
+    using bool32 = uint32;
+    using bool64 = uint64;
 }
 
 #endif //RC_UNREAL_PRIMITIVE_TYPES_HPP

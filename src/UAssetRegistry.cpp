@@ -26,6 +26,27 @@ namespace RC::Unreal
         return params.ReturnValue;
     }
 
+    FAssetData UAssetRegistry::GetAssetByObjectPath(const FName ObjectPath, bool bIncludeOnlyOnDiskAssets)
+    {
+        if (!Functions::GetAssetByObjectPath.is_valid()) { return FAssetData{}; }
+
+        GetAssetByObjectPath_Params params{ObjectPath, bIncludeOnlyOnDiskAssets};
+        Functions::GetAssetByObjectPath(this, params);
+
+        return params.ReturnValue;
+    }
+
+    bool UAssetRegistry::GetAssetsByClass(FName ClassName, TArray<FAssetData>& OutAssetData, bool bSearchSubClasses)
+    {
+        if (!Functions::GetAssetsByClass.is_valid()) { return false; }
+
+        GetAssetsByClass_Params params{ClassName, OutAssetData, bSearchSubClasses};
+        Functions::GetAssetsByClass(this, params);
+
+        OutAssetData.copy_fast(params.OutAssetData);
+        return params.ReturnValue;
+    }
+
     auto UAssetRegistry::load_all_assets_thread() -> void
     {
         set_assets_are_loading(true);

@@ -80,6 +80,10 @@ namespace RC::Unreal
         DECLARE_EXTERNAL_OBJECT_CLASS(FAssetData, CoreUObject)
 
     public:
+        FAssetData();
+        FAssetData(const FAssetData& Other);
+
+    public:
         static constexpr int32 FAssetDataAssumedStaticSize = (sizeof(FAssetData427Plus) > sizeof(FAssetDataPre427) ? sizeof(FAssetData427Plus) : sizeof(FAssetDataPre427)) + 0x20;
 
         FName ObjectPath();
@@ -90,11 +94,12 @@ namespace RC::Unreal
         FAssetDataTagMapSharedView TagsAndValues();
         FAssetBundleData* TaggedAssetBundles();
         /*TArray<int32>*/void ChunkIDs();
+        TArray<int32>& OldChunkIDsUnsafe();
+        TArray<int32, TInlineAllocator<2>>& NewChunkIDsUnsafe();
         uint32 PackageFlags();
 
         static int32 StaticSize();
 
-        FAssetData(const FAssetData& Other);
 
     private:
         static int32 StaticSize_Private;
@@ -104,7 +109,7 @@ namespace RC::Unreal
         // Size must be large enough to fit entire struct
         // For now, let's give it a larger size than needed to be future safe
         // We're also making sure at runtime that this size is large enough
-        std::byte Data[FAssetDataAssumedStaticSize];
+        std::uint8_t Data[FAssetDataAssumedStaticSize]{0};
     };
 }
 

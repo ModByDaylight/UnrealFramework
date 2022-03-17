@@ -8,6 +8,44 @@ namespace RC::Unreal
 
     int32 FAssetData::StaticSize_Private{-1};
 
+    FAssetData::FAssetData() = default;
+
+    FAssetData::FAssetData(const FAssetData& Other)
+    {
+        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::is_atleast(4, 27))
+        {
+            auto* TypedThis = std::bit_cast<FAssetData427Plus*>(this);
+            auto* TypedOther = std::bit_cast<FAssetData427Plus*>(&Other);
+
+            TypedThis->ObjectPath = TypedOther->ObjectPath;
+            TypedThis->PackageName = TypedOther->PackageName;
+            TypedThis->PackagePath = TypedOther->PackagePath;
+            TypedThis->AssetName = TypedOther->AssetName;
+            TypedThis->AssetClass = TypedOther->AssetClass;
+            TypedThis->TagsAndValues = TypedOther->TagsAndValues;
+            TypedThis->TaggedAssetBundles = TypedOther->TaggedAssetBundles;
+            TypedThis->ChunkIDs = TypedOther->ChunkIDs;
+            TypedThis->PackageFlags = TypedOther->PackageFlags;
+        }
+        else
+        {
+            auto* TypedThis = std::bit_cast<FAssetDataPre427*>(this);
+            auto* TypedOther = std::bit_cast<FAssetDataPre427*>(&Other);
+
+            TypedThis->ObjectPath = TypedOther->ObjectPath;
+            TypedThis->PackageName = TypedOther->PackageName;
+            TypedThis->PackagePath = TypedOther->PackagePath;
+            TypedThis->AssetName = TypedOther->AssetName;
+            TypedThis->AssetClass = TypedOther->AssetClass;
+            TypedThis->TagsAndValues = TypedOther->TagsAndValues;
+            //TypedThis->TaggedAssetBundles = TypedOther->TaggedAssetBundles;
+            TypedThis->ChunkIDs = TypedOther->ChunkIDs;
+            TypedThis->PackageFlags = TypedOther->PackageFlags;
+        }
+    }
+
     FName FAssetData::ObjectPath()
     {
         if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
@@ -114,6 +152,34 @@ namespace RC::Unreal
         throw std::runtime_error{"FAssetData:ChunkIDs is not implemented"};
     }
 
+    TArray<int32>& FAssetData::OldChunkIDsUnsafe()
+    {
+        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::is_atleast(4, 27))
+        {
+            throw std::runtime_error{"FAssetData::OldChunkIDsUnsafe can only be used in pre-4.27"};
+        }
+        else
+        {
+            return std::bit_cast<FAssetDataPre427*>(this)->ChunkIDs;
+        }
+    }
+
+    TArray<int32, TInlineAllocator<2>>& FAssetData::NewChunkIDsUnsafe()
+    {
+        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::is_atleast(4, 27))
+        {
+            return std::bit_cast<FAssetData427Plus*>(this)->ChunkIDs;
+        }
+        else
+        {
+            throw std::runtime_error{"FAssetData::NewChunkIDsUnsafe can only be used in 4.27+"};
+        }
+    }
+
     uint32 FAssetData::PackageFlags()
     {
         if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
@@ -138,41 +204,5 @@ namespace RC::Unreal
         }
 
         return StaticSize_Private;
-    }
-
-    FAssetData::FAssetData(const FAssetData& Other)
-    {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
-
-        if (Version::is_atleast(4, 27))
-        {
-            auto* TypedThis = std::bit_cast<FAssetData427Plus*>(this);
-            auto* TypedOther = std::bit_cast<FAssetData427Plus*>(&Other);
-
-            TypedThis->ObjectPath = TypedOther->ObjectPath;
-            TypedThis->PackageName = TypedOther->PackageName;
-            TypedThis->PackagePath = TypedOther->PackagePath;
-            TypedThis->AssetName = TypedOther->AssetName;
-            TypedThis->AssetClass = TypedOther->AssetClass;
-            TypedThis->TagsAndValues = TypedOther->TagsAndValues;
-            TypedThis->TaggedAssetBundles = TypedOther->TaggedAssetBundles;
-            TypedThis->ChunkIDs = TypedOther->ChunkIDs;
-            TypedThis->PackageFlags = TypedOther->PackageFlags;
-        }
-        else
-        {
-            auto* TypedThis = std::bit_cast<FAssetDataPre427*>(this);
-            auto* TypedOther = std::bit_cast<FAssetDataPre427*>(&Other);
-
-            TypedThis->ObjectPath = TypedOther->ObjectPath;
-            TypedThis->PackageName = TypedOther->PackageName;
-            TypedThis->PackagePath = TypedOther->PackagePath;
-            TypedThis->AssetName = TypedOther->AssetName;
-            TypedThis->AssetClass = TypedOther->AssetClass;
-            TypedThis->TagsAndValues = TypedOther->TagsAndValues;
-            //TypedThis->TaggedAssetBundles = TypedOther->TaggedAssetBundles;
-            TypedThis->ChunkIDs = TypedOther->ChunkIDs;
-            TypedThis->PackageFlags = TypedOther->PackageFlags;
-        }
     }
 }

@@ -229,7 +229,6 @@ namespace RC::Unreal
 
     auto RC_UE_API HookProcessConsoleExec() -> void
     {
-        Output::send(STR("Hooking UObject::ProcessConsoleExec\n"));
         PLH::ZydisDisassembler dis(PLH::Mode::x64);
         Hook::StaticStorage::ProcessConsoleExecDetour = std::make_unique<PLH::x64Detour>(
                 static_cast<char*>(UObject::ProcessConsoleExecInternal.get_function_address()),
@@ -238,6 +237,5 @@ namespace RC::Unreal
                 dis);
 
         Hook::StaticStorage::ProcessConsoleExecDetour->hook();
-        Output::send(STR("UObject::ProcessConsoleExec hooked\n"));
     }
 }

@@ -5,6 +5,7 @@
 
 #include <Function/Function.hpp>
 #include <Unreal/Common.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
 
 namespace RC::Unreal
 {
@@ -13,6 +14,8 @@ namespace RC::Unreal
         struct CacheInfo;
         RC_UE_API auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
     }
+
+    enum {NAME_SIZE	= 1024};
 
     enum EFindName
     {
@@ -63,6 +66,12 @@ namespace RC::Unreal
 
             // Reset the address to what it was before it was overridden by a temporary address
             if (function_address_override) { constructor_internal.reset_address(); }
+        }
+
+        auto construct_with_string(const wchar_t* Name, uint32 InNumber, EFindName FindType, void* FunctionAddressOverride) -> void
+        {
+            construct_with_string(Name, FindType, FunctionAddressOverride);
+            number = InNumber;
         }
 
     public:
@@ -118,6 +127,11 @@ namespace RC::Unreal
             construct_with_string(str_name.data(), FindType, function_address_override);
         }
 
+        explicit FName(std::wstring_view Name, uint32 InNumber, EFindName FindType = FNAME_Find, void* FunctionAddressOverride = nullptr)
+        {
+            construct_with_string(Name.data(), InNumber, FindType, FunctionAddressOverride);
+        }
+
         auto inline operator==(FName other) const -> bool
         {
             return (comparison_index == other.comparison_index) & (number == other.number);
@@ -147,11 +161,17 @@ namespace RC::Unreal
         }
 
         auto to_string() -> std::wstring;
+        uint32 GetPlainNameString(TCHAR(&OutName)[NAME_SIZE]);
 
         [[nodiscard]] auto get_comparison_index() const -> uint32_t { return comparison_index; }
+        [[nodiscard]] auto get_display_index() const -> uint32_t
+        {
 #ifdef WITH_CASE_PRESERVING_NAME
-        [[nodiscard]] auto get_display_index() const -> uint32_t { return display_index; }
+            return display_index;
+#else
+            return comparison_index;
 #endif
+        }
         [[nodiscard]] auto get_number() const -> uint32_t { return number; }
     };
 #pragma warning(default: 4324)

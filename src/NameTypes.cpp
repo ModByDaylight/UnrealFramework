@@ -16,4 +16,12 @@ namespace RC::Unreal
         std::wstring name_string{string.get_string_data() ? string.get_string_data() : L"UE4SS_None"};
         return name_string;
     }
+
+    uint32 FName::GetPlainNameString(TCHAR(&OutName)[NAME_SIZE])
+    {
+        const uint32 Entry = get_display_index();
+        auto String = FName(Entry).to_string();
+        std::memcpy(OutName, &String[0], String.size() * sizeof(File::StringType::size_type));
+        return static_cast<uint32>(String.size());
+    }
 }

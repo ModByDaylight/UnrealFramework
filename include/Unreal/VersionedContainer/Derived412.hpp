@@ -112,6 +112,8 @@ namespace RC::Unreal
                 return nullptr;
             }
         }
+
+        bool FUObjectItem_HasAnyFlags(void* RawThis, EInternalObjectFlags InFlags) override;
         // Abstraction Layer -> END
         // FUObjectItem -> END
 

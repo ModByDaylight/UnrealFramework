@@ -1,6 +1,7 @@
 #include <Unreal/VersionedContainer/UObject422.hpp>
 #include <Unreal/VersionedContainer/Flags422.hpp>
 #include <Unreal/VersionedContainer/Flags.hpp>
+#include <Unreal/VersionedContainer/Container.hpp>
 
 namespace RC::Unreal
 {
@@ -27,5 +28,10 @@ namespace RC::Unreal
     auto UObject422::UObject_has_all_flags(void* p_this, const EObjectFlags flags_to_check) -> bool
     {
         return Flags::has_all_flags(p_this, Flags422::to_impl_flags(flags_to_check));
+    }
+
+    bool UObject422::UObject_HasAnyInternalFlags(void* p_this, const EInternalObjectFlags FlagsToCheck)
+    {
+        return Container::m_unreal_vc_base->FUObjectItem_HasAnyFlags(Container::m_unreal_vc_base->UObjectArray_index_to_object(UObject_get_internal_index(p_this)), FlagsToCheck);
     }
 }

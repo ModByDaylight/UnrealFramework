@@ -234,6 +234,16 @@ namespace RC::Unreal
             return Container::m_unreal_object_base->UObject_has_all_flags(this, flags_to_check);
         }
 
+        bool HasAnyInternalFlags(EInternalObjectFlags FlagsToCheck)
+        {
+            return Container::m_unreal_vc_base->FUObjectItem_HasAnyFlags(Container::m_unreal_vc_base->UObjectArray_index_to_object(get_internal_index()), FlagsToCheck);
+        }
+
+        bool IsUnreachable()
+        {
+            return Container::m_unreal_vc_base->FUObjectItem_is_object_unreachable(Container::m_unreal_vc_base->UObjectArray_index_to_object(get_internal_index()));
+        }
+
         /**
          * Templated version of the IsA(UClass*) function
          */

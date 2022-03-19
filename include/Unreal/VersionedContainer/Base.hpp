@@ -56,6 +56,7 @@ namespace RC::Unreal
         virtual auto FUObjectItem_get_serial_number(int32_t index) -> int32_t = 0;
         virtual auto FUObjectItem_get_serial_number(FUObjectItem* p_this) -> int32_t = 0;
         virtual auto FUObjectItem_get_uobject(void* p_this) -> UObject* = 0;
+        virtual bool FUObjectItem_HasAnyFlags(void* p_this, EInternalObjectFlags InFlags) = 0;
         // FUObjectItem -> END
 
         // GUObjectArray -> START
@@ -194,6 +195,12 @@ namespace RC::Unreal
             {
                 return nullptr;
             }
+        }
+
+        bool FUObjectItem_HasAnyFlags(void* RawThis, EInternalObjectFlags InFlags) override
+        {
+            FUObjectItem* TypedThis = static_cast<FUObjectItem*>(RawThis);
+            return !!(TypedThis->flags & int32(InFlags));
         }
         // Abstraction Layer -> END
         // FUObjectItem -> END

@@ -23,4 +23,10 @@ namespace RC::Unreal
     {
         return Helper::Casting::offset_deref<FName>(p_this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_NamePrivate));
     }
+
+    bool Derived412::FUObjectItem_HasAnyFlags(void* RawThis, EInternalObjectFlags InFlags)
+    {
+        FUObjectItem* TypedThis = static_cast<FUObjectItem*>(RawThis);
+        return !!(TypedThis->cluster_and_flags & int32(InFlags));
+    }
 }

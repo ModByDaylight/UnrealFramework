@@ -148,8 +148,7 @@ namespace RC::Unreal
 
         // Virtual Functions
     public:
-        using FArchive = void*; // Remove if/when we have an FArchive implementation, for now, probably a bad idea to call
-        auto Serialize(FArchive& Ar) -> void;
+        auto Serialize(class FArchive& Ar) -> void;
         auto PostLoad() -> void;
         auto GetPreloadDependencies(TArray<UObject*>& OutDeps) -> void;
         auto BeginDestroy() -> void;

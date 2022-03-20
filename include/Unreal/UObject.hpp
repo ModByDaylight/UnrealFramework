@@ -19,6 +19,7 @@
 namespace RC::Unreal
 {
     class UObject;
+    class FArchive;
     struct FFrame;
 
     namespace UnrealInitializer
@@ -31,7 +32,6 @@ namespace RC::Unreal
     // Placeholder types for virtual functions
     // TODO: Remove when they are implemented
     using FRestoreForUObjectOverwrite = void*;
-    using FArchive = void*;
     using FObjectDuplicationParameters = void*;
     using FFeedbackContext = void*;
     using FResourceSizeEx = void*;

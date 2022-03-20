@@ -2,6 +2,7 @@
 #define RC_UNREAL_FFRAME_HPP
 
 #include <Unreal/Common.hpp>
+#include <Unreal/FOutputDevice.hpp>
 
 namespace RC::Unreal
 {
@@ -12,17 +13,6 @@ namespace RC::Unreal
     class UFunction;
 
     using FlowStackType = uint8_t[0x30];
-
-    class RC_UE_API FOutputDevice
-    {
-    protected:
-        uint8_t* vtable;
-
-        /** Whether to output the 'Log: ' type front... */
-        bool bSuppressEventTag;
-        /** Whether to output a line-terminator after each log call... */
-        bool bAutoEmitLineTerminator;
-    };
 
     struct RC_UE_API FFrame : public FOutputDevice
     {

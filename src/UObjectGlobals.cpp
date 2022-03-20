@@ -188,8 +188,8 @@ namespace RC::Unreal::UObjectGlobals
                 (!care_about_name && care_about_class && class_matches) ||
                 (!care_about_class && care_about_name && name_matches))
             {
-                bool required_flags_passes = object->has_all_flags(static_cast<EObjectFlags>(required_flags));
-                bool banned_flags_passes = !object->has_any_flag(static_cast<EObjectFlags>(banned_flags));
+                bool required_flags_passes = required_flags == EObjectFlags::RF_NoFlags || object->has_all_flags(static_cast<EObjectFlags>(required_flags));
+                bool banned_flags_passes = banned_flags == EObjectFlags::RF_NoFlags || !object->has_any_flag(static_cast<EObjectFlags>(banned_flags));
 
                 if (required_flags_passes && banned_flags_passes)
                 {

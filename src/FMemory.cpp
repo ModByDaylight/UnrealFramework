@@ -5,7 +5,7 @@ namespace RC::Unreal
 {
     FMalloc* GMalloc{};
     FMalloc** FMalloc::UnrealStaticGMalloc{};
-    bool FMalloc::IsInitialized = false;
+    bool FMalloc::bIsInitialized = false;
 
     void* FMalloc::Malloc(SIZE_T Count, uint32 Alignment)
     {
@@ -99,7 +99,7 @@ namespace RC::Unreal
 
     void* FMemory::Malloc(SIZE_T Count, uint32 Alignment)
     {
-        if (!GMalloc || !FMalloc::IsInitialized)
+        if (!GMalloc || !FMalloc::bIsInitialized)
         {
             throw std::runtime_error{"Tried to call 'FMemory::Malloc' before the FMalloc instance was found"};
         }
@@ -109,14 +109,14 @@ namespace RC::Unreal
 
     void FMemory::Free(void* Original)
     {
-        if (!GMalloc || !FMalloc::IsInitialized) { return; }
+        if (!GMalloc || !FMalloc::bIsInitialized) { return; }
 
         GMalloc->Free(Original);
     }
 
     void* FMemory::Realloc(void* Original, SIZE_T Count, uint32 Alignment)
     {
-        if (!GMalloc || !FMalloc::IsInitialized)
+        if (!GMalloc || !FMalloc::bIsInitialized)
         {
             throw std::runtime_error{"Tried to call 'FMemory::Realloc' before the FMalloc instance was found"};
         }

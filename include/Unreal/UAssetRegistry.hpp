@@ -15,7 +15,7 @@ namespace RC::Unreal
     public:
         struct Functions
         {
-            static inline InstancedReflectedFunction get_all_assets{STR("/Script/AssetRegistry.AssetRegistry:GetAllAssets")};
+            static inline InstancedReflectedFunction GetAllAssets{STR("/Script/AssetRegistry.AssetRegistry:GetAllAssets")};
             static inline InstancedReflectedFunction GetAssetByObjectPath{STR("/Script/AssetRegistry.AssetRegistry:GetAssetByObjectPath")};
             static inline InstancedReflectedFunction GetAssetsByClass{STR("/Script/AssetRegistry.AssetRegistry:GetAssetsByClass")};
         };
@@ -32,7 +32,7 @@ namespace RC::Unreal
         {
             FName ObjectPath{}; // 0x0
             bool32 bIncludeOnlyOnDiskAssets{}; // 0x8
-            uint32 padding; // Alignment to make 'ReturnValue' be at its proper offset of 0x10
+            uint32 Padding; // Alignment to make 'ReturnValue' be at its proper offset of 0x10
             FAssetData ReturnValue{}; // 0x10
         };
 
@@ -47,9 +47,9 @@ namespace RC::Unreal
     private:
         struct StaticStorage
         {
-            static inline bool assets_are_loading{false};
-            static inline bool should_load_all_assets{false};
-            static inline std::vector<FUObjectItem*> forcefully_loaded_assets{};
+            static inline bool bAssetsAreLoading{false};
+            static inline bool bShouldLoadAllAssets{false};
+            static inline std::vector<FUObjectItem*> ForcefullyLoadedAssets{};
         };
 
     public:
@@ -58,23 +58,23 @@ namespace RC::Unreal
         bool GetAssetsByClass(FName ClassName, TArray<FAssetData>& OutAssetData, bool bSearchSubClasses = false);
 
         // Custom functions -> START
-        auto static assets_are_loading() -> bool { return StaticStorage::assets_are_loading; }
-        auto static should_load_all_assets() -> bool { return StaticStorage::should_load_all_assets; }
-        auto static set_assets_are_loading(bool new_value) -> void { StaticStorage::assets_are_loading = new_value; }
-        auto static set_should_load_all_assets(bool new_value) -> void { StaticStorage::should_load_all_assets = new_value; }
-        auto static free_all_forcefully_loaded_assets() -> void;
+        auto static AssetsAreLoading() -> bool { return StaticStorage::bAssetsAreLoading; }
+        auto static ShouldLoadAllAssets() -> bool { return StaticStorage::bShouldLoadAllAssets; }
+        auto static SetAssetsAreLoading(bool new_value) -> void { StaticStorage::bAssetsAreLoading = new_value; }
+        auto static SetShouldLoadAllAssets(bool new_value) -> void { StaticStorage::bShouldLoadAllAssets = new_value; }
+        auto static FreeAllForcefullyLoadedAssets() -> void;
 
     private:
         // Internal function, do not use!
         // Call 'load_all_assets()' to safely load all assets regardless of thread context
         // This function is responsible for loading all assets into GUObjectArray
         // Must be called from within the game thread
-        auto static load_all_assets_thread() -> void;
-        auto friend hooked_process_event(UObject*, UFunction*, void*) -> void;
+        auto static LoadAllAssetsThread() -> void;
+        auto friend HookedProcessEvent(UObject*, UFunction*, void*) -> void;
 
     public:
         // Helper function to load all assets from the AssetRegistry into GUObjectArray
-        auto static load_all_assets() -> void;
+        auto static LoadAllAssets() -> void;
         // Custom functions -> END
     };
 }

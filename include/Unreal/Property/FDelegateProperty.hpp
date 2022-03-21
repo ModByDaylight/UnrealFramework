@@ -16,8 +16,8 @@ namespace RC::Unreal
         using TWeakPtr = FWeakObjectPtr;
 
     public:
-        TWeakPtr object;
-        FName function_name;
+        TWeakPtr Object;
+        FName FunctionName;
     };
     using FScriptDelegate = TScriptDelegate/*<>*/;
 

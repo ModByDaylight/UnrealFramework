@@ -96,13 +96,13 @@ namespace RC::Unreal
 
     auto StaticOffsetFinder::get_property_from_uobject(const wchar_t* uclass_string, const wchar_t* property_string) -> void*
     {
-        UClass* uclass = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, uclass_string);
+        UClass* uclass = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, uclass_string);
         if (!uclass) { return nullptr; }
 
         void* prop{};
         FName prop_name = FName(property_string);
 
-        uclass->for_each_property([&](FProperty* child) {
+        uclass->ForEachProperty([&](FProperty* child) {
             if (child->GetFName() == prop_name)
             {
                 prop = child;
@@ -133,12 +133,12 @@ namespace RC::Unreal
     {
         find_super_struct();
 
-        Output::send(STR("engine major: {} | engine minor: {}\n"), Version::major, Version::minor);
+        Output::send(STR("engine major: {} | engine minor: {}\n"), Version::Major, Version::Minor);
 
         find_children();
         find_ustruct_next();
 
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             find_child_properties();
             find_ffield_owner();
@@ -152,7 +152,7 @@ namespace RC::Unreal
             throw std::runtime_error{"TypeChecker: Was unable to find some or all of the required core objects"};
         }
 
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             find_ffield_class();
             find_ffield_fname();
@@ -160,7 +160,7 @@ namespace RC::Unreal
             find_fieldpathproperty_property_class();
         }
 
-        if (Version::is_atleast(4, 13))
+        if (Version::IsAtLeast(4, 13))
         {
             find_setproperty_elementprop();
         }
@@ -179,7 +179,7 @@ namespace RC::Unreal
         find_property_flags();
         find_property_class_and_meta_class();
 
-        if (Version::is_atleast(4, 18))
+        if (Version::IsAtLeast(4, 18))
         {
             find_softclassproperty_meta_class();
         }
@@ -210,7 +210,7 @@ namespace RC::Unreal
             add_static_offset(MemberOffsets::UObject_ClassPrivate, uobject_class_private_offset, STR("ClassPrivate"));
         }
 
-        if (Version::is_below(4, 25) && retrieve_static_offset(MemberOffsets::FField_Class) == -1)
+        if (Version::IsBelow(4, 25) && retrieve_static_offset(MemberOffsets::FField_Class) == -1)
         {
             add_static_offset(MemberOffsets::FField_Class, uobject_class_private_offset, STR("FFieldClass"));
         }
@@ -234,7 +234,7 @@ namespace RC::Unreal
         // Add an identical offset for FField::FName also but only if the UE version is <4.24
         // This enables the use of XField::get_fname() to work properly in <4.25 without checking at runtime if the object is an FField
         // If the UE version is >=4.25 then this offset will be set by StaticOffsetFinder::find_ffield_fname()
-        if (Version::is_below(4, 25) && retrieve_static_offset(MemberOffsets::FField_NamePrivate) == -1)
+        if (Version::IsBelow(4, 25) && retrieve_static_offset(MemberOffsets::FField_NamePrivate) == -1)
         {
             add_static_offset(MemberOffsets::FField_NamePrivate, 0x18, STR("NamePrivate_FField"));
         }
@@ -260,7 +260,7 @@ namespace RC::Unreal
     {
         if (retrieve_static_offset(MemberOffsets::UStruct_SuperStruct) != -1) { return; }
 
-        void* core_struct = UObjectGlobals::static_find_object(nullptr, nullptr, L"/Script/CoreUObject.Struct");
+        void* core_struct = UObjectGlobals::StaticFindObject(nullptr, nullptr, L"/Script/CoreUObject.Struct");
         if (!core_struct)
         {
             throw_missed_offset(
@@ -269,7 +269,7 @@ namespace RC::Unreal
             );
         }
 
-        void* core_class = UObjectGlobals::static_find_object(nullptr, nullptr, L"/Script/CoreUObject.Class");
+        void* core_class = UObjectGlobals::StaticFindObject(nullptr, nullptr, L"/Script/CoreUObject.Class");
         if (!core_class)
         {
             throw_missed_offset(
@@ -303,7 +303,7 @@ namespace RC::Unreal
     {
         if (retrieve_static_offset(MemberOffsets::XField_Children) != -1) { return; }
 
-        UClass* character_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, STR("/Script/Engine.Pawn"));
+        UClass* character_class = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/Engine.Pawn"));
         if (!character_class)
         {
             throw_missed_offset(
@@ -313,7 +313,7 @@ namespace RC::Unreal
         }
 
         const File::CharType* child_name_to_find = []() {
-            if (Version::is_below(4, 25))
+            if (Version::IsBelow(4, 25))
             {
                 return STR("/Script/Engine.Pawn:bUseControllerRotationPitch");
             }
@@ -323,7 +323,7 @@ namespace RC::Unreal
             }
         }();
 
-        UObject* child_to_find = UObjectGlobals::static_find_object(nullptr, nullptr, child_name_to_find);
+        UObject* child_to_find = UObjectGlobals::StaticFindObject(nullptr, nullptr, child_name_to_find);
         if (!child_to_find)
         {
             throw_missed_offset(
@@ -339,7 +339,7 @@ namespace RC::Unreal
             if (unreal_ptr_to_test == child_to_find)
             {
                 add_static_offset(MemberOffsets::XField_Children, i, STR("Children"));
-                if (Version::is_below(4, 25))
+                if (Version::IsBelow(4, 25))
                 {
                     add_static_offset(MemberOffsets::XField_ChildProperties, i, STR("XField_ChildProperties"));
                 }
@@ -361,7 +361,7 @@ namespace RC::Unreal
     {
         if (retrieve_static_offset(MemberOffsets::UField_Next) != -1) { return; }
 
-        UFunction* function = UObjectGlobals::static_find_object<UFunction*>(nullptr, nullptr, STR("/Script/Engine.Character:UnCrouch"));
+        UFunction* function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, STR("/Script/Engine.Character:UnCrouch"));
         if (!function)
         {
             throw_missed_offset(
@@ -370,7 +370,7 @@ namespace RC::Unreal
             );
         }
 
-        UFunction* next_function = UObjectGlobals::static_find_object<UFunction*>(nullptr, nullptr, STR("/Script/Engine.Character:StopJumping"));
+        UFunction* next_function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, STR("/Script/Engine.Character:StopJumping"));
         if (!next_function)
         {
             throw_missed_offset(
@@ -386,7 +386,7 @@ namespace RC::Unreal
             if (unreal_ptr_to_test == next_function)
             {
                 add_static_offset(MemberOffsets::UField_Next, i, STR("UField_Next"));
-                if (Version::is_below(4, 25))
+                if (Version::IsBelow(4, 25))
                 {
                     add_static_offset(MemberOffsets::FField_Next, i, STR("FField_Next"));
                     add_static_offset(MemberOffsets::XField_Next, i, STR("XField_Next"));
@@ -413,7 +413,7 @@ namespace RC::Unreal
         }
 
         // Find AActor UClass which should always contain some properties
-        UClass* aactor = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.Actor");
+        UClass* aactor = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/Engine.Actor");
         if (!aactor)
         {
             throw_missed_offset(
@@ -472,7 +472,7 @@ namespace RC::Unreal
     {
         if (retrieve_static_offset(MemberOffsets::FField_Owner) != -1) { return; }
 
-        UStruct* aactor = UObjectGlobals::static_find_object<UStruct*>(nullptr, nullptr, L"/Script/Engine.Actor");
+        UStruct* aactor = UObjectGlobals::StaticFindObject<UStruct*>(nullptr, nullptr, L"/Script/Engine.Actor");
         if (!aactor)
         {
             throw_missed_offset(
@@ -490,7 +490,7 @@ namespace RC::Unreal
             );
         }
 
-        void* ffield_children = aactor->get_child_properties();
+        void* ffield_children = aactor->GetChildProperties();
 
         bool success = false;
         for (int i = 0x0; i < 0x90; i += 0x8)
@@ -522,7 +522,7 @@ namespace RC::Unreal
             return;
         }
 
-        UClass* aactor = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.Actor");
+        UClass* aactor = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/Engine.Actor");
         if (!aactor)
         {
             throw_missed_offset(
@@ -547,7 +547,7 @@ namespace RC::Unreal
             );
         }
 
-        void* child_properties = aactor->get_child_properties();
+        void* child_properties = aactor->GetChildProperties();
 
         bool success = false;
         for (int i = 0x0; i < 0x90; i += 0x8)
@@ -614,7 +614,7 @@ namespace RC::Unreal
             );
         }
 
-        if (!FName::constructor_internal.is_ready())
+        if (!FName::ConstructorInternal.is_ready())
         {
             throw_missed_offset(
                     MemberOffsets::FField_NamePrivate,
@@ -622,7 +622,7 @@ namespace RC::Unreal
             );
         }
 
-        UClass* actorClass = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.Actor");
+        UClass* actorClass = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/Engine.Actor");
         if (!actorClass)
         {
             throw_missed_offset(
@@ -633,7 +633,7 @@ namespace RC::Unreal
 
         FName knownCoreFName = FName(L"bCanBeDamaged");
 
-        FField* property = actorClass->get_child_properties();
+        FField* property = actorClass->GetChildProperties();
         while (property)
         {
             for (int i = 0x8; i < 0x50; i += 0x8)
@@ -660,7 +660,7 @@ namespace RC::Unreal
     {
         if (retrieve_static_offset(MemberOffsets::StructProperty_Struct) != -1) { return; }
 
-        void* fvector = UObjectGlobals::static_find_object(nullptr, nullptr, L"/Script/CoreUObject.Vector");
+        void* fvector = UObjectGlobals::StaticFindObject(nullptr, nullptr, L"/Script/CoreUObject.Vector");
         if (!fvector)
         {
             throw_missed_offset(
@@ -721,7 +721,7 @@ namespace RC::Unreal
 
         if (retrieve_static_offset(MemberOffsets::XProperty_Offset_Internal) != -1) { return; }
 
-        UObject* default_pawn = UObjectGlobals::static_find_object(nullptr, nullptr, L"/Script/Engine.Default__DefaultPawn");
+        UObject* default_pawn = UObjectGlobals::StaticFindObject(nullptr, nullptr, L"/Script/Engine.Default__DefaultPawn");
         if (!default_pawn)
         {
             throw_missed_offset(
@@ -753,9 +753,9 @@ namespace RC::Unreal
             UObject* try_object = Helper::Casting::offset_deref<UObject*>(default_pawn, try_offset);
             if (try_object)
             {
-                if (UObject::is_real(try_object))
+                if (UObject::IsReal(try_object))
                 {
-                    std::wstring obj_name = try_object->get_full_name();
+                    std::wstring obj_name = try_object->GetFullName();
                     if (obj_name == L"StaticMeshComponent /Script/Engine.Default__DefaultPawn:MeshComponent0")
                     {
                         add_static_offset(MemberOffsets::XProperty_Offset_Internal, i, STR("XProperty_Offset_Internal"));
@@ -800,11 +800,11 @@ namespace RC::Unreal
         }
 
         // Type: UScriptStruct
-        UStruct* hit_result = UObjectGlobals::static_find_object<UStruct*>(nullptr, nullptr, L"/Script/Engine.HitResult");
+        UStruct* hit_result = UObjectGlobals::StaticFindObject<UStruct*>(nullptr, nullptr, L"/Script/Engine.HitResult");
 
         FName prop_name_to_test_against = FName(L"bBlockingHit");
         FProperty* prop_to_test{};
-        hit_result->for_each_property([&](FProperty* child) {
+        hit_result->ForEachProperty([&](FProperty* child) {
             if (child->GetFName() == prop_name_to_test_against)
             {
                 prop_to_test = child;
@@ -893,7 +893,7 @@ namespace RC::Unreal
             );
         }
 
-        UClass* known_class_within = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, STR("/Script/CoreUObject.Object"));
+        UClass* known_class_within = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/CoreUObject.Object"));
         if (!known_class_within)
         {
             throw_missed_offset(
@@ -902,7 +902,7 @@ namespace RC::Unreal
             );
         }
 
-        UClass* engine_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, STR("/Script/Engine.Engine"));
+        UClass* engine_class = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/Engine.Engine"));
         if (!engine_class)
         {
             throw_missed_offset(
@@ -947,7 +947,7 @@ namespace RC::Unreal
 
         constexpr wchar_t classDefaultObjectName[] = L"/Script/Engine.Default__MaterialExpression";
 
-        UObject* cdo = UObjectGlobals::static_find_object(nullptr, nullptr, classDefaultObjectName);
+        UObject* cdo = UObjectGlobals::StaticFindObject(nullptr, nullptr, classDefaultObjectName);
         if (!cdo)
         {
             throw_missed_offset(
@@ -956,7 +956,7 @@ namespace RC::Unreal
             );
         }
 
-        void* class_to_test = cdo->get_uclass();
+        void* class_to_test = cdo->GetClass();
 
         bool success{};
         for (int32_t iteratorOffset = 0x50; iteratorOffset < 0x160; iteratorOffset += 0x8)
@@ -1015,15 +1015,15 @@ namespace RC::Unreal
         // TODO: Improved this because right now this is a very bad method because of the many versions checks required
         uint64_t flags_to_check_for{};
 
-        if (Version::major == 4)
+        if (Version::Major == 4)
         {
-            if (Version::minor <= 12)
+            if (Version::Minor <= 12)
             {
                 // Flags
                 // CPF_Edit | CPF_BlueprintVisible | CPF_ZeroConstructor | CPF_IsPlainOldData | CPF_NoDestructor | CPF_NativeAccessSpecifierPublic
                 flags_to_check_for = 0x0010001040000205;
             }
-            else if (Version::minor <= 18)
+            else if (Version::Minor <= 18)
             {
                 // Flags
                 // CPF_Edit | CPF_BlueprintVisible | CPF_HasGetValueTypeHash | CPF_IsPlainOldData | CPF_NoDestructor | CPF_NativeAccessSpecifierPublic
@@ -1036,7 +1036,7 @@ namespace RC::Unreal
                 flags_to_check_for = 0x0018001040000205;
             }
         }
-        else if (Version::major < 4)
+        else if (Version::Major < 4)
         {
             throw_missed_offset(
                     MemberOffsets::Property_PropertyFlags,
@@ -1131,7 +1131,7 @@ namespace RC::Unreal
 
         for (auto& object_info : objects_to_test)
         {
-            void* object = UObjectGlobals::static_find_object(nullptr, nullptr, object_info.object_name);
+            void* object = UObjectGlobals::StaticFindObject(nullptr, nullptr, object_info.object_name);
             if (!object) { continue; }
 
             for (int32_t i = 0x0; i < 0x100; i += 0x8)
@@ -1227,7 +1227,7 @@ namespace RC::Unreal
 
         for (auto& function_to_test : functions_to_test)
         {
-            UFunction* func = UObjectGlobals::static_find_object<UFunction*>(nullptr, nullptr, function_to_test.name);
+            UFunction* func = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, function_to_test.name);
 
             // All functions must exist or increase the list of functions and require a minimum amount to exist & pass all tests
             // For now I will require all functions to exist
@@ -1448,7 +1448,7 @@ namespace RC::Unreal
         functions_to_test.reserve(num_functions_to_test);
 
         // Find a number of non-default UFunctions
-        UObjectGlobals::find_objects(num_functions_to_test, FName(STR("Function")), FName(0u, 0u), functions_to_test, RF_NoFlags, RF_DefaultSubObject | RF_ArchetypeObject);
+        UObjectGlobals::FindObjects(num_functions_to_test, FName(STR("Function")), FName(0u, 0u), functions_to_test, RF_NoFlags, RF_DefaultSubObject | RF_ArchetypeObject);
 
         // Parse memory
         for (const auto& function_to_test : functions_to_test)
@@ -1510,8 +1510,8 @@ namespace RC::Unreal
         // PropertyClass: Class /Script/CoreUObject.Class
         // MetaClass: Class /Script/Engine.PlayerCameraManager
         void* controller_player_camera_manager_class = get_property_from_uobject(L"/Script/Engine.PlayerController", L"PlayerCameraManagerClass");
-        void* core_class = UObjectGlobals::static_find_object(nullptr, nullptr, L"/Script/CoreUObject.Class");
-        void* player_camera_manager_class = UObjectGlobals::static_find_object(nullptr, nullptr, L"/Script/Engine.PlayerCameraManager");
+        void* core_class = UObjectGlobals::StaticFindObject(nullptr, nullptr, L"/Script/CoreUObject.Class");
+        void* player_camera_manager_class = UObjectGlobals::StaticFindObject(nullptr, nullptr, L"/Script/Engine.PlayerCameraManager");
 
         if (!controller_player_camera_manager_class || !core_class || !player_camera_manager_class)
         {
@@ -1588,7 +1588,7 @@ namespace RC::Unreal
         }
 
         FProperty* softclassproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.PrimaryAssetTypeInfo", L"AssetBaseClass"));
-        UClass* meta_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Object");
+        UClass* meta_class = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Object");
 
         if (!softclassproperty || !meta_class)
         {
@@ -1702,10 +1702,10 @@ namespace RC::Unreal
         for (auto& object_to_test : objects_to_test)
         {
             FProperty* prop = static_cast<FProperty*>(get_property_from_uobject(object_to_test.object_owner, object_to_test.prop_short_name));
-            UObject* known_underlying_type = UObjectGlobals::static_find_object(nullptr, nullptr, object_to_test.object_underlying_type);
-            UObject* known_enum = UObjectGlobals::static_find_object(nullptr, nullptr, object_to_test.object_enum);
+            UObject* known_underlying_type = UObjectGlobals::StaticFindObject(nullptr, nullptr, object_to_test.object_underlying_type);
+            UObject* known_enum = UObjectGlobals::StaticFindObject(nullptr, nullptr, object_to_test.object_enum);
 
-            if (Version::is_below(4, 25) && !File::StringViewType{object_to_test.object_underlying_type}.empty() && !known_underlying_type)
+            if (Version::IsBelow(4, 25) && !File::StringViewType{object_to_test.object_underlying_type}.empty() && !known_underlying_type)
             {
                 Output::send(STR("Known underlying enum type not found: {}\n"), File::StringViewType{object_to_test.object_underlying_type});
                 continue;
@@ -1756,7 +1756,7 @@ namespace RC::Unreal
                     // We can then to a pointer comparison to find the offset of 'UEnumProperty::UnderlyingProp'
                     // If >=4.25, we cannot use 'StaticFindObject' because the underlying property wont' exist in GUObjectArray
                     // Therefore we fall back on using a relative offset to 'FEnumProperty::Enum'
-                    if (Version::is_below(4, 25))
+                    if (Version::IsBelow(4, 25))
                     {
                         if (!found_underlying_type)
                         {
@@ -1848,7 +1848,7 @@ namespace RC::Unreal
 
         for (const auto& object_to_test : objects_to_test)
         {
-            UObject* known_enum = UObjectGlobals::static_find_object(nullptr, nullptr, object_to_test.object_enum);
+            UObject* known_enum = UObjectGlobals::StaticFindObject(nullptr, nullptr, object_to_test.object_enum);
             FProperty* prop = static_cast<FProperty*>(get_property_from_uobject(object_to_test.object_name, object_to_test.prop_short_name));
 
             for (int32_t i = 0x0; i < 0x130; i += sizeof(void*))
@@ -1905,7 +1905,7 @@ namespace RC::Unreal
             {
                 // The value at MapProperty+i is a valid pointer
                 FName maybe_fname = Helper::Casting::offset_deref<FName>(pointer, retrieve_static_offset(MemberOffsets::FField_NamePrivate));
-                if (maybe_fname.equals(key_name))
+                if (maybe_fname.Equals(key_name))
                 {
                     key_prop_offset = i;
                     value_prop_offset = i + 0x8;
@@ -1943,7 +1943,7 @@ namespace RC::Unreal
             throw_missed_offset(MemberOffsets::DelegateProperty_SignatureFunction, STR("Was unable to find a DelegateProperty in UClass 'Widget'"));
         }
 
-        UFunction* delegate_function = UObjectGlobals::static_find_object<UFunction*>(nullptr, nullptr, L"/Script/UMG.Widget:GetSlateVisibility__DelegateSignature");
+        UFunction* delegate_function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, L"/Script/UMG.Widget:GetSlateVisibility__DelegateSignature");
         if (!delegate_function)
         {
             throw_missed_offset(MemberOffsets::DelegateProperty_SignatureFunction, STR("Was unable to find UFunction 'GetSlateVisibility__DelegateSignature'"));
@@ -1991,7 +1991,7 @@ namespace RC::Unreal
             throw_custom_missed_offset(STR("Was unable to find a MulticastDelegateProperty in UClass 'ComboBoxString'"));
         }
 
-        UFunction* delegate_function = UObjectGlobals::static_find_object<UFunction*>(nullptr, nullptr, L"/Script/UMG.ComboBoxString:OnOpeningEvent__DelegateSignature");
+        UFunction* delegate_function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, L"/Script/UMG.ComboBoxString:OnOpeningEvent__DelegateSignature");
         if (!delegate_function)
         {
             throw_custom_missed_offset(STR("Was unable to find UFunction 'MovementModeChangedSignature__DelegateSignature'"));
@@ -2038,7 +2038,7 @@ namespace RC::Unreal
         }
 
         FProperty* interfaceproperty = static_cast<FProperty*>(get_property_from_uobject(L"/Script/Engine.KismetSystemLibrary:Conv_InterfaceToObject", L"Interface"));
-        UClass* interface_class = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Interface");
+        UClass* interface_class = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Interface");
 
         if (!interfaceproperty || !interface_class)
         {
@@ -2090,7 +2090,7 @@ namespace RC::Unreal
             int64_t maybe_property_class_name = Helper::Casting::offset_deref_safe<int64_t>(maybe_pointer, ffieldclass_name_offset, m_process_handle);
             if (!maybe_property_class_name) { continue; }
 
-            if (FName(maybe_property_class_name).equals(property_class_name))
+            if (FName(maybe_property_class_name).Equals(property_class_name))
             {
                 add_static_offset(MemberOffsets::FieldPathProperty_PropertyClass, i, STR("FieldPathProperty_PropertyClass"));
                 success = true;
@@ -2114,7 +2114,7 @@ namespace RC::Unreal
         FProperty* setproperty{};
         FName element_property_name{};
 
-        if (Version::is_equal(4, 13))
+        if (Version::IsEqual(4, 13))
         {
             // In 4.13, 'LandscapeInfo:Proxies' is the only SetProperty that exists
             // So we use 'LandscapeInfo:Proxies' in 4.13 (SetProperty doesn't exist in <4.13)
@@ -2142,7 +2142,7 @@ namespace RC::Unreal
             void* is_pointer = Helper::Casting::offset_deref_safe<void*>(maybe_element_prop, 0, m_process_handle);
             if (!is_pointer) { continue; }
 
-            if (maybe_element_prop->GetFName().equals(element_property_name))
+            if (maybe_element_prop->GetFName().Equals(element_property_name))
             {
                 add_static_offset(MemberOffsets::SetProperty_ElementProp, i, STR("SetProperty_ElementProp"));
                 success = true;
@@ -2174,7 +2174,7 @@ namespace RC::Unreal
             throw std::runtime_error("[StaticOffsetFinder->find_ustruct_reflink] Was unable to find HitResult.PhysMaterial");
         }
 
-        UStruct* hit_result = UObjectGlobals::static_find_object<UStruct*>(nullptr, nullptr, L"/Script/Engine.HitResult");
+        UStruct* hit_result = UObjectGlobals::StaticFindObject<UStruct*>(nullptr, nullptr, L"/Script/Engine.HitResult");
 
         bool success{};
         for (int32_t i = 0x50; i < 0x130; i += 0x8)
@@ -2213,7 +2213,7 @@ namespace RC::Unreal
         }
 
         // The 'HitResult' script struct is used here because the memory layout and memory values are known, including the number and locations of the zero sets.
-        UStruct* hit_result = UObjectGlobals::static_find_object<UStruct*>(nullptr, nullptr, L"/Script/Engine.HitResult");
+        UStruct* hit_result = UObjectGlobals::StaticFindObject<UStruct*>(nullptr, nullptr, L"/Script/Engine.HitResult");
         void* ref_link_address = Helper::Casting::offset_deref<void*>(hit_result, ref_link_offset);
 
         constexpr static uint32_t zero_set_size = 0x8;
@@ -2226,12 +2226,12 @@ namespace RC::Unreal
 
             // In 4.25+, there are the variables 'UnresolvedScriptProperties' and 'UnversionedSchema', both are pointers
             // So in 4.25+, there should be 6 sets of zeros instead of 4
-            if (Version::is_below(4, 25) && num_zero_sets == 4)
+            if (Version::IsBelow(4, 25) && num_zero_sets == 4)
             {
                 struct_flags_offset = i + zero_set_size;
                 break;
             }
-            else if (Version::is_atleast(4, 25) && num_zero_sets == 6)
+            else if (Version::IsAtLeast(4, 25) && num_zero_sets == 6)
             {
                 struct_flags_offset = i + zero_set_size;
                 break;
@@ -2255,8 +2255,8 @@ namespace RC::Unreal
             return;
         }
 
-        UClass* pawn = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.Pawn");
-        UClass* nav_agent_interface = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.NavAgentInterface");
+        UClass* pawn = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/Engine.Pawn");
+        UClass* nav_agent_interface = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/Engine.NavAgentInterface");
 
         if (!pawn || !nav_agent_interface)
         {

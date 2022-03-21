@@ -32,6 +32,6 @@ namespace RC::Unreal
 
     bool UObject415::UObject_HasAnyInternalFlags(void* p_this, const EInternalObjectFlags FlagsToCheck)
     {
-        return Container::m_unreal_vc_base->FUObjectItem_HasAnyFlags(Container::m_unreal_vc_base->UObjectArray_index_to_object(UObject_get_internal_index(p_this)), FlagsToCheck);
+        return Container::UnrealVC->FUObjectItem_HasAnyFlags(Container::UnrealVC->UObjectArray_index_to_object(UObject_get_internal_index(p_this)), FlagsToCheck);
     }
 }

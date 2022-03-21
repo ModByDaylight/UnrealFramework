@@ -4,26 +4,26 @@
 
 namespace RC::Unreal
 {
-    auto ReflectedFunctionBase::assign_function(UFunction* function) -> void
+    auto ReflectedFunctionBase::AssignFunction(UFunction* Function_) -> void
     {
-        if (!function) { return; }
+        if (!Function_) { return; }
 
-        m_function = function;
-        ReturnValueOffset = function->GetReturnValueOffset();
+        Function = Function_;
+        ReturnValueOffset = Function_->GetReturnValueOffset();
     }
 
-    auto ReflectedFunctionBase::is_valid() -> bool
+    auto ReflectedFunctionBase::IsValid() -> bool
     {
-        if (!m_function)
+        if (!Function)
         {
-            assign_function(UObjectGlobals::static_find_object<UFunction*>(nullptr, nullptr, get_name()));
-            if (!m_function)
+            AssignFunction(UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, GetFullName()));
+            if (!Function)
             {
-                Output::send(STR("Was unable to locate '{}'\n"), File::StringViewType{get_name()});
+                Output::send(STR("Was unable to locate '{}'\n"), File::StringViewType{GetFullName()});
                 return false;
             }
         }
 
-        return m_function;
+        return Function;
     }
 }

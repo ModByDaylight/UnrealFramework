@@ -10,21 +10,21 @@ namespace RC::Unreal
 {
     struct RC_UE_API FUObjectItem
     {
-        auto is_unreachable() -> bool;
-        auto set_root_set() -> void;
-        auto unset_root_set() -> void;
-        auto set_gc_keep() -> void;
-        auto unset_gc_keep() -> void;
-        auto get_uobject() -> class UObject*;
+        auto IsUnreachable() -> bool;
+        auto SetRootSet() -> void;
+        auto UnsetRootSet() -> void;
+        auto SetGCKeep() -> void;
+        auto UnsetGCKeep() -> void;
+        auto GetUObject() -> class UObject*;
     };
 
     class RC_UE_API UObjectArray
     {
     public:
-        auto static setup_guobjectarray_address(void* address) -> void;
+        auto static SetupGUObjectArrayAddress(void* address) -> void;
 
     public:
-        auto static is_valid(FUObjectItem* object_item, bool b_even_if_pending_kill) -> bool;
+        auto static IsValid(FUObjectItem* ObjectItem, bool bEvenIfPendingKill) -> bool;
     };
 }
 

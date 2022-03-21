@@ -41,7 +41,7 @@ namespace RC::Unreal
 
     bool FOutputDevice::CanBeUsedOnMultipleThreads() const
     {
-        if (Version::is_below(4, 21))
+        if (Version::IsBelow(4, 21))
         {
             throw std::runtime_error{"FOutputDevice::CanBeUsedOnMultipleThreads is only available in 4.21+"};
         }

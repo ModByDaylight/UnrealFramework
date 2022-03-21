@@ -109,7 +109,7 @@ namespace RC::Unreal
             {
                 throw std::runtime_error("Cannot set floating point property value to integral value");
             }
-            TTypeFundamentals::set_property_value(data, (TCppType) value);
+            TTypeFundamentals::SetPropertyValue(data, (TCppType) value);
         }
 
         /**
@@ -123,7 +123,7 @@ namespace RC::Unreal
             {
                 throw std::runtime_error("Cannot set floating point property value to integral value");
             }
-            TTypeFundamentals::set_property_value(data, (TCppType) value);
+            TTypeFundamentals::SetPropertyValue(data, (TCppType) value);
         }
     };
 }

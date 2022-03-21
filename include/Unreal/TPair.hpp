@@ -6,8 +6,8 @@ namespace RC::Unreal
     template<typename KeyType, typename ValueType>
     struct TPair
     {
-        KeyType key;
-        ValueType value;
+        KeyType Key;
+        ValueType Value;
     };
 }
 

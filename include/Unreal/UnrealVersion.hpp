@@ -11,7 +11,9 @@
 
 #include <Unreal/UObjectGlobals.hpp>
 
-#define UNREAL_VERSION_RUN_TESTS 1
+#ifndef UNREAL_VERSION_RUN_TESTS
+#define UNREAL_VERSION_RUN_TESTS 0
+#endif
 
 namespace RC::Unreal
 {
@@ -28,38 +30,38 @@ namespace RC::Unreal
             FAILURE,
         };
 
-        std::wstring error_message{};
-        StatusCode status_code{};
+        std::wstring ErrorMessage{};
+        StatusCode Status{};
 
         VersionStatus() = default;
-        VersionStatus(StatusCode status_code_param, std::wstring error_message_param);
+        VersionStatus(StatusCode StatusParam, std::wstring ErrorMessageParam);
     };
 
     class RC_UE_API Version
     {
     public:
-        static int32_t major;
-        static int32_t minor;
+        static int32_t Major;
+        static int32_t Minor;
 
-        auto static setup(const UnrealInitializer::Config& config, void* address) -> VersionStatus;
-
-        [[nodiscard]]
-        auto static is_equal(int32_t major_p, int32_t minor_p) -> bool { return (major == major_p && minor == minor_p); }
+        auto static Initialize(const UnrealInitializer::Config& Config, void* Address) -> VersionStatus;
 
         [[nodiscard]]
-        auto static is_atleast(int32_t major_p, int32_t minor_p) -> bool { return ((major > major_p) || (major == major_p && minor >= minor_p)); }
+        auto static IsEqual(int32_t major_p, int32_t minor_p) -> bool { return (Major == major_p && Minor == minor_p); }
 
         [[nodiscard]]
-        auto static is_atmost(int32_t major_p, int32_t minor_p) -> bool { return ((major < major_p) || (major == major_p && minor <= minor_p)); }
+        auto static IsAtLeast(int32_t major_p, int32_t minor_p) -> bool { return ((Major > major_p) || (Major == major_p && Minor >= minor_p)); }
 
         [[nodiscard]]
-        auto static is_below(int32_t major_p, int32_t minor_p) -> bool { return ((major < major_p) || (major == major_p && minor < minor_p)); }
+        auto static IsAtMost(int32_t major_p, int32_t minor_p) -> bool { return ((Major < major_p) || (Major == major_p && Minor <= minor_p)); }
 
         [[nodiscard]]
-        auto static is_above(int32_t major_p, int32_t minor_p) -> bool { return ((major > major_p) || (major == major_p && minor > minor_p)); }
+        auto static IsBelow(int32_t major_p, int32_t minor_p) -> bool { return ((Major < major_p) || (Major == major_p && Minor < minor_p)); }
+
+        [[nodiscard]]
+        auto static IsAbove(int32_t major_p, int32_t minor_p) -> bool { return ((Major > major_p) || (Major == major_p && Minor > minor_p)); }
 
 #if UNREAL_VERSION_RUN_TESTS == 1
-        auto static run_tests() -> void;
+        auto static RunTests() -> void;
 #endif
     };
 }

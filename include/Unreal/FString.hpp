@@ -11,25 +11,25 @@ namespace RC::Unreal
     namespace UnrealInitializer
     {
         struct CacheInfo;
-        auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
-        auto load_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
+        auto CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
+        auto LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
     }
 
     class RC_UE_API FString
     {
     protected:
-        friend auto UnrealInitializer::create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
-        friend auto UnrealInitializer::load_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
+        friend auto UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
+        friend auto UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
 
     protected:
-        TArray<wchar_t> m_str_data{nullptr, 0, 0};
+        TArray<TCHAR> Data{nullptr, 0, 0};
 
     public:
         FString() = default;
-        explicit FString(wchar_t* str);
+        explicit FString(wchar_t* Str);
 
-        [[nodiscard]] auto get_string_data() const -> const wchar_t*;
-        auto clear() -> void;
+        [[nodiscard]] auto GetCharArray() const -> const wchar_t*;
+        auto Clear() -> void;
     };
 
     class FStringOut : public FString

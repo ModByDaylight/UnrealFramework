@@ -12,18 +12,18 @@
 
 namespace RC::Unreal::Signatures
 {
-    auto scan_for_game_functions_and_data(const UnrealInitializer::Config& config) -> ScanResult
+    auto ScanForGameFunctionsAndData(const UnrealInitializer::Config& config) -> ScanResult
     {
         // TODO: Add some code here to deal with nothing being found due to code being injected too early
-        return scan_for_game_functions_and_data_impl(config);
+        return ScanForGameFunctionsAndDataImpl(config);
     }
-    auto scan_for_guobjectarray(const UnrealInitializer::Config& config) -> ScanResult
+    auto ScanForGUObjectArray(const UnrealInitializer::Config& config) -> ScanResult
     {
         // TODO: Add some code here to deal with nothing being found due to code being injected too early
-        return scan_for_guobjectarray_impl(config);
+        return ScnForGUObjectArrayImpl(config);
     }
 
-    auto scan_for_game_functions_and_data_impl(const UnrealInitializer::Config& config) -> ScanResult
+    auto ScanForGameFunctionsAndDataImpl(const UnrealInitializer::Config& config) -> ScanResult
     {
         ScanResult scan_result;
 
@@ -37,9 +37,9 @@ namespace RC::Unreal::Signatures
         uint8_t* FNameToStringAddress{};
         uint8_t FNameToStringNumMatches{};
 
-        if (config.scan_overrides.version_finder)
+        if (config.ScanOverrides.version_finder)
         {
-            config.scan_overrides.version_finder(signature_containers_core, scan_result);
+            config.ScanOverrides.version_finder(signature_containers_core, scan_result);
         }
         else
         {
@@ -57,31 +57,31 @@ namespace RC::Unreal::Signatures
                     },
                     // On Match Found
                     [&]([[maybe_unused]]SignatureContainer& self) {
-                        version_status = Unreal::Version::setup(config, self.get_match_address());
+                        version_status = Unreal::Version::Initialize(config, self.get_match_address());
 
-                        if (version_status.status_code == VersionStatus::SUCCESS)
+                        if (version_status.Status == VersionStatus::SUCCESS)
                         {
-                            scan_result.success_messages.emplace_back(std::format(STR("Engine Version: {}.{} <- Built-in\n"), Version::major, Version::minor));
+                            scan_result.SuccessMessage.emplace_back(std::format(STR("Engine Version: {}.{} <- Built-in\n"), Version::Major, Version::Minor));
                         }
 
-                        return version_status.status_code == VersionStatus::SUCCESS;
+                        return version_status.Status == VersionStatus::SUCCESS;
                     },
                     // On Scan Completed
                     [&]([[maybe_unused]]SignatureContainer& self) {
-                        if (version_status.status_code != VersionStatus::SUCCESS)
+                        if (version_status.Status != VersionStatus::SUCCESS)
                         {
                             // We're not including the error message from VersionStatus here because it's inaccurate
-                            scan_result.errors.emplace_back("Was unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.");
+                            scan_result.Errors.emplace_back("Was unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.");
                         }
                     }
             };
             signature_containers_core.emplace_back(unreal_version_finder);
         }
 
-        if (config.scan_overrides.fname_to_string)
+        if (config.ScanOverrides.fname_to_string)
         {
             // If we have an override look in the 'Core' module because that's where FName::ToString is
-            config.scan_overrides.fname_to_string(signature_containers_core, scan_result);
+            config.ScanOverrides.fname_to_string(signature_containers_core, scan_result);
         }
         else
         {
@@ -135,9 +135,9 @@ namespace RC::Unreal::Signatures
             signature_containers_coreuobject.emplace_back(fname_to_string_backup);
         }
 
-        if (config.scan_overrides.static_construct_object)
+        if (config.ScanOverrides.static_construct_object)
         {
-            config.scan_overrides.static_construct_object(signature_containers_umg, scan_result);
+            config.ScanOverrides.static_construct_object(signature_containers_umg, scan_result);
         }
         else
         {
@@ -188,8 +188,8 @@ namespace RC::Unreal::Signatures
 
                         if (!callee) { return false; }
 
-                        scan_result.success_messages.emplace_back(std::format(STR("StaticConstructObject_Internal address: {} <- Built-in\n"), static_cast<void*>(callee)));
-                        UObjectGlobals::setup_static_construct_object_internal_address(callee);
+                        scan_result.SuccessMessage.emplace_back(std::format(STR("StaticConstructObject_Internal address: {} <- Built-in\n"), static_cast<void*>(callee)));
+                        UObjectGlobals::SetupStaticConstructObjectInternalAddress(callee);
                         self.get_did_succeed() = true;
                         return true;
                     },
@@ -197,7 +197,7 @@ namespace RC::Unreal::Signatures
                     [&](const SignatureContainer& self) {
                         if (!self.get_did_succeed())
                         {
-                            scan_result.errors.emplace_back("Was unable to find address for 'StaticConstructObject_Internal'\nYou can supply your own in 'UE4SS_Signatures/StaticConstructObject'");
+                            scan_result.Errors.emplace_back("Was unable to find address for 'StaticConstructObject_Internal'\nYou can supply your own in 'UE4SS_Signatures/StaticConstructObject'");
                         }
                     }
             };
@@ -216,29 +216,29 @@ namespace RC::Unreal::Signatures
         // Needed because it checks in more than one module and the scanner isn't setup for that
         if (FNameToStringNumMatches > 1)
         {
-            scan_result.info_messages.emplace(STR("Found FName::ToString in both Engine & CoreUObject modules, using the first match\n"));
+            scan_result.InfoMessages.emplace(STR("Found FName::ToString in both Engine & CoreUObject modules, using the first match\n"));
         }
 
-        if (!config.scan_overrides.fname_to_string)
+        if (!config.ScanOverrides.fname_to_string)
         {
             if (FNameToStringNumMatches >= 1 && FNameToStringAddress)
             {
-                FName::to_string_internal.assign_address(FNameToStringAddress);
-                scan_result.success_messages.emplace_back(std::format(STR("FName::ToString address: {} <- Built-in\n"), static_cast<void*>(FNameToStringAddress)));
+                FName::ToStringInternal.assign_address(FNameToStringAddress);
+                scan_result.SuccessMessage.emplace_back(std::format(STR("FName::ToString address: {} <- Built-in\n"), static_cast<void*>(FNameToStringAddress)));
             }
             else
             {
-                scan_result.errors.emplace_back("Was unable to find AOB for 'FName::ToString'\nYou can supply your own in 'UE4SS_Signatures/FName_ToString.lua'");
+                scan_result.Errors.emplace_back("Was unable to find AOB for 'FName::ToString'\nYou can supply your own in 'UE4SS_Signatures/FName_ToString.lua'");
             }
         }
 
-        if (scan_result.errors.empty())
+        if (scan_result.Errors.empty())
         {
-            scan_result.scan_status = ScanStatus::Succeeded;
+            scan_result.Status = ScanStatus::Succeeded;
         }
         return scan_result;
     }
-    auto scan_for_guobjectarray_impl(const UnrealInitializer::Config& config) -> ScanResult
+    auto ScnForGUObjectArrayImpl(const UnrealInitializer::Config& config) -> ScanResult
     {
         ScanResult scan_result;
 
@@ -247,9 +247,9 @@ namespace RC::Unreal::Signatures
         std::vector<SignatureContainer> signature_containers_core;
 
         // FName:FName has to be in the second pass because we need access to FName::ToString which is found in the first pass
-        if (config.scan_overrides.fname_constructor)
+        if (config.ScanOverrides.fname_constructor)
         {
-            config.scan_overrides.fname_constructor(signature_containers_core, scan_result);
+            config.ScanOverrides.fname_constructor(signature_containers_core, scan_result);
         }
         else
         {
@@ -272,8 +272,8 @@ namespace RC::Unreal::Signatures
 
                 if (name == L"bCanBeDamaged")
                 {
-                    scan_result.success_messages.emplace_back(std::format(STR("FName::FName address: {} <- Built-in\n"), static_cast<void*>(destination)));
-                    FName::constructor_internal.assign_address(destination);
+                    scan_result.SuccessMessage.emplace_back(std::format(STR("FName::FName address: {} <- Built-in\n"), static_cast<void*>(destination)));
+                    FName::ConstructorInternal.assign_address(destination);
                     return true;
                 }
                 else
@@ -326,7 +326,7 @@ namespace RC::Unreal::Signatures
 
                         if (!success)
                         {
-                            scan_result.errors.emplace_back("Was unable to find AOB for 'FName::FName'\nYou can supply your own in 'UE4SS_Signatures/FName_Constructor.lua'");
+                            scan_result.Errors.emplace_back("Was unable to find AOB for 'FName::FName'\nYou can supply your own in 'UE4SS_Signatures/FName_Constructor.lua'");
                         }
                         else
                         {
@@ -339,9 +339,9 @@ namespace RC::Unreal::Signatures
 
         // FMemory stuff needs to be scanned in the second pass
         // This is because we need access to the engine version which we don't until after the first pass
-        if (config.scan_overrides.fmemory_free)
+        if (config.ScanOverrides.fmemory_free)
         {
-            config.scan_overrides.fmemory_free(signature_containers_core, scan_result);
+            config.ScanOverrides.fmemory_free(signature_containers_core, scan_result);
         }
         else
         {
@@ -366,7 +366,7 @@ namespace RC::Unreal::Signatures
                     },
                     // On Match Found
                     [&](SignatureContainer& self) {
-                        scan_result.success_messages.emplace_back(std::format(STR("FMemory::Free address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
+                        scan_result.SuccessMessage.emplace_back(std::format(STR("FMemory::Free address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
                         self.get_did_succeed() = true;
 
                         const auto signature_identifier = static_cast<const FMemoryFreeSignatureType>(self.get_signatures()[self.get_index_into_signatures()].custom_data);
@@ -408,22 +408,22 @@ namespace RC::Unreal::Signatures
                     [&](const SignatureContainer& self) {
                         if (!self.get_did_succeed())
                         {
-                            scan_result.errors.emplace_back("Was unable to find AOB for 'FMemory::Free'\nYou can supply your own in 'UE4SS_Signatures/FMemory_Free.lua");
+                            scan_result.Errors.emplace_back("Was unable to find AOB for 'FMemory::Free'\nYou can supply your own in 'UE4SS_Signatures/FMemory_Free.lua");
                         }
                     }
             };
             signature_containers_core.emplace_back(fmemory_free);
         }
 
-        if (config.scan_overrides.guobjectarray)
+        if (config.ScanOverrides.guobjectarray)
         {
-            config.scan_overrides.guobjectarray(signature_containers_coreuobject, scan_result);
+            config.ScanOverrides.guobjectarray(signature_containers_coreuobject, scan_result);
         }
         else
         {
             SignatureContainer guobjectarray = [&]() -> SignatureContainer {
                 // Custom AOBs for specific games
-                if (config.game_exe.filename() == STR("FactoryGame-Win64-Shipping.exe") && Version::is_atleast(4, 26))
+                if (config.GameExe.filename() == STR("FactoryGame-Win64-Shipping.exe") && Version::IsAtLeast(4, 26))
                 {
                     // Satisfactory is special, maybe it's because it's modular ?
                     return {
@@ -437,12 +437,12 @@ namespace RC::Unreal::Signatures
 
                                 if (!guobjectarray)
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: LEA instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find GUObjectArray: LEA instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                     return true;
                                 }
 
-                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"), guobjectarray));
-                                UObjectArray::setup_guobjectarray_address(guobjectarray);
+                                scan_result.SuccessMessage.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"), guobjectarray));
+                                UObjectArray::SetupGUObjectArrayAddress(guobjectarray);
 
                                 self.get_did_succeed() = true;
                                 return true;
@@ -450,13 +450,13 @@ namespace RC::Unreal::Signatures
                             [&](const SignatureContainer& self) {
                                 if (!self.get_did_succeed())
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                 }
                             }
                     };
                 }
                 // Default AOBs that work for most games
-                else if (Version::is_atmost(4, 12))
+                else if (Version::IsAtMost(4, 12))
                 {
                     return {
                             {
@@ -472,12 +472,12 @@ namespace RC::Unreal::Signatures
 
                                 if (!guobjectarray)
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: ADD instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find GUObjectArray: ADD instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                     return true;
                                 }
 
-                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"),  guobjectarray));
-                                UObjectArray::setup_guobjectarray_address(guobjectarray);
+                                scan_result.SuccessMessage.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"), guobjectarray));
+                                UObjectArray::SetupGUObjectArrayAddress(guobjectarray);
 
                                 self.get_did_succeed() = true;
                                 return true;
@@ -485,12 +485,12 @@ namespace RC::Unreal::Signatures
                             [&](const SignatureContainer& self) {
                                 if (!self.get_did_succeed())
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                 }
                             }
                     };
                 }
-                else if (Version::is_atmost(4, 13))
+                else if (Version::IsAtMost(4, 13))
                 {
                     return {
                             {
@@ -503,12 +503,12 @@ namespace RC::Unreal::Signatures
 
                                 if (!guobjectarray)
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: LEA instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find GUObjectArray: LEA instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                     return true;
                                 }
 
-                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"),  guobjectarray));
-                                UObjectArray::setup_guobjectarray_address(guobjectarray);
+                                scan_result.SuccessMessage.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"), guobjectarray));
+                                UObjectArray::SetupGUObjectArrayAddress(guobjectarray);
 
                                 self.get_did_succeed() = true;
                                 return true;
@@ -516,12 +516,12 @@ namespace RC::Unreal::Signatures
                             [&](const SignatureContainer& self) {
                                 if (!self.get_did_succeed())
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                 }
                             }
                     };
                 }
-                else if (Version::is_atmost(4, 19))
+                else if (Version::IsAtMost(4, 19))
                 {
                     return {
                             {
@@ -534,12 +534,12 @@ namespace RC::Unreal::Signatures
 
                                 if (!guobjectarray)
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: MOV instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find GUObjectArray: MOV instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                     return true;
                                 }
 
-                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"),  guobjectarray));
-                                UObjectArray::setup_guobjectarray_address(guobjectarray);
+                                scan_result.SuccessMessage.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"), guobjectarray));
+                                UObjectArray::SetupGUObjectArrayAddress(guobjectarray);
 
                                 self.get_did_succeed() = true;
                                 return true;
@@ -547,12 +547,12 @@ namespace RC::Unreal::Signatures
                             [&](const SignatureContainer& self) {
                                 if (!self.get_did_succeed())
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                 }
                             }
                     };
                 }
-                else if (Version::is_atleast(4, 20))
+                else if (Version::IsAtLeast(4, 20))
                 {
                     return {
                             {
@@ -565,12 +565,12 @@ namespace RC::Unreal::Signatures
 
                                 if (!guobjectarray)
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find GUObjectArray: MOV instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find GUObjectArray: MOV instruction resolved to nullptr\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                     return true;
                                 }
 
-                                scan_result.success_messages.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"),  guobjectarray));
-                                UObjectArray::setup_guobjectarray_address(guobjectarray);
+                                scan_result.SuccessMessage.emplace_back(std::format(STR("GUObjectArray address: {} <- Built-in\n"), guobjectarray));
+                                UObjectArray::SetupGUObjectArrayAddress(guobjectarray);
 
                                 self.get_did_succeed() = true;
                                 return true;
@@ -578,14 +578,14 @@ namespace RC::Unreal::Signatures
                             [&](const SignatureContainer& self) {
                                 if (!self.get_did_succeed())
                                 {
-                                    scan_result.errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
+                                    scan_result.Errors.emplace_back("Was unable to find AOB for 'GUObjectArray'\nYou can supply your own in 'UE4SS_Signatures/GUObjectArray.lua'");
                                 }
                             }
                     };
                 }
                 else
                 {
-                    throw std::runtime_error{std::format("GUObjectArray Finder: Unsupported engine version '{}.{}'", Version::major, Version::minor)};
+                    throw std::runtime_error{std::format("GUObjectArray Finder: Unsupported engine version '{}.{}'", Version::Major, Version::Minor)};
                 }
             }();
 
@@ -596,9 +596,9 @@ namespace RC::Unreal::Signatures
         signature_container_map.emplace(ScanTarget::CoreUObject, signature_containers_coreuobject);
         SinglePassScanner::start_scan(signature_container_map);
 
-        if (scan_result.errors.empty())
+        if (scan_result.Errors.empty())
         {
-            scan_result.scan_status = Signatures::ScanStatus::Succeeded;
+            scan_result.Status = Signatures::ScanStatus::Succeeded;
         }
         return scan_result;
     }

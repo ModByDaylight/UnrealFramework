@@ -12,18 +12,18 @@ namespace RC::Unreal
     struct RC_UE_API TTextData
     {
         void* vtable{};
-        FString* string{};
+        FString* Data{};
     };
 
     class RC_UE_API FText
     {
     public:
-        TTextData* m_text_data{nullptr};
+        TTextData* Data{nullptr};
 
     public:
-        auto to_string_raw() -> FString*;
-        auto to_string() -> std::wstring;
-        auto set_string(FString*) -> void;
+        auto ToFString() -> FString*;
+        auto ToString() -> std::wstring;
+        auto SetString(FString*) -> void;
     };
 }
 

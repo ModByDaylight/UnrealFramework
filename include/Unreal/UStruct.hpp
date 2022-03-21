@@ -28,7 +28,7 @@ namespace RC::Unreal
          * This will include both UFunction and UProperty objects on UE versions before 4.25,
          * afterwards it will only include functions
          */
-        auto get_children() -> UField*;
+        auto GetChildren() -> UField*;
 
         /**
          * Returns the linked list of FField* objects defined on this struct
@@ -36,63 +36,63 @@ namespace RC::Unreal
          *
          * Will throw the exception if UE version is below 4.25 since FField did not exist back then
          */
-        auto get_child_properties() -> FField*;
+        auto GetChildProperties() -> FField*;
     public:
         /**
          * Returns the parent struct of this struct
          * It might totally return nullptr when used on script structs or
          * UObject itself, since it does not have a superclass
          */
-        auto get_super_struct() -> UStruct*;
+        auto GetSuperStruct() -> UStruct*;
 
         /**
          * Returns the total size of this object's properties
          * This is effectively the size of the object in memory
          */
-        auto get_properties_size() -> int32_t;
+        auto GetPropertiesSize() -> int32_t;
 
         /**
          * Returns the alignment of this struct
          * Most of the objects and structs do not specify alignment requirements though
          */
-        auto get_min_alignment() -> int32_t;
+        auto GetMinAlignment() -> int32_t;
 
         /**
          * Checks if this struct is a child of the provided one
          */
-        auto is_child_of(UStruct* ustruct) -> bool;
+        auto IsChildOf(UStruct* Struct) -> bool;
 
         template<UObjectDerivative UObjectDerivedType>
-        auto is_child_of() -> bool
+        auto IsChildOf() -> bool
         {
-            return is_child_of(UObjectDerivedType::static_class());
+            return IsChildOf(UObjectDerivedType::StaticClass());
         }
 
         /**
          * Iterates properties of this object and calls the provided function on each of them
          * Will stop the iteration once the callable returns Break
          */
-        auto for_each_property(const std::function<LoopAction(FProperty*)>& callable) -> void;
+        auto ForEachProperty(const std::function<LoopAction(FProperty*)>& Callable) -> void;
 
         /**
          * Iterates the functions of the object and calls the provided function on each of them
          * Will stop the iteration once the callable returns Break
          */
-        auto for_each_function(const std::function<LoopAction(UFunction*)>& callable) -> void;
+        auto ForEachFunction(const std::function<LoopAction(UFunction *)>& Callable) -> void;
 
         /**
          * Iterates the super structs of this object and calls the provided function on each of them
          * Will stop the iteration once the callable returns Break
          */
         using ForEachSuperStructCallable = std::function<LoopAction(UStruct*)>;
-        auto for_each_super_struct(const ForEachSuperStructCallable& callable) -> void;
+        auto ForEachSuperStruct(const ForEachSuperStructCallable& Callable) -> void;
 
         /**
          * Iterates every property in every super struct and calls the provided function on each of them
          * Will stop the iteration once the callable returns Break
          */
         using ForEachPropertyInChainCallable = std::function<LoopAction(FProperty*)>;
-        auto ForEachPropertyInChain(const ForEachPropertyInChainCallable& callable) -> void;
+        auto ForEachPropertyInChain(const ForEachPropertyInChainCallable& Property) -> void;
 
         /**
          * Finds a property by FName

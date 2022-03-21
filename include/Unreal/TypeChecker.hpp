@@ -10,6 +10,12 @@ namespace RC::Unreal
 {
     struct FName;
 
+    extern FName GWorldName;
+    extern FName GLevelName;
+    extern FName GPackageName;
+    extern FName GPropertyName;
+    extern FName GFunctionName;
+
     enum class InternalType
     {
         Array,
@@ -19,15 +25,9 @@ namespace RC::Unreal
     class RC_UE_API TypeChecker
     {
     private:
-        constexpr static int32_t ffield_class_offset = 0x8;
-        constexpr static int32_t super_class_offset = 0x20;
+        constexpr static int32_t FFieldClassOffset = 0x8;
 
     public:
-        static std::unordered_map<std::wstring, FName> m_core_object_names;
-
-        // Be careful with storing pointers, they may be relocated at any given point so make sure before you store them
-        static std::unordered_map<std::wstring, void*> m_core_object_pointers;
-
         // Stores function pointers to all 'to_string' functions for UObject and FProperty.
         // The key is UClass* (or FFieldClass* in 4.25+)
         using ObjectToStringDecl = std::function<void(void*, std::wstring&)>;
@@ -38,42 +38,8 @@ namespace RC::Unreal
         static std::unordered_map<void*, ObjectToStringComplexDecl> m_object_to_string_complex_functions;
 
     public:
-        // Core Names
-        static FName m_core_world_name;
-        static FName m_core_level_name;
-        static FName m_core_package_name;
-        static FName m_core_enum_name;
-        static FName m_core_object_name;
-        static FName m_core_engine_name;
-
         // Property Names
-        static FName m_property_name;
-        static FName m_boolproperty_name;
-        static FName m_int8property_name;
-        static FName m_int16property_name;
-        static FName m_intproperty_name;
-        static FName m_int64property_name;
-        static FName m_byteproperty_name;
-        static FName m_uint16property_name;
-        static FName m_uint32property_name;
-        static FName m_uint64property_name;
-        static FName m_floatproperty_name;
-        static FName m_doubleproperty_name;
-        static FName m_objectproperty_name;
-        static FName m_classproperty_name;
-        static FName m_strproperty_name;
-        static FName m_textproperty_name;
-        static FName m_structproperty_name;
-        static FName m_enumproperty_name;
-        static FName m_arrayproperty_name;
-        static FName m_nameproperty_name;
-        static FName m_scriptdelegateproperty_name;
-        static FName m_multicastinlinescriptdelegateproperty_name;
-        static FName m_multicastsparsescriptdelegateproperty_name;
-        static FName m_weakobjectproperty_name;
-        static FName m_mapproperty_name;
 
-        static FName m_function_name;
 
     public:
         auto static get_world_name() -> FName;
@@ -82,10 +48,6 @@ namespace RC::Unreal
     public:
         auto static store_all_object_names() -> void;
         auto static store_all_object_types() -> bool;
-
-        auto static get_fname(const std::wstring& object_name) -> FName;
-
-        auto static is_ffield(const void* p_this) -> bool;
 
         // Returns true if the UObject inherits from the Property class
         // DO NOT RUN IN 4.25+!

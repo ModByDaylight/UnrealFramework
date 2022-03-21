@@ -52,17 +52,17 @@ namespace RC::Unreal
             static inline int32_t class_config_name;
         };
     public:
-        auto has_any_class_flags(EClassFlags flags_to_check) -> bool;
-        auto has_all_class_flags(EClassFlags flags_to_check) -> bool;
-        auto get_class_flags() -> EClassFlags;
-        auto get_class_within() -> UClass*;
-        auto get_class_config_name() -> FName;
-        auto get_class_default_object() -> UObject*;
-        auto get_interfaces() -> TArray<FImplementedInterface>&;
+        auto HasAnyClassFlags(EClassFlags FlagsToCheck) -> bool;
+        auto HasAllClassFlags(EClassFlags FlagsToCheck) -> bool;
+        auto GetClassFlags() -> EClassFlags;
+        auto GetClassWithin() -> UClass*;
+        auto GetClassConfigName() -> FName;
+        auto GetClassDefaultObject() -> UObject*;
+        auto GetInterfaces() -> TArray<FImplementedInterface>&;
 
-        auto get_super_class() -> UClass*
+        auto GetSuperClass() -> UClass*
         {
-            return reinterpret_cast<UClass*>(get_super_struct());
+            return reinterpret_cast<UClass*>(GetSuperStruct());
         }
     };
 

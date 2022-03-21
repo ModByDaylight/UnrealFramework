@@ -6,86 +6,86 @@
 
 namespace RC::Unreal
 {
-    UnrealScriptFunctionData::UnrealScriptFunctionData(UnrealScriptFunction original_func_ptr) {
-        this->original_func = original_func_ptr;
-        this->hook_index_counter = 1;
+    UnrealScriptFunctionData::UnrealScriptFunctionData(UnrealScriptFunction OriginalFuncPtr) {
+        this->OriginalFunc = OriginalFuncPtr;
+        this->HookIndexCounter = 1;
     }
 
-    CallbackId UnrealScriptFunctionData::add_pre_callback(const UnrealScriptFunctionCallable& callable, void* custom_data)
+    CallbackId UnrealScriptFunctionData::AddPreCallback(const UnrealScriptFunctionCallable& Callable, void* CustomData)
     {
-        CallbackId new_callback_id = this->hook_index_counter++;
-        this->pre_callbacks.insert({new_callback_id, {callable, custom_data}});
+        CallbackId new_callback_id = this->HookIndexCounter++;
+        this->PreCallbacks.insert({new_callback_id, {Callable, CustomData}});
         return new_callback_id;
     }
 
-    CallbackId UnrealScriptFunctionData::add_post_callback(const UnrealScriptFunctionCallable& callable, void* custom_data)
+    CallbackId UnrealScriptFunctionData::AddPostCallback(const UnrealScriptFunctionCallable& Callable, void* CustomData)
     {
-        CallbackId new_callback_id = this->hook_index_counter++;
-        this->post_callbacks.insert({new_callback_id, {callable, custom_data}});
-        return new_callback_id;
+        CallbackId NewCallbackId = this->HookIndexCounter++;
+        this->PostCallbacks.insert({NewCallbackId, {Callable, CustomData}});
+        return NewCallbackId;
     }
 
-    bool UnrealScriptFunctionData::remove_callback(CallbackId callback_id)
+    bool UnrealScriptFunctionData::RemoveCallback(CallbackId CallbackId)
     {
-        return pre_callbacks.erase(callback_id) ||
-            post_callbacks.erase(callback_id);
+        return PreCallbacks.erase(CallbackId) ||
+               PostCallbacks.erase(CallbackId);
     }
 
-    void UnrealScriptFunctionData::remove_all_callbacks()
+    void UnrealScriptFunctionData::RemoveAllCallbacks()
     {
-        pre_callbacks.clear();
-        post_callbacks.clear();
+        PreCallbacks.clear();
+        PostCallbacks.clear();
     }
 
-    void UnrealScriptFunctionData::fire_pre_callbacks(UnrealScriptFunctionCallableContext& context) const
+    void UnrealScriptFunctionData::FirePreCallbacks(UnrealScriptFunctionCallableContext& Context) const
     {
-        for (const auto& [callback_id, callback_data] : pre_callbacks)
+        for (const auto& [CallbackId, CallbackData] : PreCallbacks)
         {
-            callback_data.callable(context, callback_data.custom_data);
+            CallbackData.Callable(Context, CallbackData.CustomData);
         }
     }
 
-    void UnrealScriptFunctionData::fire_post_callbacks(UnrealScriptFunctionCallableContext& context) const
+    void UnrealScriptFunctionData::FirePostCallbacks(UnrealScriptFunctionCallableContext& Context) const
     {
-        for (const auto& [callback_id, callback_data]  : post_callbacks)
+        for (const auto& [CallbackId, CallbackData]  : PostCallbacks)
         {
-            callback_data.callable(context, callback_data.custom_data);
+            CallbackData.Callable(Context, CallbackData.CustomData);
         }
     }
 
-    UnrealScriptFunctionCallableContext::UnrealScriptFunctionCallableContext(UObject* context, FFrame& the_stack, void* result_decl)
-            : context(context),
-              the_stack(the_stack),
-              result_decl(result_decl) {}
+    UnrealScriptFunctionCallableContext::UnrealScriptFunctionCallableContext(UObject* Context, FFrame& TheStack, void* RESULT_DECL)
+            : Context(Context),
+              TheStack(TheStack),
+              RESULT_DECL(RESULT_DECL) {}
 
-    static Internal::HookedUFunctionMap g_hooked_script_functions{};
+    static Internal::HookedUFunctionMap GHookedScriptFunctions{};
 
-    auto Internal::get_hooked_functions_map() -> HookedUFunctionMap&
+    auto Internal::GetHookedFunctionsMap() -> HookedUFunctionMap&
     {
-        return g_hooked_script_functions;
+        return GHookedScriptFunctions;
     }
 
-    auto Internal::unreal_script_function_hook(UObject* context, FFrame& the_stack, void* result_decl) -> void
+    auto Internal::UnrealScriptFunctionHook(UObject* Context, FFrame& TheStack, void* RESULT_DECL) -> void
     {
         try
         {
-            HookedUFunctionMap& function_map = get_hooked_functions_map();
-            const auto iterator = function_map.find(the_stack.CurrentNativeFunction);
+            HookedUFunctionMap& FunctionMap = GetHookedFunctionsMap();
+            const auto Iterator = FunctionMap.find(TheStack.CurrentNativeFunction);
 
-            if (iterator == function_map.end())
+            if (Iterator == FunctionMap.end())
             {
                 throw std::runtime_error("Failed to find the function map entry for hooked function");
             }
 
-            UnrealScriptFunctionCallableContext func_context(context, the_stack, result_decl);
+            UnrealScriptFunctionCallableContext FuncContext(Context, TheStack, RESULT_DECL);
 
-            iterator->second.fire_pre_callbacks(func_context);
-            iterator->second.get_original_func_ptr()(context, the_stack, result_decl);
-            iterator->second.fire_post_callbacks(func_context);
+            Iterator->second.FirePreCallbacks(FuncContext);
+            Iterator->second.GetOriginalFuncPtr()(Context, TheStack, RESULT_DECL);
+            Iterator->second.FirePostCallbacks(FuncContext);
         }
         catch (std::exception& e)
         {
-            Output::send(STR("{}\n"), RC::fmt(L"Error executing hooked function %s: %S", the_stack.CurrentNativeFunction->get_path_name().c_str(), e.what()));
+            Output::send(STR("{}\n"), RC::fmt(L"Error executing hooked function %s: %S", TheStack.CurrentNativeFunction->GetPathName().c_str(), e.what()));
         }
     }
 }

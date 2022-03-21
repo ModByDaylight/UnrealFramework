@@ -30,54 +30,54 @@ namespace RC::Unreal
             Post,
         };
 
-        using ProcessEventCallback = void (*)(UObject* context, UFunction* function, void* parms);
-        using StaticConstructObjectPreCallback = UObject* (*)(const FStaticConstructObjectParameters& params);
-        using StaticConstructObjectPostCallback = UObject* (*)(const FStaticConstructObjectParameters& params, UObject* constructed_object);
+        using ProcessEventCallback = void (*)(UObject* Context, UFunction* Function, void* Parms);
+        using StaticConstructObjectPreCallback = UObject* (*)(const FStaticConstructObjectParameters& Params);
+        using StaticConstructObjectPostCallback = UObject* (*)(const FStaticConstructObjectParameters& Params, UObject* ConstructedObject);
         using ProcessConsoleExecCallback = bool (*)(UObject* Context, const TCHAR* Cmd, FOutputDevice& Ar, UObject* Executor);
 
         struct RC_UE_API StaticStorage
         {
             struct RequiredObject
             {
-                std::wstring object_name{};
-                bool object_constructed{false};
+                std::wstring ObjectName{};
+                bool ObjectConstructed{false};
             };
 
-            static inline std::vector<RequiredObject> required_objects_for_init{};
-            static inline int32_t num_required_objects_constructed{};
-            static inline bool all_required_objects_constructed{false};
-            static inline std::unique_ptr<::PLH::x64Detour> static_construct_object_detour;
-            static inline std::unique_ptr<::PLH::x64Detour> process_event_detour;
+            static inline std::vector<RequiredObject> RequiredObjectsForInit{};
+            static inline int32_t NumRequiredObjectsConstructed{};
+            static inline bool bAllRequiredObjectsConstructed{false};
+            static inline std::unique_ptr<::PLH::x64Detour> StaticConstructObjectDetour;
+            static inline std::unique_ptr<::PLH::x64Detour> ProcessEventDetour;
             static inline std::unique_ptr<::PLH::x64Detour> ProcessConsoleExecDetour;
-            static inline std::vector<StaticConstructObjectPreCallback> static_construct_object_pre_callbacks;
-            static inline std::vector<StaticConstructObjectPostCallback> static_construct_object_post_callbacks;
-            static inline std::vector<ProcessEventCallback> process_event_pre_callbacks;
-            static inline std::vector<ProcessEventCallback> process_event_post_callbacks;
+            static inline std::vector<StaticConstructObjectPreCallback> StaticConstructObjectPreCallbacks;
+            static inline std::vector<StaticConstructObjectPostCallback> StaticConstructObjectPostCallbacks;
+            static inline std::vector<ProcessEventCallback> ProcessEventPreCallbacks;
+            static inline std::vector<ProcessEventCallback> ProcessEventPostCallbacks;
             static inline std::vector<ProcessConsoleExecCallback> ProcessConsoleExecCallbacks;
         };
 
-        auto RC_UE_API add_required_object(const std::wstring& object_full_typeless_name) -> void;
+        auto RC_UE_API AddRequiredObject(const std::wstring& ObjectFullTypelessName) -> void;
 
         // Registers a callback to be called whenever 'StaticConstructObject' is called
         // Callbacks may alter the return value of 'StaticConstructObject', and the last one to alter it is the one that takes effect
         // Alterations to parameters in the 'pre' callback are applied prior to object construction
         // Alterations to parameters in the 'post' callback have no effect
-        auto RC_UE_API register_static_construct_object_pre_callback(StaticConstructObjectPreCallback) -> void;
-        auto RC_UE_API register_static_construct_object_post_callback(StaticConstructObjectPostCallback) -> void;
+        auto RC_UE_API RegisterStaticConstructObjectPreCallback(StaticConstructObjectPreCallback) -> void;
+        auto RC_UE_API RegisterStaticConstructObjectPostCallback(StaticConstructObjectPostCallback) -> void;
 
         // Registers a callback to be called whenever 'ProcessEvent' is called
         // Callbacks may not alter the return value 'ProcessEvent', because there is no return value
         // Alterations to parameters in the 'pre' callback are applied prior to object construction
         // Alterations to parameters in the 'post' callback have no effect
-        auto RC_UE_API register_process_event_pre_callback(ProcessEventCallback) -> void;
-        auto RC_UE_API register_process_event_post_callback(ProcessEventCallback) -> void;
+        auto RC_UE_API RegisterProcessEventPreCallback(ProcessEventCallback) -> void;
+        auto RC_UE_API RegisterProcessEventPostCallback(ProcessEventCallback) -> void;
 
         // Registers a callback to be called whenever 'UGameViewportClient::ProcessConsoleExec' is executed
         auto RC_UE_API RegisterProcessConsoleExecCallback(ProcessConsoleExecCallback) -> void;
     }
 
-    auto RC_UE_API hook_static_construct_object() -> void;
-    auto RC_UE_API hook_process_event() -> void;
+    auto RC_UE_API HookStaticConstructObject() -> void;
+    auto RC_UE_API HookProcessEvent() -> void;
     auto RC_UE_API HookProcessConsoleExec() -> void;
 
 

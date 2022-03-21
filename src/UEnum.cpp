@@ -8,20 +8,20 @@ namespace RC::Unreal
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
-    auto UEnum::get_enum_names() -> FEnumNameArray&
+    auto UEnum::GetEnumNames() -> FEnumNameArray&
     {
         return *Helper::Casting::ptr_cast<FEnumNameArray*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UEnum_Names));
     }
 
-    auto UEnum::get_cpp_form() -> ECppForm
+    auto UEnum::GetCppForm() -> ECppForm
     {
         // The offset of 'Names' + the size of 'Names' = offset of 'CppForm'
         return Helper::Casting::offset_deref<ECppForm>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UEnum_Names) + sizeof(FEnumNameArray));
     }
 
-    auto UEnum::get_enum_flags() -> EEnumFlags
+    auto UEnum::GetEnumFlags() -> EEnumFlags
     {
-        if (Version::is_below(4, 26))
+        if (Version::IsBelow(4, 26))
         {
             // EEnumFlags was added in 4.26
             // Let's assume the 'None' flag is valid for whatever code calls this function in <4.26

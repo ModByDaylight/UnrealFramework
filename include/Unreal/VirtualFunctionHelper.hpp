@@ -13,20 +13,20 @@
 class SharedObjectManager {
 public:
     template<typename T>
-    static inline T& get_shared_object(const char* unique_identifier)
+    static inline T& GetSharedObject(const char* UniqueIdentifier)
     {
-        auto* existing_value = reinterpret_cast<T*>(get_shared_object_internal(unique_identifier));
-        if (existing_value != nullptr)
+        auto* ExistingValue = reinterpret_cast<T*>(GetSharedObjectInternal(UniqueIdentifier));
+        if (ExistingValue != nullptr)
         {
-            return *existing_value;
+            return *ExistingValue;
         }
-        auto* new_value = new T();
-        set_shared_object_internal(unique_identifier, new_value);
-        return *new_value;
+        auto* NewValue = new T();
+        SetSharedObjectInternal(UniqueIdentifier, NewValue);
+        return *NewValue;
     }
 private:
-    static void* get_shared_object_internal(const char* id);
-    static void set_shared_object_internal(const char* id, void* new_value);
+    static void* GetSharedObjectInternal(const char* Id);
+    static void SetSharedObjectInternal(const char* Id, void* NewValue);
 };
 
 /**
@@ -35,10 +35,10 @@ private:
  *
  * The class should provide following properties:
  *  -typename ClassType - type of the object class
- *  -template<typename U> static auto static_class() -> ClassType - retrieves the class of the template object type U
- *  -static auto get_class_super_class(ClassType) -> ClassType - retrieves the superclass of the provided class
- *  -static auto register_late_bind_callback(void(*Callback)()) - registers the callback to be called after static_class() is safe to call
- *  -static auto is_class_valid(ClassType) -> bool - returns true if the provided class object is valid
+ *  -template<typename U> static auto StaticClass() -> ClassType - retrieves the class of the template object type U
+ *  -static auto GetClassSuperClass(ClassType) -> ClassType - retrieves the superclass of the provided class
+ *  -static auto RegisterLateBindCallback(void(*Callback)()) - registers the callback to be called after StaticClass() is safe to call
+ *  -static auto IsClassValid(ClassType) -> bool - returns true if the provided class object is valid
  *
  *  The class extending it should be declared as the typedef named TypeAccessor of your object type
  */
@@ -52,52 +52,52 @@ template<typename ReceiverType, typename ReturnValueType, typename... ArgumentTy
 class VirtualFunctionInvoker<ReturnValueType(ReceiverType::*)(ArgumentTypes...), MemberFuncPtr>
 {
 private:
-    using DispatcherFuncType = ReturnValueType(*)(ReceiverType* self, ArgumentTypes... args);
+    using DispatcherFuncType = ReturnValueType(*)(ReceiverType* Self, ArgumentTypes... Args);
     using TypeAccessor = typename ReceiverType::TypeAccessor;
     using ObjectClassType = typename TypeAccessor::ClassType;
     using DispatchMapType = std::unordered_map<ObjectClassType, DispatcherFuncType>;
 
-    inline static auto get_dispatch_map() -> DispatchMapType&
+    inline static auto GetDispatchMap() -> DispatchMapType&
     {
-        return SharedObjectManager::get_shared_object<DispatchMapType>(__FUNCDNAME__);
+        return SharedObjectManager::GetSharedObject<DispatchMapType>(__FUNCDNAME__);
     }
 public:
     /** Registers the dispatch function associated with the provided class */
-    inline static auto register_dispatch_func(ObjectClassType clazz, DispatcherFuncType dispatch_func)
+    inline static auto RegisterDispatchFunc(ObjectClassType clazz, DispatcherFuncType dispatch_func)
     {
-        get_dispatch_map().insert({clazz, dispatch_func});
+        GetDispatchMap().insert({clazz, dispatch_func});
     }
 
     /** Dispatches the virtual function call on the provided object */
-    inline static auto dispatch_call(ReceiverType* receiver, ArgumentTypes... args) -> ReturnValueType
+    inline static auto DispatchCall(ReceiverType* Receiver, ArgumentTypes... Args) -> ReturnValueType
     {
-        ObjectClassType object_class = TypeAccessor::get_object_class(receiver);
-        DispatchMapType& dispatch_map = get_dispatch_map();
+        ObjectClassType ObjectClass = TypeAccessor::GetObjectClass(Receiver);
+        DispatchMapType& DispatchMap = GetDispatchMap();
 
-        DispatcherFuncType dispatcher_func = nullptr;
-        while (TypeAccessor::is_class_valid(object_class))
+        DispatcherFuncType DispatcherFunc = nullptr;
+        while (TypeAccessor::IsClassValid(ObjectClass))
         {
-            const auto iterator = dispatch_map.template find<ObjectClassType>(object_class);
-            if (iterator != dispatch_map.end())
+            const auto Iterator = DispatchMap.template find<ObjectClassType>(ObjectClass);
+            if (Iterator != DispatchMap.end())
             {
-                dispatcher_func = iterator->second;
+                DispatcherFunc = Iterator->second;
                 break;
             }
-            object_class = TypeAccessor::get_class_super_class(object_class);
+            ObjectClass = TypeAccessor::GetClassSuperClass(ObjectClass);
         }
 
-        if (dispatcher_func == nullptr)
+        if (DispatcherFunc == nullptr)
         {
             throw std::runtime_error("Pure virtual function not implemented");
         }
 
         if constexpr(std::is_same_v<ReturnValueType, void>)
         {
-            dispatcher_func(receiver, args...);
+            DispatcherFunc(Receiver, Args...);
         }
         else
         {
-            return dispatcher_func(receiver, args...);
+            return DispatcherFunc(Receiver, Args...);
         }
     }
 };
@@ -116,25 +116,25 @@ public:
     /** Registers the dispatch function inside of the invoker */
     inline VirtualFunctionRegistrar()
     {
-        TypeAccessor::register_late_bind_callback(&bind_virtual_function);
+        TypeAccessor::RegisterLateBindCallback(&BindVirtualFunction);
     }
 private:
     /** Performs the actual binding of the virtual function to the static class */
-    static auto bind_virtual_function() -> void
+    static auto BindVirtualFunction() -> void
     {
-        InvokerType::register_dispatch_func(TypeAccessor::template static_class<ImplReceiverType>(), &dispatch_call);
+        InvokerType::RegisterDispatchFunc(TypeAccessor::template StaticClass<ImplReceiverType>(), &DispatchCall);
     }
 
     /** Dispatches the call to the member function implementation in the impl class */
-    static auto dispatch_call(BaseReceiverType* self, ArgumentTypes... args) -> ReturnValueType
+    static auto DispatchCall(BaseReceiverType* Self, ArgumentTypes... Args) -> ReturnValueType
     {
         if constexpr(std::is_same_v<ReturnValueType, void>)
         {
-            (*static_cast<ImplReceiverType*>(self).*ImplFunctionPtr)(args...);
+            (*static_cast<ImplReceiverType*>(Self).*ImplFunctionPtr)(Args...);
         }
         else
         {
-            return (*static_cast<ImplReceiverType*>(self).*ImplFunctionPtr)(args...);
+            return (*static_cast<ImplReceiverType*>(Self).*ImplFunctionPtr)(Args...);
         }
     }
 };
@@ -174,6 +174,6 @@ static VirtualFunctionRegistrarHolder<ClassName, decltype(&ClassName::FunctionNa
 
 /** Performs a call to the virtual function with the provided name */
 #define CALL_VIRTUAL_FUNCTION(Self, FunctionName, ...) \
-    VirtualFunctionInvoker<decltype(&std::remove_reference_t<decltype(*Self)>::FunctionName), &std::remove_reference_t<decltype(*Self)>::FunctionName>::dispatch_call(Self, __VA_ARGS__)
+    VirtualFunctionInvoker<decltype(&std::remove_reference_t<decltype(*Self)>::FunctionName), &std::remove_reference_t<decltype(*Self)>::FunctionName>::DispatchCall(Self, __VA_ARGS__)
 
 #endif //RC_UNREAL_VIRTUALFUNCTIONHELPER_H

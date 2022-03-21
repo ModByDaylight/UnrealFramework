@@ -13,15 +13,15 @@ namespace RC::Unreal
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
-    Function<UObject::ProcessEventSignature> UObject::process_event_internal;
+    Function<UObject::ProcessEventSignature> UObject::ProcessEventInternal;
     Function<UObject::ProcessConsoleExecSignature> UObject::ProcessConsoleExecInternal;
 
-    auto UObjectBase::register_dependencies() -> void
+    auto UObjectBase::RegisterDependencies() -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBase, RegisterDependencies, void)
     }
 
-    auto UObjectBase::deferred_register(class UClass* UClassStaticClass, const File::CharType* PackageName, const File::CharType* Name) -> void
+    auto UObjectBase::DeferredRegister(class UClass* UClassStaticClass, const File::CharType* PackageName, const File::CharType* Name) -> void
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObjectBase, DeferredRegister, void, PARAMS(const UClass*, const File::CharType*, const File::CharType*), ARGS(UClassStaticClass, PackageName, Name))
     }
@@ -46,34 +46,34 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, OnClusterMarkedAsPendingKill, void)
     }
 
-    auto UObject::get_uclass() const -> UClass*
+    auto UObject::GetClass() const -> UClass*
     {
         return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_ClassPrivate));
     }
 
-    auto UObject::get_outer() -> UObject*
+    auto UObject::GetOuter() -> UObject*
     {
         return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_OuterPrivate));
     }
 
-    auto UObject::get_fname() -> FName
+    auto UObject::GetFName() -> FName
     {
         return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_NamePrivate));
     }
 
-    auto UObject::set_flags_to(EObjectFlags new_flags) -> void
+    auto UObject::SetFlagsTo(EObjectFlags NewFlags) -> void
     {
-        Container::m_unreal_object_base->UObject_set_flags_to(this, new_flags);
+        Container::UnrealObjectVC->UObject_set_flags_to(this, NewFlags);
     }
 
-    auto UObject::get_internal_index() -> uint32_t
+    auto UObject::GetInternalIndex() -> uint32_t
     {
-        return Container::m_unreal_object_base->UObject_get_internal_index(this);
+        return Container::UnrealObjectVC->UObject_get_internal_index(this);
     }
 
-    auto UObject::get_object_item() -> FUObjectItem*
+    auto UObject::GetObjectItem() -> FUObjectItem*
     {
-        return static_cast<FUObjectItem*>(Container::m_unreal_vc_base->UObjectArray_index_to_object(get_internal_index()));
+        return static_cast<FUObjectItem*>(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()));
     }
 
     FString UObject::GetDetailedInfoInternal() const
@@ -440,76 +440,71 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetNetPushIdDynamic, int32)
     }
 
-    auto UObject::process_event(UFunction* function, void* params) -> void
+    auto UObject::GetOutermost() -> UObject*
     {
-        process_event_internal(this, function, params);
-    }
-
-    auto UObject::get_outermost() -> UObject*
-    {
-        UObject* current_object = this;
-        while (current_object->get_outer())
+        UObject* CurrentObject = this;
+        while (CurrentObject->GetOuter())
         {
-            current_object = current_object->get_outer();
+            CurrentObject = CurrentObject->GetOuter();
         }
-        return current_object;
+        return CurrentObject;
     }
 
-    auto UObject::get_typed_outer(UClass* outer_type) -> UObject*
+    auto UObject::GetTypedOuter(UClass* OuterType) -> UObject*
     {
-        UObject* current_outer = get_outer();
-        while (current_outer != nullptr)
+        UObject* CurrentOuter = GetOuter();
+        while (CurrentOuter != nullptr)
         {
-            if (current_outer->is_a(outer_type))
+            if (CurrentOuter->IsA(OuterType))
             {
-                return current_outer;
+                return CurrentOuter;
             }
-            current_outer = current_outer->get_outer();
+            CurrentOuter = CurrentOuter->GetOuter();
         }
         return nullptr;
     }
 
-    auto UObject::is_a(UClass* uclass) -> bool {
-        return get_uclass()->is_child_of(uclass);
+    auto UObject::IsA(UClass* Class) -> bool {
+        return GetClass()->IsChildOf(Class);
     }
 
-    auto UObject::get_path_name(UObject *stop_outer) -> std::wstring
+    auto UObject::GetPathName(UObject* StopOuter) -> std::wstring
     {
-        std::wstring result_name;
-        get_path_name(stop_outer, result_name);
-        return result_name;
+        std::wstring ResultName;
+        GetPathName(StopOuter, ResultName);
+        return ResultName;
     }
 
-    auto UObject::get_path_name(UObject* stop_outer, std::wstring& result_string) -> void
+    auto UObject::GetPathName(UObject* StopOuter, std::wstring& ResultString) -> void
     {
-        if(this != stop_outer && this != nullptr)
+        if(this != StopOuter && this != nullptr)
         {
-            UObject* outer = get_outer();
+            UObject* Outer = GetOuter();
 
-            if (outer && outer != stop_outer)
+            if (Outer && Outer != StopOuter)
             {
-                outer->get_path_name(stop_outer, result_string);
+                Outer->GetPathName(StopOuter, ResultString);
 
                 // SUBOBJECT_DELIMITER_CHAR is used to indicate that this object's outer is not a UPackage
                 // We use the name of UPackage here instead of StaticClass because StaticClass has not yet been initialized,
                 // and it cannot be initialized until after a bunch of GetPathName calls has already happened
-                if (outer->get_uclass()
-                    && outer->get_uclass()->get_fname() != TypeChecker::m_core_package_name
-                    && outer->get_outer()
-                    && outer->get_outer()->get_uclass()->get_fname() == TypeChecker::m_core_package_name)
+                if (Outer->GetClass()
+                    && Outer->GetClass()->GetFName() != GPackageName
+                    && Outer->GetOuter()
+                    && Outer->GetOuter()->GetClass()->GetFName() == GPackageName)
                 {
-                    result_string.push_back(SUBOBJECT_DELIMITER_CHAR);
+                    ResultString.push_back(SUBOBJECT_DELIMITER_CHAR);
                 }
                 else
                 {
-                    result_string.append(STR("."));
+                    ResultString.append(STR("."));
                 }
             }
-            result_string.append(get_name());
+            ResultString.append(GetName());
         }
         else
         {
-            result_string.append(STR("None"));
+            ResultString.append(STR("None"));
         }
     }
 
@@ -518,7 +513,7 @@ namespace RC::Unreal
         return reinterpret_cast<size_t>(this);
     }
 
-    auto UObject::get_full_name(UObject* stop_outer) -> std::wstring
+    auto UObject::GetFullName(UObject* StopOuter) -> std::wstring
     {
         if (this == nullptr)
         {
@@ -526,19 +521,19 @@ namespace RC::Unreal
         }
         else
         {
-            std::wstring out_name;
-            out_name.append(get_uclass()->get_name() + STR(" "));
-            get_path_name(stop_outer, out_name);
-            return out_name;
+            std::wstring OutName;
+            OutName.append(GetClass()->GetName() + STR(" "));
+            GetPathName(StopOuter, OutName);
+            return OutName;
         }
     }
 
-    bool UObject::is_real(const void* p_this)
+    bool UObject::IsReal(const void* pThis)
     {
         bool ObjectWasFound{};
 
-        UObjectGlobals::ForEachUObject([&](void* obj, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t obj_index) {
-            if (p_this == obj)
+        UObjectGlobals::ForEachUObject([&](void* RawObject, [[maybe_unused]]int32_t ChunkIndex, [[maybe_unused]]int32_t ObjectIndex) {
+            if (pThis == RawObject)
             {
                 ObjectWasFound = true;
                 return LoopAction::Break;

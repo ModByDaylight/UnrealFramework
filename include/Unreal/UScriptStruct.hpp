@@ -26,30 +26,30 @@ namespace RC::Unreal
          * Returns the struct acting as a parent to this struct
          * Can totally return nullptr since most structs do not have a parent struct
          */
-        auto get_super_script_struct() -> UScriptStruct*;
+        auto GetSuperScriptStruct() -> UScriptStruct*;
 
         /**
          * Returns the flags set on the struct
          * Some of the returned flags are determined automatically in runtime, others are saved
          */
-        auto get_struct_flags() -> EStructFlags;
+        auto GetStructFlags() -> EStructFlags;
 
         /**
          * Checks if the struct has any of the provided flags set
          * Returns true if at least one of the provided struct flags is set
          */
-        inline auto has_any_struct_flags(EStructFlags flags_to_check)
+        inline auto HasAnyStructFlags(EStructFlags flags_to_check)
         {
-            return (get_struct_flags() & flags_to_check) != 0;
+            return (GetStructFlags() & flags_to_check) != 0;
         }
 
         /**
          * Checks if the struct has all of the provided flags set
          * Returns true only if all of the provided struct flags are set
          */
-        inline auto has_all_struct_flags(EStructFlags flags_to_check)
+        inline auto HasAllStructFlags(EStructFlags flags_to_check)
         {
-            return (get_struct_flags() & flags_to_check) == flags_to_check;
+            return (GetStructFlags() & flags_to_check) == flags_to_check;
         }
     };
 }

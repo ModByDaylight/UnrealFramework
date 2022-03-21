@@ -3,43 +3,43 @@
 
 namespace RC::Unreal
 {
-    auto FUObjectItem::is_unreachable() -> bool
+    auto FUObjectItem::IsUnreachable() -> bool
     {
-        return Container::m_unreal_vc_base->FUObjectItem_is_object_unreachable(this);
+        return Container::UnrealVC->FUObjectItem_is_object_unreachable(this);
     }
 
-    auto FUObjectItem::set_root_set() -> void
+    auto FUObjectItem::SetRootSet() -> void
     {
-        Container::m_unreal_vc_base->FUObjectItem_set_object_root_set(this, Base::SetOrUnsetFlag::Set);
+        Container::UnrealVC->FUObjectItem_set_object_root_set(this, Base::SetOrUnsetFlag::Set);
     }
 
-    auto FUObjectItem::unset_root_set() -> void
+    auto FUObjectItem::UnsetRootSet() -> void
     {
-        Container::m_unreal_vc_base->FUObjectItem_set_object_root_set(this, Base::SetOrUnsetFlag::Unset);
+        Container::UnrealVC->FUObjectItem_set_object_root_set(this, Base::SetOrUnsetFlag::Unset);
     }
 
-    auto FUObjectItem::set_gc_keep() -> void
+    auto FUObjectItem::SetGCKeep() -> void
     {
-        Container::m_unreal_vc_base->FUObjectItem_set_object_gc_keep(this, Base::SetOrUnsetFlag::Set);
+        Container::UnrealVC->FUObjectItem_set_object_gc_keep(this, Base::SetOrUnsetFlag::Set);
     }
 
-    auto FUObjectItem::unset_gc_keep() -> void
+    auto FUObjectItem::UnsetGCKeep() -> void
     {
-        Container::m_unreal_vc_base->FUObjectItem_set_object_gc_keep(this, Base::SetOrUnsetFlag::Unset);
+        Container::UnrealVC->FUObjectItem_set_object_gc_keep(this, Base::SetOrUnsetFlag::Unset);
     }
 
-    auto FUObjectItem::get_uobject() -> UObject*
+    auto FUObjectItem::GetUObject() -> UObject*
     {
-        return static_cast<UObject*>(Container::m_unreal_vc_base->FUObjectItem_get_uobject(this));
+        return static_cast<UObject*>(Container::UnrealVC->FUObjectItem_get_uobject(this));
     }
 
-    auto UObjectArray::setup_guobjectarray_address(void* address) -> void
+    auto UObjectArray::SetupGUObjectArrayAddress(void* address) -> void
     {
-        Container::m_unreal_vc_base->UObjectArray_set_internal_storage_ptr(address);
+        Container::UnrealVC->UObjectArray_set_internal_storage_ptr(address);
     }
 
-    auto UObjectArray::is_valid(FUObjectItem* object_item, bool b_even_if_pending_kill) -> bool
+    auto UObjectArray::IsValid(FUObjectItem* ObjectItem, bool bEvenIfPendingKill) -> bool
     {
-        return Container::m_unreal_vc_base->FUObjectItem_is_valid(object_item, b_even_if_pending_kill);
+        return Container::UnrealVC->FUObjectItem_is_valid(ObjectItem, bEvenIfPendingKill);
     }
 }

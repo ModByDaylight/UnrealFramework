@@ -13,6 +13,7 @@ namespace RC::Unreal
     class RC_UE_API FOutputDevice
     {
     protected:
+        // For alignment purposes
         uint8_t* vtable_;
 
         /** Whether to output the 'Log: ' type front... */

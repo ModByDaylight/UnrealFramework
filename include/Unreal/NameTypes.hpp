@@ -12,7 +12,7 @@ namespace RC::Unreal
     namespace UnrealInitializer
     {
         struct CacheInfo;
-        RC_UE_API auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
+        RC_UE_API auto CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
     }
 
     enum {NAME_SIZE	= 1024};
@@ -37,41 +37,41 @@ namespace RC::Unreal
 #endif
     {
     private:
-        friend auto UnrealInitializer::create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
+        friend auto UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
 
-        uint32_t comparison_index{};
+        uint32_t ComparisonIndex{};
 #ifdef WITH_CASE_PRESERVING_NAME
-        uint32_t display_index{};
+        uint32_t DisplayIndex{};
 #endif
-        uint32_t number{};
+        uint32_t Number{};
 
     public:
-        static inline Function<void(FName*, class FStringOut&)> to_string_internal{};
-        static inline Function<FName(const wchar_t*, EFindName)> constructor_internal{};
+        static inline Function<void(FName*, class FStringOut&)> ToStringInternal{};
+        static inline Function<FName(const wchar_t*, EFindName)> ConstructorInternal{};
 
     private:
-        auto construct_with_string(const wchar_t* str_name, EFindName FindType, void* function_address_override) -> void
+        auto construct_with_string(const wchar_t* StrName, EFindName FindType, void* FunctionAddressOverride) -> void
         {
-            if (!constructor_internal.is_ready() && !function_address_override) { return; }
+            if (!ConstructorInternal.is_ready() && !FunctionAddressOverride) { return; }
 
             // Assign the temporary address if one exists
-            if (function_address_override) { constructor_internal.assign_temp_address(function_address_override); }
+            if (FunctionAddressOverride) { ConstructorInternal.assign_temp_address(FunctionAddressOverride); }
 
-            FName name = constructor_internal(str_name, FindType);
-            comparison_index = name.comparison_index;
+            FName Name = ConstructorInternal(StrName, FindType);
+            ComparisonIndex = Name.ComparisonIndex;
 #ifdef WITH_CASE_PRESERVING_NAME
-            display_index = name.display_index;
+            DisplayIndex = Name.DisplayIndex;
 #endif
-            number = name.number;
+            Number = Name.Number;
 
             // Reset the address to what it was before it was overridden by a temporary address
-            if (function_address_override) { constructor_internal.reset_address(); }
+            if (FunctionAddressOverride) { ConstructorInternal.reset_address(); }
         }
 
         auto construct_with_string(const wchar_t* Name, uint32 InNumber, EFindName FindType, void* FunctionAddressOverride) -> void
         {
             construct_with_string(Name, FindType, FunctionAddressOverride);
-            number = InNumber;
+            Number = InNumber;
         }
 
     public:
@@ -80,51 +80,51 @@ namespace RC::Unreal
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        explicit FName(int64_t index_and_number)
+        explicit FName(int64_t IndexAndNumber)
         {
             // Split the 64-bit integer into two 32-bit integers
-            number = (index_and_number & 0xFFFFFFFF00000000LL) >> 32;
-            comparison_index = (index_and_number & 0xFFFFFFFFLL);
+            Number = (IndexAndNumber & 0xFFFFFFFF00000000LL) >> 32;
+            ComparisonIndex = (IndexAndNumber & 0xFFFFFFFFLL);
 #ifdef WITH_CASE_PRESERVING_NAME
-            display_index = comparison_index;
+            DisplayIndex = ComparisonIndex;
 #endif
         }
 
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        explicit FName(uint32_t index_param, uint32_t number_param)
+        explicit FName(uint32_t IndexParam, uint32_t NumberParam)
         {
-            comparison_index = index_param;
+            ComparisonIndex = IndexParam;
 #ifdef WITH_CASE_PRESERVING_NAME
-            display_index = index_param;
+            DisplayIndex = IndexParam;
 #endif
-            number = number_param;
+            Number = NumberParam;
         }
 
 #ifdef WITH_CASE_PRESERVING_NAME
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        explicit FName(uint32_t index_param, uint32_t display_index_param, uint32_t number_param)
+        explicit FName(uint32_t IndexParam, uint32_t DisplayIndexParam, uint32_t NumberParam)
         {
-            comparison_index = index_param;
-            display_index = display_index_param;
-            number = number_param;
+            ComparisonIndex = IndexParam;
+            DisplayIndex = DisplayIndexParam;
+            Number = NumberParam;
         }
 #endif
 
         // Lookup & create from an existing FName
         // Not safe to pass to Unreal Engine internals
         // Safe to use for return values from Unreal Engine internals
-        explicit FName(const wchar_t* str_name, EFindName FindType = FNAME_Find, void* function_address_override = nullptr)
+        explicit FName(const wchar_t* StrName, EFindName FindType = FNAME_Find, void* FunctionAddressOverride = nullptr)
         {
-            construct_with_string(str_name, FindType, function_address_override);
+            construct_with_string(StrName, FindType, FunctionAddressOverride);
         }
 
-        explicit FName(std::wstring_view str_name, EFindName FindType = FNAME_Find, void* function_address_override = nullptr)
+        explicit FName(std::wstring_view str_name, EFindName FindType = FNAME_Find, void* FunctionAddressOverride = nullptr)
         {
-            construct_with_string(str_name.data(), FindType, function_address_override);
+            construct_with_string(str_name.data(), FindType, FunctionAddressOverride);
         }
 
         explicit FName(std::wstring_view Name, uint32 InNumber, EFindName FindType = FNAME_Find, void* FunctionAddressOverride = nullptr)
@@ -134,45 +134,45 @@ namespace RC::Unreal
 
         auto inline operator==(FName other) const -> bool
         {
-            return (comparison_index == other.comparison_index) & (number == other.number);
+            return (ComparisonIndex == other.ComparisonIndex) & (Number == other.Number);
         }
 
-        auto inline operator==(const wchar_t* other) -> bool
+        auto inline operator==(const wchar_t* Other) -> bool
         {
-            return to_string() == other;
+            return ToString() == Other;
         }
 
-        auto inline operator!=(FName other) const -> bool
+        auto inline operator!=(FName Other) const -> bool
         {
-            return !(*this == other);
+            return !(*this == Other);
         }
 
         auto inline operator!() const -> bool
         {
-            return comparison_index == 0 && number == 0;
+            return ComparisonIndex == 0 && Number == 0;
         }
 
         // Returns whether the ComparisonIndex is equal
         // Use this when you don't care for an identical match
         // The operator overloads will make sure both ComparisonIndex and Number are equal
-        [[nodiscard]] auto equals(const FName& other) const -> bool
+        [[nodiscard]] auto Equals(const FName& Other) const -> bool
         {
-            return comparison_index == other.comparison_index;
+            return ComparisonIndex == Other.ComparisonIndex;
         }
 
-        auto to_string() -> std::wstring;
+        auto ToString() -> std::wstring;
         uint32 GetPlainNameString(TCHAR(&OutName)[NAME_SIZE]);
 
-        [[nodiscard]] auto get_comparison_index() const -> uint32_t { return comparison_index; }
-        [[nodiscard]] auto get_display_index() const -> uint32_t
+        [[nodiscard]] auto GetComparisonIndex() const -> uint32_t { return ComparisonIndex; }
+        [[nodiscard]] auto GetDisplayIndex() const -> uint32_t
         {
 #ifdef WITH_CASE_PRESERVING_NAME
-            return display_index;
+            return DisplayIndex;
 #else
-            return comparison_index;
+            return ComparisonIndex;
 #endif
         }
-        [[nodiscard]] auto get_number() const -> uint32_t { return number; }
+        [[nodiscard]] auto GetNumber() const -> uint32_t { return Number; }
     };
 #pragma warning(default: 4324)
 }
@@ -182,11 +182,11 @@ namespace std
     template<>
     struct hash<RC::Unreal::FName>
     {
-        auto operator()(const RC::Unreal::FName& fname) const -> size_t
+        auto operator()(const RC::Unreal::FName& name) const -> size_t
         {
-            size_t comparison_index_hash = hash<uint32_t>()(fname.get_comparison_index());
-            size_t number_hash = hash<uint32_t>()(fname.get_number());
-            return comparison_index_hash ^ number_hash;
+            size_t ComparisonIndexHash = hash<uint32_t>()(name.GetComparisonIndex());
+            size_t NumberHash = hash<uint32_t>()(name.GetNumber());
+            return ComparisonIndexHash ^ NumberHash;
         }
     };
 }

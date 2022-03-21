@@ -7,13 +7,6 @@
 
 namespace RC::Unreal
 {
-    struct RC_UE_API MapData
-    {
-        void* elements_ptr;
-        int32_t num_elements;
-        int32_t max_elements;
-    };
-
     // TODO: This should inherit from 'TProperty<FScriptMap, FProperty>' when we have FScriptMap
     class RC_UE_API FMapProperty : public FProperty
     {

@@ -11,17 +11,17 @@ namespace RC::Unreal
     class RC_UE_API ReflectedFunctionBase
     {
     protected:
-        class UFunction* m_function{nullptr};
-        const File::CharType* m_function_name{};
+        class UFunction* Function{nullptr};
+        const File::CharType* FunctionFullNameNoType{};
         int32 ReturnValueOffset{};
 
     public:
-        ReflectedFunctionBase(const File::CharType* function_name) : m_function(nullptr), m_function_name(function_name) {}
+        ReflectedFunctionBase(const File::CharType* FunctionName) : Function(nullptr), FunctionFullNameNoType(FunctionName) {}
 
     public:
-        auto get_name() const -> const File::CharType* { return m_function_name; }
-        auto assign_function(UFunction* function) -> void;
-        auto is_valid() -> bool;
+        auto GetFullName() const -> const File::CharType* { return FunctionFullNameNoType; }
+        auto AssignFunction(UFunction* Function_) -> void;
+        auto IsValid() -> bool;
         int32 GetReturnValueOffset() { return ReturnValueOffset; }
     };
 
@@ -32,7 +32,7 @@ namespace RC::Unreal
         template<typename ParamsType>
         auto operator()(ParamsType& params)
         {
-            Owner::self->process_event(this->m_function, &params);
+            Owner::Self->ProcessEvent(this->Function, &params);
         }
     };
 
@@ -40,9 +40,9 @@ namespace RC::Unreal
     {
     public:
         template<typename ParamsType>
-        auto operator()(UObject* instance, ParamsType& params)
+        auto operator()(UObject* Instance, ParamsType& Params)
         {
-            instance->process_event(this->m_function, &params);
+            Instance->ProcessEvent(this->Function, &Params);
         }
     };
 }

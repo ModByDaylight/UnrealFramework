@@ -6,51 +6,51 @@
 
 namespace RC::Unreal
 {
-    auto FWeakObjectPtr::serial_numbers_match(FUObjectItem* object_item) const -> bool
+    auto FWeakObjectPtr::SerialNumbersMatch(FUObjectItem* ObjectItem) const -> bool
     {
-        return Container::m_unreal_vc_base->FUObjectItem_get_serial_number(object_item) == object_serial_number;
+        return Container::UnrealVC->FUObjectItem_get_serial_number(ObjectItem) == ObjectSerialNumber;
     }
 
-    auto FWeakObjectPtr::internal_get_object_item() const -> FUObjectItem*
+    auto FWeakObjectPtr::InternalGetObjectItem() const -> FUObjectItem*
     {
-        if (object_serial_number == 0) { return nullptr; }
-        if (object_index < 0) { return nullptr; }
+        if (ObjectSerialNumber == 0) { return nullptr; }
+        if (ObjectIndex < 0) { return nullptr; }
 
-        FUObjectItem* const object_item = static_cast<FUObjectItem* const>(Container::m_unreal_vc_base->UObjectArray_index_to_object(object_index));
+        FUObjectItem* const ObjectItem = static_cast<FUObjectItem* const>(Container::UnrealVC->UObjectArray_index_to_object(ObjectIndex));
 
-        if (!object_item) { return nullptr; }
-        if (!serial_numbers_match(object_item)) { return nullptr; }
+        if (!ObjectItem) { return nullptr; }
+        if (!SerialNumbersMatch(ObjectItem)) { return nullptr; }
 
-        return object_item;
+        return ObjectItem;
     }
 
-    auto FWeakObjectPtr::reset() -> void
+    auto FWeakObjectPtr::Reset() -> void
     {
-        object_index = INDEX_NONE;
-        object_serial_number = 0;
+        ObjectIndex = INDEX_NONE;
+        ObjectSerialNumber = 0;
     }
 
-    auto FWeakObjectPtr::operator=(UObject* new_object) -> void
+    auto FWeakObjectPtr::operator=(UObject* NewObject) -> void
     {
-        if (!new_object)
+        if (!NewObject)
         {
-            reset();
+            Reset();
         }
         else
         {
-            object_index = new_object->get_internal_index();
-            object_serial_number = Container::m_unreal_vc_base->FUObjectItem_get_serial_number(object_index);
+            ObjectIndex = NewObject->GetInternalIndex();
+            ObjectSerialNumber = Container::UnrealVC->FUObjectItem_get_serial_number(ObjectIndex);
         }
     }
 
-    auto FWeakObjectPtr::internal_get(bool b_even_if_pending_kill) const -> UObject*
+    auto FWeakObjectPtr::InternalGet(bool bEvenIfPendingKill) const -> UObject*
     {
-        FUObjectItem* const object_item = internal_get_object_item();
-        return ((object_item != nullptr) && UObjectArray::is_valid(object_item, b_even_if_pending_kill)) ? object_item->get_uobject() : nullptr;
+        FUObjectItem* const ObjectItem = InternalGetObjectItem();
+        return ((ObjectItem != nullptr) && UObjectArray::IsValid(ObjectItem, bEvenIfPendingKill)) ? ObjectItem->GetUObject() : nullptr;
     }
 
-    auto FWeakObjectPtr::get() const -> UObject*
+    auto FWeakObjectPtr::Get() const -> UObject*
     {
-        return internal_get(false);
+        return InternalGet(false);
     }
 }

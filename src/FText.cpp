@@ -4,25 +4,25 @@
 
 namespace RC::Unreal
 {
-    auto FText::to_string_raw() -> FString*
+    auto FText::ToFString() -> FString*
     {
-        return m_text_data->string;
+        return Data->Data;
     }
 
-    auto FText::to_string() -> std::wstring
+    auto FText::ToString() -> std::wstring
     {
-        if (!m_text_data || !m_text_data->string)
+        if (!Data || !Data->Data)
         {
             return STR("");
         }
         else
         {
-            return std::wstring{m_text_data->string->get_string_data()};
+            return std::wstring{Data->Data->GetCharArray()};
         }
     }
 
-    auto FText::set_string(FString* new_string) -> void
+    auto FText::SetString(FString* new_string) -> void
     {
-        m_text_data->string = new_string;
+        Data->Data = new_string;
     }
 }

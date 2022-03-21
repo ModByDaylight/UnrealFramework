@@ -34,53 +34,53 @@ namespace RC::Unreal {
 
 #define DECLARE_EXTERNAL_OBJECT_CLASS(ClassName, ModuleName) \
 private: \
-    static RC::Unreal::UClass* m_static_class; \
+    static RC::Unreal::UClass* StaticClassStorage; \
     template<typename T>\
     friend class RC::Unreal::Internal::UClassRegistrarTemplate; \
     friend class RC::Unreal::TypeChecker; \
 \
-    inline static RC::Unreal::UClass** static_class_ptr() { return &ClassName::m_static_class; } \
-    inline static const wchar_t* static_package() { return STR("/Script/") STR(#ModuleName); }   \
-    inline static const wchar_t* static_class_name() { return (STR(#ClassName) + 1); } \
+    inline static RC::Unreal::UClass** StaticClassPtr() { return &ClassName::StaticClassStorage; } \
+    inline static const wchar_t* StaticPackage() { return STR("/Script/") STR(#ModuleName); }   \
+    inline static const wchar_t* StaticClassName() { return (STR(#ClassName) + 1); } \
 public: \
-    auto static static_class() -> RC::Unreal::UClass*; \
+    auto static StaticClass() -> RC::Unreal::UClass*; \
 
 #define IMPLEMENT_EXTERNAL_OBJECT_CLASS(ClassName) \
-RC::Unreal::UClass* ClassName::m_static_class = nullptr; \
+RC::Unreal::UClass* ClassName::StaticClassStorage = nullptr; \
 static RC::Unreal::Internal::UClassRegistrarTemplate<ClassName> __class_registrar_##ClassName;\
 \
-auto ClassName::static_class() -> RC::Unreal::UClass* \
+auto ClassName::StaticClass() -> RC::Unreal::UClass* \
 { \
-    if (!m_static_class) \
+    if (!StaticClassStorage) \
     { \
-        throw std::runtime_error{"[" #ClassName "::static_class] m_static_class is nullptr"}; \
+        throw std::runtime_error{"[" #ClassName "::StaticClass] StaticClassStorage is nullptr"}; \
     } \
-    return m_static_class; \
+    return StaticClassStorage; \
 };
 
 #define DECLARE_FIELD_CLASS(ClassName) \
 private: \
-    static RC::Unreal::FFieldClassVariant m_static_class; \
+    static RC::Unreal::FFieldClassVariant StaticClassStorage; \
     template<typename T>\
     friend class RC::Unreal::Internal::FFieldClassRegistrarTemplate; \
     friend class RC::Unreal::TypeChecker; \
 \
-    inline static RC::Unreal::FFieldClassVariant* static_class_ptr() { return &ClassName::m_static_class; } \
-    inline static const wchar_t* static_class_name() { return (STR(#ClassName) + 1); } \
+    inline static RC::Unreal::FFieldClassVariant* StaticClassPtr() { return &ClassName::StaticClassStorage; } \
+    inline static const wchar_t* StaticClassName() { return (STR(#ClassName) + 1); } \
 public: \
-    auto static static_class() -> RC::Unreal::FFieldClassVariant;    \
+    auto static StaticClass() -> RC::Unreal::FFieldClassVariant;    \
 
 #define IMPLEMENT_FIELD_CLASS(ClassName) \
-RC::Unreal::FFieldClassVariant ClassName::m_static_class{(RC::Unreal::FFieldClass*) nullptr}; \
+RC::Unreal::FFieldClassVariant ClassName::StaticClassStorage{(RC::Unreal::FFieldClass*) nullptr}; \
 static RC::Unreal::Internal::FFieldClassRegistrarTemplate<ClassName> __field_class_registrar_##ClassName;\
 \
-auto ClassName::static_class() -> RC::Unreal::FFieldClassVariant \
+auto ClassName::StaticClass() -> RC::Unreal::FFieldClassVariant \
 { \
-    if (!m_static_class.IsValid()) \
+    if (!StaticClassStorage.IsValid()) \
     { \
-        throw std::runtime_error{"[" #ClassName "::static_class] m_static_class is not valid"}; \
+        throw std::runtime_error{"[" #ClassName "::StaticClass] StaticClassStorage is not valid"}; \
     } \
-    return m_static_class; \
+    return StaticClassStorage; \
 };
 
 namespace RC::Unreal::Internal
@@ -88,21 +88,21 @@ namespace RC::Unreal::Internal
     class RC_UE_API UClassRegistrar
     {
     protected:
-        UClassRegistrar(RC::Unreal::UClass** out_static_class, const wchar_t* class_name, const wchar_t* package_name)
+        UClassRegistrar(RC::Unreal::UClass** OutStaticClass, const wchar_t* ClassName, const wchar_t* PackageName)
         {
-            (void)out_static_class;
-            (void)class_name;
-            (void)package_name;
+            (void)OutStaticClass;
+            (void)ClassName;
+            (void)PackageName;
         };
     };
 
     class RC_UE_API FFieldClassRegistrar
     {
     protected:
-        FFieldClassRegistrar(RC::Unreal::FFieldClassVariant* out_static_class, const wchar_t* class_name)
+        FFieldClassRegistrar(RC::Unreal::FFieldClassVariant* OutStaticClass, const wchar_t* ClassName)
         {
-            (void)out_static_class;
-            (void)class_name;
+            (void)OutStaticClass;
+            (void)ClassName;
         }
     };
 
@@ -110,7 +110,7 @@ namespace RC::Unreal::Internal
     class UClassRegistrarTemplate : public UClassRegistrar
     {
     public:
-        inline UClassRegistrarTemplate() : UClassRegistrar(T::static_class_ptr(), T::static_class_name(), T::static_package()) {
+        inline UClassRegistrarTemplate() : UClassRegistrar(T::StaticClassPtr(), T::StaticClassName(), T::StaticPackage()) {
         }
     };
 
@@ -118,7 +118,7 @@ namespace RC::Unreal::Internal
     class FFieldClassRegistrarTemplate : public FFieldClassRegistrar
     {
     public:
-        inline FFieldClassRegistrarTemplate() : FFieldClassRegistrar(T::static_class_ptr(), T::static_class_name()) {
+        inline FFieldClassRegistrarTemplate() : FFieldClassRegistrar(T::StaticClassPtr(), T::StaticClassName()) {
         }
     };
 }

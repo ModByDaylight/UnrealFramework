@@ -16,62 +16,62 @@ namespace RC::Unreal
         typedef bool TCppType;
 
         /** Offset from the member variable to the byte of the property (0-7). */
-        auto get_byte_offset() -> uint8_t;
+        auto GetByteOffset() -> uint8_t;
 
         /** Mask of the byte with the property value. */
-        auto get_byte_mask() -> uint8_t;
+        auto GetByteMask() -> uint8_t;
 
         /** Mask of the field with the property value. Either equal to ByteMask or 255 in case of 'bool' type. */
-        auto get_field_mask() -> uint8_t;
+        auto GetFieldMask() -> uint8_t;
 
         /** Returns the value of the boolean property */
-        FORCEINLINE auto get_property_value(const void* A) -> bool
+        FORCEINLINE auto GetPropertyValue(const void* A) -> bool
         {
-            uint8_t* byte_value = (uint8_t*)A + get_byte_offset();
-            return !!(*byte_value & get_field_mask());
+            uint8_t* ByteValue = (uint8_t*)A + GetByteOffset();
+            return !!(*ByteValue & GetFieldMask());
         }
 
         /** Returns the value of the boolean property inside of it's container */
-        FORCEINLINE auto get_property_value_in_container(const void* A, int32_t array_index = 0) -> bool
+        FORCEINLINE auto GetPropertyValueInContainer(const void* A, int32_t ArrayIndex = 0) -> bool
         {
-            return get_property_value(ContainerPtrToValuePtr<void>(A, array_index));
+            return GetPropertyValue(ContainerPtrToValuePtr<void>(A, ArrayIndex));
         }
 
         /** Returns the default value of the boolean property */
-        FORCEINLINE static auto get_default_property_value() -> bool
+        FORCEINLINE static auto GetDefaultPropertyValue() -> bool
         {
             return false;
         }
 
         /** Returns the property value from the given address, or default value if it represents the nullptr */
-        FORCEINLINE auto get_optional_property_value(const void* B) -> bool
+        FORCEINLINE auto GetOptionalPropertyValue(const void* B) -> bool
         {
-            return B ? get_property_value(B) : get_default_property_value();
+            return B ? GetPropertyValue(B) : GetDefaultPropertyValue();
         }
 
         /** Returns the property value from the given container address, or default value if it represents the nullptr */
-        FORCEINLINE auto get_optional_property_value_in_container(const void* B, int32_t array_index = 0) -> bool
+        FORCEINLINE auto GetOptionalPropertyValueInContainer(const void* B, int32_t ArrayIndex = 0) -> bool
         {
-            return B ? get_property_value_in_container(B, array_index) : get_default_property_value();
+            return B ? GetPropertyValueInContainer(B, ArrayIndex) : GetDefaultPropertyValue();
         }
 
         /** Updates property value to the provided one */
-        FORCEINLINE auto set_property_value(void* A, bool value) -> void
+        FORCEINLINE auto SetPropertyValue(void* A, bool Value) -> void
         {
-            uint8_t* byte_value = (uint8_t*)A + get_byte_offset();
-            *byte_value = ((*byte_value) & ~get_field_mask()) | (value ? get_byte_mask() : 0);
+            uint8_t* byte_value = (uint8_t*)A + GetByteOffset();
+            *byte_value = ((*byte_value) & ~GetFieldMask()) | (Value ? GetByteMask() : 0);
         }
 
         /** Updates property value inside of the container */
-        FORCEINLINE auto set_property_value_in_container(void* A, bool value, int32_t array_index = 0)
+        FORCEINLINE auto SetPropertyValueInContainer(void* A, bool Value, int32_t ArrayIndex = 0)
         {
-            set_property_value(ContainerPtrToValuePtr<void>(A, array_index), value);
+            SetPropertyValue(ContainerPtrToValuePtr<void>(A, ArrayIndex), Value);
         }
 
         /** If the return value is true this FBoolProperty represents C++ bool type */
-        FORCEINLINE auto is_native_bool() -> bool
+        FORCEINLINE auto IsNativeBool() -> bool
         {
-            return get_field_mask() == 0xff;
+            return GetFieldMask() == 0xff;
         }
     };
 }

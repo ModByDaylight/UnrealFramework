@@ -5,7 +5,7 @@
 #include <Unreal/VersionedContainer/Container.hpp>
 
 #define IMPLEMENT_FFIELD_VIRTUAL_WRAPPER(class_name, function_name, return_type, params, args) \
-if (Version::is_below(4, 25)) \
+if (Version::IsBelow(4, 25)) \
 { \
     throw std::runtime_error{"FField virtual called in <4.25 and it has no equivalent virtual in <4.25"}; \
 } \
@@ -24,45 +24,45 @@ namespace RC::Unreal
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
-    bool Internal::FFieldTypeAccessor::type_system_initialized = false;
-    std::vector<void(*)()> Internal::FFieldTypeAccessor::late_bind_callbacks{};
+    bool Internal::FFieldTypeAccessor::TypeSystemInitialized = false;
+    std::vector<void(*)()> Internal::FFieldTypeAccessor::LateBindCallbacks{};
 
-    auto Internal::FFieldTypeAccessor::get_object_class(FField* field) -> FFieldClassVariant
+    auto Internal::FFieldTypeAccessor::GetObjectClass(FField* Field) -> FFieldClassVariant
     {
-        return field->GetClass();
+        return Field->GetClass();
     }
 
-    auto Internal::FFieldTypeAccessor::get_class_super_class(FFieldClassVariant field_class) -> FFieldClassVariant
+    auto Internal::FFieldTypeAccessor::GetClassSuperClass(FFieldClassVariant FieldClass) -> FFieldClassVariant
     {
-        return field_class.GetSuperClass();
+        return FieldClass.GetSuperClass();
     }
 
-    auto Internal::FFieldTypeAccessor::is_class_valid(FFieldClassVariant field_class) -> bool
+    auto Internal::FFieldTypeAccessor::IsClassValid(FFieldClassVariant FieldClass) -> bool
     {
-        return field_class.IsValid();
+        return FieldClass.IsValid();
     }
 
-    auto Internal::FFieldTypeAccessor::register_late_bind_callback(void (*callback)()) -> void
+    auto Internal::FFieldTypeAccessor::RegisterLateBindCallback(void (*Callback)()) -> void
     {
-        if (!type_system_initialized)
+        if (!TypeSystemInitialized)
         {
-            late_bind_callbacks.push_back(callback);
+            LateBindCallbacks.push_back(Callback);
         }
         else
         {
-            callback();
+            Callback();
         }
     }
 
-    auto Internal::FFieldTypeAccessor::on_type_system_initialized() -> void
+    auto Internal::FFieldTypeAccessor::OnTypeSystemInitialized() -> void
     {
-        if (type_system_initialized)
+        if (TypeSystemInitialized)
         {
             return;
         }
-        type_system_initialized = true;
+        TypeSystemInitialized = true;
 
-        for (void (*callback)() : late_bind_callbacks)
+        for (void (*callback)() : LateBindCallbacks)
         {
             callback();
         }
@@ -70,9 +70,9 @@ namespace RC::Unreal
 
     auto FField::GetClass() -> FFieldClassVariant
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
-            return AsUFieldUnsafe()->get_uclass();
+            return AsUFieldUnsafe()->GetClass();
         }
         else
         {
@@ -82,9 +82,9 @@ namespace RC::Unreal
 
     auto FField::GetFName() -> FName
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
-            return AsUFieldUnsafe()->get_fname();
+            return AsUFieldUnsafe()->GetFName();
         }
         else
         {
@@ -94,7 +94,7 @@ namespace RC::Unreal
 
     File::StringType FField::GetFullName()
     {
-        if (Version::is_atleast(4, 25 ))
+        if (Version::IsAtLeast(4, 25 ))
         {
             File::StringType FullName = GetClass().GetName();
             FullName += STR(" ");
@@ -103,13 +103,13 @@ namespace RC::Unreal
         }
         else
         {
-            return AsUFieldUnsafe()->get_full_name();
+            return AsUFieldUnsafe()->GetFullName();
         }
     }
 
     File::StringType FField::GetPathName(UObject* StopOuter)
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             File::StringType PathName;
             for (FFieldVariant TempOwner = GetOwnerVariant(); TempOwner.IsValid(); TempOwner = TempOwner.GetOwnerVariant())
@@ -122,7 +122,7 @@ namespace RC::Unreal
                 else
                 {
                     UObject* ObjectOwner = TempOwner.ToUObject();
-                    PathName += ObjectOwner->get_path_name(StopOuter);
+                    PathName += ObjectOwner->GetPathName(StopOuter);
                     PathName += SUBOBJECT_DELIMITER_CHAR;
                     break;
                 }
@@ -132,7 +132,7 @@ namespace RC::Unreal
         }
         else
         {
-            return AsUFieldUnsafe()->get_path_name();
+            return AsUFieldUnsafe()->GetPathName();
         }
     }
 
@@ -143,9 +143,9 @@ namespace RC::Unreal
 
     auto FField::GetOwnerVariant() -> FFieldVariant
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
-            return AsUFieldUnsafe()->get_outer();
+            return AsUFieldUnsafe()->GetOuter();
         }
         else
         {
@@ -167,23 +167,23 @@ namespace RC::Unreal
 
     auto FField::GetTypedOwner(UClass* OwnerType) -> UObject*
     {
-        FFieldVariant current_variant = GetOwnerVariant();
+        FFieldVariant CurrentVariant = GetOwnerVariant();
 
-        while (current_variant.IsValid()) {
-            if (current_variant.IsUObject())
+        while (CurrentVariant.IsValid()) {
+            if (CurrentVariant.IsUObject())
             {
-                return current_variant.ToUObject()->get_typed_outer(OwnerType);
+                return CurrentVariant.ToUObject()->GetTypedOuter(OwnerType);
             }
-            current_variant = current_variant.GetOwnerVariant();
+            CurrentVariant = CurrentVariant.GetOwnerVariant();
         }
         return nullptr;
     }
 
     bool FField::HasNext()
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
-            return AsUFieldUnsafe()->get_next_ufield();
+            return AsUFieldUnsafe()->GetNextField();
         }
         else
         {
@@ -202,7 +202,7 @@ namespace RC::Unreal
 
     auto FField::AsUFieldUnsafe() -> UField*
     {
-        if (!Version::is_below(4, 25))
+        if (!Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FField does not inherit from UObject in UE4.25+");
         }
@@ -212,7 +212,7 @@ namespace RC::Unreal
 
     auto FField::AsUFieldUnsafe() const -> const UField*
     {
-        if (!Version::is_below(4, 25))
+        if (!Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FField does not inherit from UObject in UE4.25+");
         }
@@ -221,7 +221,7 @@ namespace RC::Unreal
 
     auto FField::GetFFieldClassUnsafe() -> FFieldClass*
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FFieldClass is not available in UE versions below 4.25");
         }
@@ -230,7 +230,7 @@ namespace RC::Unreal
 
     auto FField::GetFFieldOwnerUnsafe() -> FFieldVariant
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FField::Owner is not available in UE versions below 4.25");
         }
@@ -239,7 +239,7 @@ namespace RC::Unreal
 
     auto FField::GetFFieldFNameUnsafe() -> FName
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FField::FName is not available in UE versions below 4.25");
         }
@@ -248,7 +248,7 @@ namespace RC::Unreal
 
     auto FField::Serialize(FArchive& Ar) -> void
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, Serialize, void, PARAMS(FArchive & ), ARGS(Ar))
         }
@@ -262,7 +262,7 @@ namespace RC::Unreal
 
     auto FField::PostLoad() -> void
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, PostLoad, void)
         }
@@ -276,7 +276,7 @@ namespace RC::Unreal
 
     auto FField::GetPreloadDependencies(TArray<UObject*>& OutDeps) -> void
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetPreloadDependencies, void, PARAMS(TArray<UObject*> & ), ARGS(OutDeps))
         }
@@ -288,7 +288,7 @@ namespace RC::Unreal
 
     auto FField::BeginDestroy() -> void
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, BeginDestroy, void)
         }
@@ -306,7 +306,7 @@ namespace RC::Unreal
 
     auto FField::AddCppProperty(FProperty* Property) -> void
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddCppProperty, void, PARAMS(FProperty*), ARGS(Property))
         }
@@ -320,7 +320,7 @@ namespace RC::Unreal
 
     auto FField::Bind() -> void
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, Bind, void)
         }
@@ -349,7 +349,7 @@ namespace RC::Unreal
 
     void FField::PostDuplicate(bool bDuplicateForPIE)
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             throw std::runtime_error{"FField::PostDuplicate overload with bool param is only allowed to be called in <4.25"};
         }
@@ -361,7 +361,7 @@ namespace RC::Unreal
 
     bool FField::NeedsLoadForClient() const
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             throw std::runtime_error{"FField::NeedsLoadForClient is only allowed to be called in <4.25"};
         }
@@ -373,7 +373,7 @@ namespace RC::Unreal
 
     bool FField::NeedsLoadForServer() const
     {
-        if (Version::is_atleast(4, 25))
+        if (Version::IsAtLeast(4, 25))
         {
             throw std::runtime_error{"FField::NeedsLoadForServer is only allowed to be called in <4.25"};
         }
@@ -385,7 +385,7 @@ namespace RC::Unreal
 
     auto FField::GetNextFFieldUnsafe() -> FField*
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FField::Next is not available in UE versions below 4.25");
         }
@@ -449,7 +449,7 @@ namespace RC::Unreal
     auto FFieldClassVariant::GetFName() const -> FName {
         if (IsUClass())
         {
-            return ToUClass()->get_fname();
+            return ToUClass()->GetFName();
         }
         else
         {
@@ -461,7 +461,7 @@ namespace RC::Unreal
     {
         if (IsUClass())
         {
-            return ToUClass()->get_super_class();
+            return ToUClass()->GetSuperClass();
         }
         else
         {
@@ -479,7 +479,7 @@ namespace RC::Unreal
 
         if (IsUClass())
         {
-            return ToUClass()->is_child_of(UClass.ToUClass());
+            return ToUClass()->IsChildOf(UClass.ToUClass());
         }
         else
         {
@@ -532,17 +532,17 @@ namespace RC::Unreal
         return SuperClass;
     }
 
-    auto FFieldClass::IsChildOf(FFieldClass* field_class) const -> bool
+    auto FFieldClass::IsChildOf(FFieldClass* FieldClass) const -> bool
     {
-        const FFieldClass* current_class = this;
+        const FFieldClass* CurrentClass = this;
         do {
-            if (current_class == field_class)
+            if (CurrentClass == FieldClass)
             {
                 return true;
             }
-            current_class = current_class->GetSuperClass();
+            CurrentClass = CurrentClass->GetSuperClass();
         }
-        while (current_class);
+        while (CurrentClass);
         return false;
     }
 
@@ -550,7 +550,7 @@ namespace RC::Unreal
     {
         if (IsUObject())
         {
-            return Container.Object->get_outer();
+            return Container.Object->GetOuter();
         }
         else
         {

@@ -11,19 +11,19 @@ namespace RC::Unreal
 
     UObject* UAssetRegistryHelpers::GetAsset_Params::ReturnValue()
     {
-        return Helper::Casting::ptr_cast_deref<UObject*>(this, UAssetRegistryHelpers::StaticFunctions::get_asset.GetReturnValueOffset());
+        return Helper::Casting::ptr_cast_deref<UObject*>(this, UAssetRegistryHelpers::StaticFunctions::GetAsset.GetReturnValueOffset());
     }
 
     UAssetRegistryHelpers::GetAsset_Params::GetAsset_Params(const FAssetData& InAssetData) : InAssetData_Private(InAssetData)
     {
     }
 
-    auto UAssetRegistryHelpers::verify_self() -> bool
+    auto UAssetRegistryHelpers::VerifySelf() -> bool
     {
-        if (!self)
+        if (!Self)
         {
-            self = UObjectGlobals::static_find_object<UAssetRegistryHelpers*>(nullptr, nullptr, STR("/Script/AssetRegistry.Default__AssetRegistryHelpers"));
-            if (!self)
+            Self = UObjectGlobals::StaticFindObject<UAssetRegistryHelpers*>(nullptr, nullptr, STR("/Script/AssetRegistry.Default__AssetRegistryHelpers"));
+            if (!Self)
             {
                 Output::send(STR("Was unable to locate AssetRegistryHelpers\n"));
                 return false;
@@ -35,21 +35,21 @@ namespace RC::Unreal
 
     auto UAssetRegistryHelpers::GetAssetRegistry() -> FScriptInterface
     {
-        if (!verify_self()) { return {}; }
-        if (!StaticFunctions::get_asset_registry.is_valid()) { return {}; }
+        if (!VerifySelf()) { return {}; }
+        if (!StaticFunctions::GetAssetRegistry.IsValid()) { return {}; }
 
-        GetAssetRegistry_Params params{};
-        StaticFunctions::get_asset_registry(params);
-        return params.ReturnValue;
+        GetAssetRegistry_Params Params{};
+        StaticFunctions::GetAssetRegistry(Params);
+        return Params.ReturnValue;
     }
 
-    auto UAssetRegistryHelpers::GetAsset(FAssetData& in_asset_data) -> UObject*
+    auto UAssetRegistryHelpers::GetAsset(FAssetData& InAssetData) -> UObject*
     {
-        if (!verify_self()) { return nullptr; }
-        if (!StaticFunctions::get_asset.is_valid()) { return nullptr; }
+        if (!VerifySelf()) { return nullptr; }
+        if (!StaticFunctions::GetAsset.IsValid()) { return nullptr; }
 
-        GetAsset_Params params{in_asset_data};
-        StaticFunctions::get_asset(params);
-        return params.ReturnValue();
+        GetAsset_Params Params{InAssetData};
+        StaticFunctions::GetAsset(Params);
+        return Params.ReturnValue();
     }
 }

@@ -10,64 +10,64 @@ namespace RC::Unreal
 {
     class UObject;
 
-    using UnrealScriptFunction = void(*)(UObject* context, FFrame& the_stack, void* result_decl);
+    using UnrealScriptFunction = void(*)(UObject* Context, FFrame& TheStack, void* RESULT_DECL);
 
     class RC_UE_API UnrealScriptFunctionCallableContext
     {
     public:
-        UObject* context;
-        FFrame& the_stack;
-        void* result_decl;
+        UObject* Context;
+        FFrame& TheStack;
+        void* RESULT_DECL;
 
-        UnrealScriptFunctionCallableContext(UObject* context, FFrame& the_stack, void* result_decl);
+        UnrealScriptFunctionCallableContext(UObject* Context, FFrame& TheStack, void* RESULT_DECL);
 
         template<typename ReturnType>
-        auto set_return_value(ReturnType new_value) -> void
+        auto SetReturnValue(ReturnType NewValue) -> void
         {
-            *static_cast<ReturnType*>(result_decl) = new_value;
+            *static_cast<ReturnType*>(RESULT_DECL) = NewValue;
         }
 
         template<typename ParamStruct>
-        auto get_params() -> ParamStruct&
+        auto GetParams() -> ParamStruct&
         {
-            return *static_cast<ParamStruct*>(static_cast<void*>(the_stack.Locals));
+            return *static_cast<ParamStruct*>(static_cast<void*>(TheStack.Locals));
         }
     };
-    using UnrealScriptFunctionCallable = std::function<void(UnrealScriptFunctionCallableContext& context, void* custom_data)>;
+    using UnrealScriptFunctionCallable = std::function<void(UnrealScriptFunctionCallableContext& Context, void* CustomData)>;
     using CallbackId = int32_t;
 
     struct UnrealScriptCallbackData
     {
-        UnrealScriptFunctionCallable callable;
-        void* custom_data;
+        UnrealScriptFunctionCallable Callable;
+        void* CustomData;
     };
 
     class RC_UE_API UnrealScriptFunctionData
     {
     private:
-        UnrealScriptFunction original_func;
-        CallbackId hook_index_counter;
-        std::map<int32_t, UnrealScriptCallbackData> pre_callbacks;
-        std::map<int32_t, UnrealScriptCallbackData> post_callbacks;
+        UnrealScriptFunction OriginalFunc;
+        CallbackId HookIndexCounter;
+        std::map<int32_t, UnrealScriptCallbackData> PreCallbacks;
+        std::map<int32_t, UnrealScriptCallbackData> PostCallbacks;
     public:
-        UnrealScriptFunctionData(UnrealScriptFunction original_func_ptr);
-        inline auto get_original_func_ptr() const -> UnrealScriptFunction { return original_func; }
+        UnrealScriptFunctionData(UnrealScriptFunction OriginalFuncPtr);
+        inline auto GetOriginalFuncPtr() const -> UnrealScriptFunction { return OriginalFunc; }
 
-        CallbackId add_pre_callback(const UnrealScriptFunctionCallable& callable, void* custom_data = nullptr);
-        CallbackId add_post_callback(const UnrealScriptFunctionCallable& callable, void* custom_data = nullptr);
-        bool remove_callback(CallbackId callback_id);
+        CallbackId AddPreCallback(const UnrealScriptFunctionCallable& Callable, void* CustomData = nullptr);
+        CallbackId AddPostCallback(const UnrealScriptFunctionCallable& Callable, void* CustomData = nullptr);
+        bool RemoveCallback(CallbackId CallbackId);
 
-        void remove_all_callbacks();
+        void RemoveAllCallbacks();
 
-        void fire_pre_callbacks(UnrealScriptFunctionCallableContext& context) const;
-        void fire_post_callbacks(UnrealScriptFunctionCallableContext& context) const;
+        void FirePreCallbacks(UnrealScriptFunctionCallableContext& Context) const;
+        void FirePostCallbacks(UnrealScriptFunctionCallableContext& Context) const;
     };
 
     namespace Internal {
         using HookedUFunctionMap = std::unordered_map<const UFunction*, UnrealScriptFunctionData>;
-        auto RC_UE_API get_hooked_functions_map() -> HookedUFunctionMap&;
+        auto RC_UE_API GetHookedFunctionsMap() -> HookedUFunctionMap&;
 
-        auto unreal_script_function_hook(UObject *context, FFrame &the_stack, void *result_decl) -> void;
+        auto UnrealScriptFunctionHook(UObject* Context, FFrame& TheStack, void* RESULT_DECL) -> void;
     }
 }
 

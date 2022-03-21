@@ -25,8 +25,8 @@ namespace RC::Unreal
     namespace UnrealInitializer
     {
         struct CacheInfo;
-        auto create_cache(CacheInfo&) -> void;
-        auto load_cache(CacheInfo&) -> void;
+        auto CreateCache(CacheInfo&) -> void;
+        auto LoadCache(CacheInfo&) -> void;
     }
 
     // Placeholder types for virtual functions
@@ -48,8 +48,8 @@ namespace RC::Unreal
 
     public:
         // Wrappers for virtual engine functions
-        auto register_dependencies() -> void;
-        auto deferred_register(class UClass* UClassStaticClass, const File::CharType* PackageName, const File::CharType* Name) -> void;
+        auto RegisterDependencies() -> void;
+        auto DeferredRegister(class UClass* UClassStaticClass, const File::CharType* PackageName, const File::CharType* Name) -> void;
     };
 
     class RC_UE_API UObjectBaseUtility : public UObjectBase
@@ -70,22 +70,22 @@ namespace RC::Unreal
         DECLARE_EXTERNAL_OBJECT_CLASS(UObject, CoreUObject);
 
     public:
-        using ProcessEventSignature = void(UObject* context, class UFunction* function, void* params);
-        static Function<ProcessEventSignature> process_event_internal;
+        using ProcessEventSignature = void(UObject* Context, class UFunction* Function, void* Params);
+        static Function<ProcessEventSignature> ProcessEventInternal;
 
         using ProcessConsoleExecSignature = bool(UObject* Context, const TCHAR* Cmd, FOutputDevice& Ar, UObject* Executor);
         static Function<ProcessConsoleExecSignature> ProcessConsoleExecInternal;
 
     protected:
-        friend void UnrealInitializer::create_cache(UnrealInitializer::CacheInfo&);
-        friend void UnrealInitializer::load_cache(UnrealInitializer::CacheInfo&);
-        friend void hook_process_event();
+        friend void UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo&);
+        friend void UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo&);
+        friend void HookProcessEvent();
         friend struct FWeakObjectPtr;
         friend class AActor;
         friend class UAssetRegistry;
 
-        auto get_internal_index() -> uint32_t;
-        auto get_object_item() -> struct FUObjectItem*;
+        auto GetInternalIndex() -> uint32_t;
+        auto GetObjectItem() -> struct FUObjectItem*;
 
     public:
 #include <VTableOffsets_UObject.hpp>
@@ -168,141 +168,134 @@ namespace RC::Unreal
         /**
          * Returns the Class of the object
          */
-        auto get_uclass() const -> UClass*;
+        auto GetClass() const -> UClass*;
 
         /**
          * Returns the object acting as the outer of this object
          * Every object must have a valid outer, with the exclusion of UPackage objects
          */
-        auto get_outer() -> UObject*;
+        auto GetOuter() -> UObject*;
 
         /**
          * Returns name of the object as the instance of FName
          * Names of the objects are unique inside their relevant outers
          */
-        auto get_fname() -> FName;
+        auto GetFName() -> FName;
 
         /**
          * Updates the flags currently set on the object to the provided ones
          * This function overwrites the flags completely, use set_flags or clear_flags to
          * add or remove flags instead
          */
-        auto set_flags_to(EObjectFlags new_flags) -> void;
+        auto SetFlagsTo(EObjectFlags NewFlags) -> void;
 
         /**
          * Returns the name of this object, as string
          */
-        inline auto get_name() -> std::wstring
+        inline auto GetName() -> std::wstring
         {
-            return get_fname().to_string();
+            return GetFName().ToString();
         }
 
         /**
          * Checks whenever this object is an instance of the specified class
          */
-        auto is_a(UClass* uclass) -> bool;
+        auto IsA(UClass* Class) -> bool;
 
         /**
          * Adds new flags to the object
          */
-        inline auto set_flags(EObjectFlags new_flags) -> void
+        inline auto SetFlags(EObjectFlags NewFlags) -> void
         {
-            Container::m_unreal_object_base->UObject_set_flags(this, new_flags);
+            Container::UnrealObjectVC->UObject_set_flags(this, NewFlags);
         }
 
         /**
          * Removes the provided flags from the object
          */
-        inline auto clear_flags(EObjectFlags clear_flags) -> void
+        inline auto ClearFlags(EObjectFlags ClearFlags) -> void
         {
-            Container::m_unreal_object_base->UObject_clear_flags(this, clear_flags);
+            Container::UnrealObjectVC->UObject_clear_flags(this, ClearFlags);
         }
 
         /**
          * Checks whenever the object has any of the provided flags set
          */
-        inline auto has_any_flag(EObjectFlags flags_to_check) -> bool
+        inline auto HasAnyFlags(EObjectFlags FlagsToCheck) -> bool
         {
-            return Container::m_unreal_object_base->UObject_has_any_flag(this, flags_to_check);
+            return Container::UnrealObjectVC->UObject_has_any_flag(this, FlagsToCheck);
         }
 
         /**
          * Checks whenever the object has all of the flags specified
          */
-        auto has_all_flags(EObjectFlags flags_to_check) -> bool
+        auto HasAllFlags(EObjectFlags FlagsToCheck) -> bool
         {
-            return Container::m_unreal_object_base->UObject_has_all_flags(this, flags_to_check);
+            return Container::UnrealObjectVC->UObject_has_all_flags(this, FlagsToCheck);
         }
 
         bool HasAnyInternalFlags(EInternalObjectFlags FlagsToCheck)
         {
-            return Container::m_unreal_vc_base->FUObjectItem_HasAnyFlags(Container::m_unreal_vc_base->UObjectArray_index_to_object(get_internal_index()), FlagsToCheck);
+            return Container::UnrealVC->FUObjectItem_HasAnyFlags(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()), FlagsToCheck);
         }
 
         bool IsUnreachable()
         {
-            return Container::m_unreal_vc_base->FUObjectItem_is_object_unreachable(Container::m_unreal_vc_base->UObjectArray_index_to_object(get_internal_index()));
+            return Container::UnrealVC->FUObjectItem_is_object_unreachable(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()));
         }
 
         /**
          * Templated version of the IsA(UClass*) function
          */
         template<UObjectDerivative T>
-        inline auto is_a() -> bool
+        inline auto IsA() -> bool
         {
-            return is_a(T::static_class());
+            return IsA(T::StaticClass());
         }
 
         /**
          * Returns the outermost object for this object, normally the returned
          * object will always represent the UPackage instance
          */
-        auto get_outermost() -> UObject*;
+        auto GetOutermost() -> UObject*;
 
         /**
          * Returns the first outer of the object that is a subclass of the provided type
          */
-        auto get_typed_outer(UClass* outer_type) -> UObject*;
+        auto GetTypedOuter(UClass* OuterType) -> UObject*;
 
          /**
           * Templated version of the get_typed_outer function above,
           * returns the object already casted to the provided type too
           */
          template<UObjectDerivative T>
-         auto get_typed_outer() -> T*
+         auto GetTypedOuter() -> T*
          {
-              return cast_object<T>(get_typed_outer(T::static_class()));
+              return Cast<T>(GetTypedOuter(T::StaticClass()));
          }
-
-        /**
-         * Executes the ProcessEvent on this object with the provided function,
-         * which practically means calling the provided function with passed parameters struct
-         * and object as it's context argument
-         */
-        auto process_event(UFunction* function, void* params) -> void;
 
         /**
          * Returns the full path to the object in form of Package.Outer:ObjectName
          * Safe to call on the NULL objects and will return None in that case
          */
-        auto get_path_name(UObject* stop_outer = nullptr) -> std::wstring;
+        auto GetPathName(UObject* StopOuter = nullptr) -> std::wstring;
 
         /**
          * Returns the full name of the object in form Class Package.Outer:ObjectName
          */
-        auto get_full_name(UObject* stop_outer = nullptr) -> std::wstring;
+        auto GetFullName(UObject* StopOuter = nullptr) -> std::wstring;
 
-        auto get_path_name(UObject* stop_outer, std::wstring& result_name) -> void;
+        auto GetPathName(UObject* StopOuter, std::wstring& ResultString) -> void;
 
         size_t HashObject();
 
-        static bool is_real(const void* p_this);
+        static bool IsReal(const void* RawObject);
     };
 
     template<UObjectDerivative CastResultType>
-    auto cast_object(UObject* object) -> CastResultType*
+    auto Cast(UObject* Object) -> CastResultType*
     {
-        return object != nullptr && object->is_a<CastResultType>() ? static_cast<CastResultType*>(object) : nullptr;
+        return Object != nullptr && Object->IsA<CastResultType>() ? static_cast<CastResultType*>(Object) : nullptr;
     }
 }
 

@@ -7,56 +7,52 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/UAssetRegistry.hpp>
 #include <Unreal/UGameViewportClient.hpp>
-// TODO: Uncomment when Lua & Unreal have been decoupled
-//#include <LuaType/LuaUObject.hpp>
-// TODO: Uncomment when UE4SS & Unreal have been decoupled
-//#include <UE4SSProgram.hpp>
 
 //#include <polyhook2/CapstoneDisassembler.hpp>
 #include <polyhook2/ZydisDisassembler.hpp>
 
 namespace RC::Unreal
 {
-    uint64_t hook_trampoline_process_event = NULL;
-    uint64_t hook_trampoline_static_construct_object = NULL;
+    uint64_t HookTrampolineProcessEvent = NULL;
+    uint64_t HookTrampolineStaticConstructObject = NULL;
     uint64_t HookTrampolineProcessConsoleExec = NULL;
 
-    auto Hook::add_required_object(const std::wstring& object_full_typeless_name) -> void
+    auto Hook::AddRequiredObject(const std::wstring& ObjectFullTypelessName) -> void
     {
-        if (!UObjectGlobals::static_find_object(nullptr, nullptr, object_full_typeless_name))
+        if (!UObjectGlobals::StaticFindObject(nullptr, nullptr, ObjectFullTypelessName))
         {
-            Output::send(STR("Need to construct: {}\n"), object_full_typeless_name);
-            StaticStorage::required_objects_for_init.emplace_back(Hook::StaticStorage::RequiredObject{object_full_typeless_name});
-            StaticStorage::all_required_objects_constructed = false;
+            Output::send(STR("Need to construct: {}\n"), ObjectFullTypelessName);
+            StaticStorage::RequiredObjectsForInit.emplace_back(Hook::StaticStorage::RequiredObject{ObjectFullTypelessName});
+            StaticStorage::bAllRequiredObjectsConstructed = false;
         }
         else
         {
-            Output::send(STR("Already constructed: {}\n"), object_full_typeless_name);
-            if (StaticStorage::required_objects_for_init.size() == 0)
+            Output::send(STR("Already constructed: {}\n"), ObjectFullTypelessName);
+            if (StaticStorage::RequiredObjectsForInit.size() == 0)
             {
-                StaticStorage::all_required_objects_constructed = true;
+                StaticStorage::bAllRequiredObjectsConstructed = true;
             }
         }
     }
 
-    auto Hook::register_static_construct_object_pre_callback(StaticConstructObjectPreCallback callback) -> void
+    auto Hook::RegisterStaticConstructObjectPreCallback(StaticConstructObjectPreCallback callback) -> void
     {
-        StaticStorage::static_construct_object_pre_callbacks.emplace_back(callback);
+        StaticStorage::StaticConstructObjectPreCallbacks.emplace_back(callback);
     }
 
-    auto Hook::register_static_construct_object_post_callback(StaticConstructObjectPostCallback callback) -> void
+    auto Hook::RegisterStaticConstructObjectPostCallback(StaticConstructObjectPostCallback callback) -> void
     {
-        StaticStorage::static_construct_object_post_callbacks.emplace_back(callback);
+        StaticStorage::StaticConstructObjectPostCallbacks.emplace_back(callback);
     }
 
-    auto Hook::register_process_event_pre_callback(ProcessEventCallback callback) -> void
+    auto Hook::RegisterProcessEventPreCallback(ProcessEventCallback callback) -> void
     {
-        StaticStorage::process_event_pre_callbacks.emplace_back(callback);
+        StaticStorage::ProcessEventPreCallbacks.emplace_back(callback);
     }
 
-    auto Hook::register_process_event_post_callback(ProcessEventCallback callback) -> void
+    auto Hook::RegisterProcessEventPostCallback(ProcessEventCallback callback) -> void
     {
-        StaticStorage::process_event_post_callbacks.emplace_back(callback);
+        StaticStorage::ProcessEventPostCallbacks.emplace_back(callback);
     }
 
     auto RC_UE_API Hook::RegisterProcessConsoleExecCallback(ProcessConsoleExecCallback callback) -> void
@@ -64,51 +60,51 @@ namespace RC::Unreal
         StaticStorage::ProcessConsoleExecCallbacks.emplace_back(callback);
     }
 
-    auto hooked_static_construct_object_pre(const FStaticConstructObjectParameters& params) -> UObject*
+    auto HookedStaticConstructObjectPre(const FStaticConstructObjectParameters& Params) -> UObject*
     {
-        UObject* altered_return_value{};
-        for (const auto& callback : Hook::StaticStorage::static_construct_object_pre_callbacks)
+        UObject* AlteredReturnValue{};
+        for (const auto& Callback : Hook::StaticStorage::StaticConstructObjectPreCallbacks)
         {
-            altered_return_value = callback(params);
+            AlteredReturnValue = Callback(Params);
         }
-        return altered_return_value;
+        return AlteredReturnValue;
     }
 
-    auto hooked_static_construct_object_post(const FStaticConstructObjectParameters& params, UObject* constructed_object) -> UObject*
+    auto HookedStaticConstructObjectPost(const FStaticConstructObjectParameters& Params, UObject* ConstructedObject) -> UObject*
     {
-        if (!Hook::StaticStorage::all_required_objects_constructed)
+        if (!Hook::StaticStorage::bAllRequiredObjectsConstructed)
         {
-            for (auto& required_object : Hook::StaticStorage::required_objects_for_init)
+            for (auto& RequiredObject : Hook::StaticStorage::RequiredObjectsForInit)
             {
-                if (Hook::StaticStorage::num_required_objects_constructed >= Hook::StaticStorage::required_objects_for_init.size())
+                if (Hook::StaticStorage::NumRequiredObjectsConstructed >= Hook::StaticStorage::RequiredObjectsForInit.size())
                 {
-                    Hook::StaticStorage::all_required_objects_constructed = true;
+                    Hook::StaticStorage::bAllRequiredObjectsConstructed = true;
                     break;
                 }
 
-                if (required_object.object_constructed) { continue; }
+                if (RequiredObject.ObjectConstructed) { continue; }
 
-                UObject* required_object_ptr = UObjectGlobals::static_find_object(nullptr, nullptr, required_object.object_name);
+                UObject* required_object_ptr = UObjectGlobals::StaticFindObject(nullptr, nullptr, RequiredObject.ObjectName);
                 if (required_object_ptr)
                 {
-                    required_object.object_constructed = true;
-                    ++Hook::StaticStorage::num_required_objects_constructed;
-                    Output::send(STR("Constructed [{} / {}]: {}\n"), Hook::StaticStorage::num_required_objects_constructed, Hook::StaticStorage::required_objects_for_init.size(), required_object.object_name);
+                    RequiredObject.ObjectConstructed = true;
+                    ++Hook::StaticStorage::NumRequiredObjectsConstructed;
+                    Output::send(STR("Constructed [{} / {}]: {}\n"), Hook::StaticStorage::NumRequiredObjectsConstructed, Hook::StaticStorage::RequiredObjectsForInit.size(), RequiredObject.ObjectName);
                 }
             }
         }
 
-        UObject* altered_return_value{};
-        for (const auto& callback : Hook::StaticStorage::static_construct_object_post_callbacks)
+        UObject* AlteredReturnValue{};
+        for (const auto& Callback : Hook::StaticStorage::StaticConstructObjectPostCallbacks)
         {
-            altered_return_value = callback(params, constructed_object);
+            AlteredReturnValue = Callback(Params, ConstructedObject);
         }
-        return altered_return_value;
+        return AlteredReturnValue;
     }
 
-    auto hooked_static_construct_object_deprecated(StaticConstructObject_Internal_Params_Deprecated) -> UObject*
+    auto HookedStaticConstructObjectDeprecated(StaticConstructObject_Internal_Params_Deprecated) -> UObject*
     {
-        const FStaticConstructObjectParameters params{
+        const FStaticConstructObjectParameters Params{
             .Class = InClass_,
             .Outer = InOuter_,
             .Name = InName_,
@@ -122,8 +118,8 @@ namespace RC::Unreal
             .SubobjectOverrides = nullptr
         };
 
-        UObject* altered_return_value = hooked_static_construct_object_pre(params);
-        UObject* constructed_object = PLH::FnCast(hook_trampoline_static_construct_object, UObjectGlobals::GlobalState::static_construct_object_internal_deprecated.get_function_pointer())(
+        UObject* AlteredReturnValue = HookedStaticConstructObjectPre(Params);
+        UObject* ConstructedObject = PLH::FnCast(HookTrampolineStaticConstructObject, UObjectGlobals::GlobalState::StaticConstructObjectInternalDeprecated.get_function_pointer())(
                 InClass_,
                 InOuter_,
                 InName_,
@@ -135,44 +131,44 @@ namespace RC::Unreal
                 bAssumeTemplateIsArchetype_,
                 ExternalPackage_
         );
-        altered_return_value = hooked_static_construct_object_post(params, constructed_object);
+        AlteredReturnValue = HookedStaticConstructObjectPost(Params, ConstructedObject);
 
-        return altered_return_value ? altered_return_value : constructed_object;
+        return AlteredReturnValue ? AlteredReturnValue : ConstructedObject;
     }
 
-    auto hooked_static_construct_object(const FStaticConstructObjectParameters& params) -> UObject*
+    auto HookedStaticConstructObject(const FStaticConstructObjectParameters& Params) -> UObject*
     {
-        UObject* altered_return_value = hooked_static_construct_object_pre(params);
-        UObject* constructed_object = PLH::FnCast(hook_trampoline_static_construct_object, UObjectGlobals::GlobalState::static_construct_object_internal.get_function_pointer())(
-                params
+        UObject* AlteredReturnValue = HookedStaticConstructObjectPre(Params);
+        UObject* ConstructedObject = PLH::FnCast(HookTrampolineStaticConstructObject, UObjectGlobals::GlobalState::StaticConstructObjectInternal.get_function_pointer())(
+                Params
         );
-        altered_return_value = hooked_static_construct_object_post(params, constructed_object);
+        AlteredReturnValue = HookedStaticConstructObjectPost(Params, ConstructedObject);
 
-        return altered_return_value ? altered_return_value : constructed_object;
+        return AlteredReturnValue ? AlteredReturnValue : ConstructedObject;
     }
 
-    auto hooked_process_event(UObject* context, UFunction* function, void* parms) -> void
+    auto HookedProcessEvent(UObject* Context, UFunction* Function, void* Parms) -> void
     {
-        for (const auto& callback : Hook::StaticStorage::process_event_pre_callbacks)
+        for (const auto& Callback : Hook::StaticStorage::ProcessEventPreCallbacks)
         {
-            callback(context, function, parms);
+            Callback(Context, Function, Parms);
         }
 
-        PLH::FnCast(hook_trampoline_process_event, UObject::process_event_internal.get_function_pointer())(context, function, parms);
+        PLH::FnCast(HookTrampolineProcessEvent, UObject::ProcessEventInternal.get_function_pointer())(Context, Function, Parms);
 
-        for (const auto& callback : Hook::StaticStorage::process_event_post_callbacks)
+        for (const auto& Callback : Hook::StaticStorage::ProcessEventPostCallbacks)
         {
-            callback(context, function, parms);
+            Callback(Context, Function, Parms);
         }
 
-        if (UAssetRegistry::should_load_all_assets() && !UAssetRegistry::assets_are_loading())
+        if (UAssetRegistry::ShouldLoadAllAssets() && !UAssetRegistry::AssetsAreLoading())
         {
-            UAssetRegistry::load_all_assets_thread();
+            UAssetRegistry::LoadAllAssetsThread();
 
             // Loading assets is an asynchronous operation
             // It's very important to not reset this bool until after the assets have been loaded
             // This is what keeps the load-requester waiting until all the assets have been loaded
-            UAssetRegistry::set_should_load_all_assets(false);
+            UAssetRegistry::SetShouldLoadAllAssets(false);
         }
     }
 
@@ -180,7 +176,7 @@ namespace RC::Unreal
     {
         bool return_value = PLH::FnCast(HookTrampolineProcessConsoleExec, UObject::ProcessConsoleExecInternal.get_function_pointer())(Context, Cmd, Ar, Executor);
 
-        if (cast_object<UGameViewportClient>(Context))
+        if (Cast<UGameViewportClient>(Context))
         {
             for (const auto& callback : Hook::StaticStorage::ProcessConsoleExecCallbacks)
             {
@@ -191,50 +187,50 @@ namespace RC::Unreal
         return return_value;
     }
 
-    auto hook_static_construct_object() -> void
+    auto HookStaticConstructObject() -> void
     {
-        PLH::ZydisDisassembler dis(PLH::Mode::x64);
+        PLH::ZydisDisassembler Dis(PLH::Mode::x64);
 
-        if (Version::is_atmost(4, 25))
+        if (Version::IsAtMost(4, 25))
         {
-            Hook::StaticStorage::static_construct_object_detour = std::make_unique<PLH::x64Detour>(
-                    static_cast<char*>(UObjectGlobals::GlobalState::static_construct_object_internal_deprecated.get_function_address()),
-                    std::bit_cast<char*>(&hooked_static_construct_object_deprecated),
-                    &hook_trampoline_static_construct_object,
-                    dis);
+            Hook::StaticStorage::StaticConstructObjectDetour = std::make_unique<PLH::x64Detour>(
+                    static_cast<char*>(UObjectGlobals::GlobalState::StaticConstructObjectInternalDeprecated.get_function_address()),
+                    std::bit_cast<char*>(&HookedStaticConstructObjectDeprecated),
+                    &HookTrampolineStaticConstructObject,
+                    Dis);
         }
         else
         {
-            Hook::StaticStorage::static_construct_object_detour = std::make_unique<PLH::x64Detour>(
-                    static_cast<char*>(UObjectGlobals::GlobalState::static_construct_object_internal.get_function_address()),
-                    std::bit_cast<char*>(&hooked_static_construct_object),
-                    &hook_trampoline_static_construct_object,
-                    dis);
+            Hook::StaticStorage::StaticConstructObjectDetour = std::make_unique<PLH::x64Detour>(
+                    static_cast<char*>(UObjectGlobals::GlobalState::StaticConstructObjectInternal.get_function_address()),
+                    std::bit_cast<char*>(&HookedStaticConstructObject),
+                    &HookTrampolineStaticConstructObject,
+                    Dis);
         }
 
-        Hook::StaticStorage::static_construct_object_detour->hook();
+        Hook::StaticStorage::StaticConstructObjectDetour->hook();
     }
 
-    auto hook_process_event() -> void
+    auto HookProcessEvent() -> void
     {
-        PLH::ZydisDisassembler dis(PLH::Mode::x64);
-        Hook::StaticStorage::process_event_detour = std::make_unique<PLH::x64Detour>(
-                static_cast<char*>(UObject::process_event_internal.get_function_address()),
-                std::bit_cast<char*>(&hooked_process_event),
-                &hook_trampoline_process_event,
-                dis);
+        PLH::ZydisDisassembler Dis(PLH::Mode::x64);
+        Hook::StaticStorage::ProcessEventDetour = std::make_unique<PLH::x64Detour>(
+                static_cast<char*>(UObject::ProcessEventInternal.get_function_address()),
+                std::bit_cast<char*>(&HookedProcessEvent),
+                &HookTrampolineProcessEvent,
+                Dis);
 
-        Hook::StaticStorage::process_event_detour->hook();
+        Hook::StaticStorage::ProcessEventDetour->hook();
     }
 
     auto RC_UE_API HookProcessConsoleExec() -> void
     {
-        PLH::ZydisDisassembler dis(PLH::Mode::x64);
+        PLH::ZydisDisassembler Dis(PLH::Mode::x64);
         Hook::StaticStorage::ProcessConsoleExecDetour = std::make_unique<PLH::x64Detour>(
                 static_cast<char*>(UObject::ProcessConsoleExecInternal.get_function_address()),
                 std::bit_cast<char*>(&HookedProcessConsoleExec),
                 &HookTrampolineProcessConsoleExec,
-                dis);
+                Dis);
 
         Hook::StaticStorage::ProcessConsoleExecDetour->hook();
     }

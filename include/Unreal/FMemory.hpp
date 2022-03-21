@@ -22,26 +22,26 @@ namespace RC::Unreal
     {
         struct Config;
         struct CacheInfo;
-        auto create_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
-        auto load_cache(UnrealInitializer::CacheInfo& cache_info) -> void;
+        auto CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
+        auto LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
     }
 
     namespace Signatures
     {
         struct ScanResult;
-        auto scan_for_guobjectarray_impl(const UnrealInitializer::Config&) -> ScanResult;
+        auto ScnForGUObjectArrayImpl(const UnrealInitializer::Config&) -> ScanResult;
     }
 
     class FMalloc
     {
     public:
 #include <VTableOffsets_FMalloc.hpp>
-        static bool IsInitialized;
+        static bool bIsInitialized;
 
     private:
-        friend Signatures::ScanResult Signatures::scan_for_guobjectarray_impl(const UnrealInitializer::Config&);
-        friend void UnrealInitializer::create_cache(UnrealInitializer::CacheInfo&);
-        friend void UnrealInitializer::load_cache(UnrealInitializer::CacheInfo&);
+        friend Signatures::ScanResult Signatures::ScnForGUObjectArrayImpl(const UnrealInitializer::Config&);
+        friend void UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo&);
+        friend void UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo&);
 
     public:
         static FMalloc** UnrealStaticGMalloc;

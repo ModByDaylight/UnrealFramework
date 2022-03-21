@@ -12,9 +12,9 @@ namespace RC::Unreal
 
     FAssetData::FAssetData(const FAssetData& Other)
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             auto* TypedThis = std::bit_cast<FAssetData427Plus*>(this);
             auto* TypedOther = std::bit_cast<FAssetData427Plus*>(&Other);
@@ -48,9 +48,9 @@ namespace RC::Unreal
 
     FName FAssetData::ObjectPath()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             return std::bit_cast<FAssetData427Plus*>(this)->ObjectPath;
         }
@@ -62,9 +62,9 @@ namespace RC::Unreal
 
     FName FAssetData::PackageName()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             return std::bit_cast<FAssetData427Plus*>(this)->PackageName;
         }
@@ -76,9 +76,9 @@ namespace RC::Unreal
 
     FName FAssetData::PackagePath()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             return std::bit_cast<FAssetData427Plus*>(this)->PackagePath;
         }
@@ -90,9 +90,9 @@ namespace RC::Unreal
 
     FName FAssetData::AssetName()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             return std::bit_cast<FAssetData427Plus*>(this)->AssetName;
         }
@@ -104,9 +104,9 @@ namespace RC::Unreal
 
     FName FAssetData::AssetClass()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             return std::bit_cast<FAssetData427Plus*>(this)->AssetClass;
         }
@@ -118,9 +118,9 @@ namespace RC::Unreal
 
     FAssetDataTagMapSharedView FAssetData::TagsAndValues()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             return std::bit_cast<FAssetData427Plus*>(this)->TagsAndValues;
         }
@@ -132,9 +132,9 @@ namespace RC::Unreal
 
     FAssetBundleData* FAssetData::TaggedAssetBundles()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             return std::bit_cast<FAssetData427Plus*>(this)->TaggedAssetBundles;
         }
@@ -154,9 +154,9 @@ namespace RC::Unreal
 
     TArray<int32>& FAssetData::OldChunkIDsUnsafe()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             throw std::runtime_error{"FAssetData::OldChunkIDsUnsafe can only be used in pre-4.27"};
         }
@@ -168,9 +168,9 @@ namespace RC::Unreal
 
     TArray<int32, TInlineAllocator<2>>& FAssetData::NewChunkIDsUnsafe()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             return std::bit_cast<FAssetData427Plus*>(this)->ChunkIDs;
         }
@@ -182,9 +182,9 @@ namespace RC::Unreal
 
     uint32 FAssetData::PackageFlags()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
-        if (Version::is_atleast(4, 27))
+        if (Version::IsAtLeast(4, 27))
         {
             return std::bit_cast<FAssetData427Plus*>(this)->PackageFlags;
         }
@@ -196,11 +196,11 @@ namespace RC::Unreal
 
     int32 FAssetData::StaticSize()
     {
-        if (Version::is_below(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
 
         if (StaticSize_Private == -1)
         {
-            StaticSize_Private = std::bit_cast<UScriptStruct*>(FAssetData::static_class())->GetSize();
+            StaticSize_Private = std::bit_cast<UScriptStruct*>(FAssetData::StaticClass())->GetSize();
         }
 
         return StaticSize_Private;

@@ -18,51 +18,51 @@ namespace RC::Unreal
         };
 
         /** Convert the address of a value of the property to the proper type */
-        FORCEINLINE static auto get_property_value_ptr(const void* value) -> const TCppType*
+        FORCEINLINE static auto GetPropertyValuePtr(const void* Value) -> const TCppType*
         {
-            return std::bit_cast<const TCppType*>(value);
+            return std::bit_cast<const TCppType*>(Value);
         }
 
         /** Convert the address of a value of the property to the proper type */
-        FORCEINLINE static auto get_property_value_ptr(void* value) -> TCppType*
+        FORCEINLINE static auto GetPropertyValuePtr(void* Value) -> TCppType*
         {
-            return std::bit_cast<TCppType*>(value);
+            return std::bit_cast<TCppType*>(Value);
         }
 
         /** Get the value of the property from an address */
-        FORCEINLINE static auto get_property_value(const void* value) -> const TCppType&
+        FORCEINLINE static auto GetPropertyValue(const void* Value) -> const TCppType&
         {
-            return *get_property_value_ptr(value);
+            return *GetPropertyValuePtr(Value);
         }
 
         /** Get the default value of the cpp type, just the default constructor, which works even for things like int32 */
-        FORCEINLINE static auto get_default_property_value() -> TCppType
+        FORCEINLINE static auto GetDefaultPropertyValue() -> TCppType
         {
             return TCppType();
         }
 
         /** Get the value of the property from an address, unless it is NULL, then return the default value */
-        FORCEINLINE static auto get_optional_property_value(const void* value) -> TCppType
+        FORCEINLINE static auto GetOptionalPropertyValue(const void* Value) -> TCppType
         {
-            return value ? get_property_value(value) : get_default_property_value();
+            return Value ? GetPropertyValue(Value) : GetDefaultPropertyValue();
         }
 
         /** Set the value of a property at an address */
-        FORCEINLINE static auto set_property_value(void* property_value, const TCppType& value) -> void
+        FORCEINLINE static auto SetPropertyValue(void* PropertyValue, const TCppType& Value) -> void
         {
-            *get_property_value_ptr(property_value) = value;
+            *GetPropertyValuePtr(PropertyValue) = Value;
         }
 
         /** Initialize the value of a property at an address, this assumes over uninitialized memory */
-        FORCEINLINE static auto initialize_property_value(void* value) -> TCppType*
+        FORCEINLINE static auto InitializePropertyValue(void* Value) -> TCppType*
         {
-            return new (value) TCppType();
+            return new (Value) TCppType();
         }
 
         /** Destroy the value of a property at an address */
-        FORCEINLINE static auto destroy_property_value(void* value) -> void
+        FORCEINLINE static auto DestroyPropertyValue(void* Value) -> void
         {
-            get_property_value_ptr(value)->~TCppType();
+            GetPropertyValuePtr(Value)->~TCppType();
         }
     };
 
@@ -76,76 +76,76 @@ namespace RC::Unreal
         typedef TPropertyTypeFundamentals<InTCppType> TTypeFundamentals;
 
         /** Convert the address of a container to the address of the property value, in the proper type */
-        FORCEINLINE auto get_property_value_ptr_in_container(const void* A, int32_t array_index = 0) -> const TCppType*
+        FORCEINLINE auto GetPropertyValuePtrInContainer(const void* A, int32_t ArrayIndex = 0) -> const TCppType*
         {
-            assert_type_equality();
-            return TTypeFundamentals::get_property_value_ptr(Super::template container_ptr_to_value_ptr<void>(A, array_index));
+            AssetTypeEquality();
+            return TTypeFundamentals::GetPropertyValuePtr(Super::template ContainerPtrToValuePtr<void>(A, ArrayIndex));
         }
 
         /** Convert the address of a container to the address of the property value, in the proper type */
-        FORCEINLINE auto get_property_value_ptr_in_container(void* A, int32_t array_index = 0) -> TCppType*
+        FORCEINLINE auto GetPropertyValuePtrInContainer(void* A, int32_t ArrayIndex = 0) -> TCppType*
         {
-            assert_type_equality();
-            return TTypeFundamentals::get_property_value_ptr(Super::template container_ptr_to_value_ptr<void>(A, array_index));
+            AssetTypeEquality();
+            return TTypeFundamentals::GetPropertyValuePtr(Super::template ContainerPtrToValuePtr<void>(A, ArrayIndex));
         }
 
         /** Get the value of the property from a container address */
-        FORCEINLINE auto get_property_value_in_container(void const* A, int32_t array_index = 0) -> TCppType const&
+        FORCEINLINE auto GetPropertyValueInContainer(void const* A, int32_t ArrayIndex = 0) -> TCppType const&
         {
-            return *get_property_value_ptr_in_container(A, array_index);
+            return *GetPropertyValuePtrInContainer(A, ArrayIndex);
         }
 
         /** Get the value of the property from a container address, unless it is NULL, then return the default value */
-        FORCEINLINE auto get_optional_property_value_in_container(const void* A, int32_t array_index = 0) -> TCppType
+        FORCEINLINE auto GetOptionalPropertyValueInContainer(const void* A, int32_t ArrayIndex = 0) -> TCppType
         {
-            assert_type_equality();
-            return A ? get_property_value_in_container(A, array_index) : TTypeFundamentals::GetDefaultPropertyValue();
+            AssetTypeEquality();
+            return A ? GetPropertyValueInContainer(A, ArrayIndex) : TTypeFundamentals::GetDefaultPropertyValue();
         }
 
         /** Set the value of a property in a container */
-        FORCEINLINE auto set_property_value_in_container(void* A, const TCppType& value, int32_t array_index = 0) -> void
+        FORCEINLINE auto SetPropertyValueInContainer(void* A, const TCppType& Value, int32_t ArrayIndex = 0) -> void
         {
-            *get_property_value_ptr_in_container(A, array_index) = value;
+            *GetPropertyValuePtrInContainer(A, ArrayIndex) = Value;
         }
     protected:
-        auto initialize_value_impl(void* dest) -> void
+        auto InitializeValueImpl(void* Dest) -> void
         {
-            assert_type_equality();
-            for (int32_t i = 0; i < this->get_array_dim(); i++)
+            AssetTypeEquality();
+            for (int32_t i = 0; i < this->GetArrayDim(); i++)
             {
-                TTypeFundamentals::initialize_property_value((uint8_t*)dest + i * this->get_element_size());
+                TTypeFundamentals::InitializePropertyValue((uint8_t*)Dest + i * this->GetElementSize());
             }
         }
 
-        auto destroy_value_impl(void* dest) -> void
+        auto DestroyValueImpl(void* Dest) -> void
         {
-            assert_type_equality();
-            for (int32_t i = 0; i < this->get_array_dim(); i++)
+            AssetTypeEquality();
+            for (int32_t i = 0; i < this->GetArrayDim(); i++)
             {
-                TTypeFundamentals::destroy_property_value((uint8_t*) dest + i * this->get_element_size());
+                TTypeFundamentals::DestroyPropertyValue((uint8_t*) Dest + i * this->GetElementSize());
             }
         }
 
-        auto clear_value_impl(void* data) -> void
+        auto ClearValueImpl(void* Data) -> void
         {
-            assert_type_equality();
-            TTypeFundamentals::set_property_value(data, TTypeFundamentals::get_default_property_value());
+            AssetTypeEquality();
+            TTypeFundamentals::SetPropertyValue(Data, TTypeFundamentals::GetDefaultPropertyValue());
         }
 
-        auto copy_values_internal_impl(void* dest, void const* src, int32_t count) -> void
+        auto CopyValuesInternalImpl(void* Dest, void const* Src, int32_t Count) -> void
         {
-            assert_type_equality();
-            for (int32_t i = 0; i < count; i++)
+            AssetTypeEquality();
+            for (int32_t i = 0; i < Count; i++)
             {
-                TTypeFundamentals::get_property_value_ptr(dest)[i] = TTypeFundamentals::get_property_value_ptr(src)[i];
+                TTypeFundamentals::GetPropertyValuePtr(Dest)[i] = TTypeFundamentals::GetPropertyValuePtr(Src)[i];
             }
         }
 
-        FORCEINLINE auto assert_type_equality()
+        FORCEINLINE auto AssetTypeEquality()
         {
-            if (this->get_element_size() != TTypeFundamentals::CPPSize)
+            if (this->GetElementSize() != TTypeFundamentals::CPPSize)
             {
-                throw std::runtime_error("Type equality assertion failed: get_element_size() != TTypeFundamentals::CPPSize");
+                throw std::runtime_error("Type equality assertion failed: GetElementSize() != TTypeFundamentals::CPPSize");
             }
         }
     };
@@ -158,10 +158,10 @@ namespace RC::Unreal
         typedef InTCppType TCppType;
         typedef typename Super::TTypeFundamentals TTypeFundamentals;
     protected:
-        auto identical_impl(const void* A, const void* B, uint32_t port_flags) -> bool
+        auto IdenticalImpl(const void* A, const void* B, uint32_t PortFlags) -> bool
         {
             // RHS is the same as TTypeFundamentals::GetOptionalPropertyValue(B) but avoids an unnecessary copy of B
-            return TTypeFundamentals::get_property_value(A) == (B ? TTypeFundamentals::get_property_value(B) : TTypeFundamentals::get_default_property_value());
+            return TTypeFundamentals::GetPropertyValue(A) == (B ? TTypeFundamentals::GetPropertyValue(B) : TTypeFundamentals::GetDefaultPropertyValue());
         }
 
         //virtual void SerializeItem(FStructuredArchive::FSlot Slot, void *Value, void const *Defaults) const override {

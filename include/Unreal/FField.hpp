@@ -61,7 +61,7 @@ namespace RC::Unreal
         */
         inline auto GetName() -> std::wstring
         {
-            return GetFName().to_string();
+            return GetFName().ToString();
         }
 
         File::StringType GetFullName();
@@ -75,7 +75,7 @@ namespace RC::Unreal
         template<FFieldDerivative FFieldDerivedType>
         inline auto IsA() -> bool
         {
-            return IsA(FFieldDerivedType::static_class());
+            return IsA(FFieldDerivedType::StaticClass());
         }
 
         /**
@@ -98,7 +98,7 @@ namespace RC::Unreal
         template<UObjectDerivative T>
         inline auto GetTypedOwner() -> T*
         {
-            return cast_object<T>(GetTypedOwner(T::static_class()));
+            return Cast<T>(GetTypedOwner(T::StaticClass()));
         }
 
         /**
@@ -291,7 +291,7 @@ namespace RC::Unreal
          */
         inline auto GetName() const -> std::wstring
         {
-            return GetFName().to_string();
+            return GetFName().ToString();
         }
 
         /** Equality operator for FFieldClassVariant, they are equal if they both point to the same class */
@@ -330,11 +330,11 @@ namespace RC::Unreal
 
         auto GetSuperClass() const -> FFieldClass*;
 
-        auto IsChildOf(FFieldClass* field_class) const -> bool;
+        auto IsChildOf(FFieldClass* FieldClass) const -> bool;
 
         inline auto GetName() const -> std::wstring
         {
-            return GetFName().to_string();
+            return GetFName().ToString();
         }
     };
 
@@ -350,21 +350,21 @@ namespace RC::Unreal
         class FFieldTypeAccessor : public BaseTypeAccessor
         {
         private:
-            static std::vector<void(*)()> late_bind_callbacks;
-            static bool type_system_initialized;
+            static std::vector<void(*)()> LateBindCallbacks;
+            static bool TypeSystemInitialized;
         public:
             using ClassType = FFieldClassVariant;
 
             template<typename T>
-            inline static auto static_class() -> FFieldClassVariant
+            inline static auto StaticClass() -> FFieldClassVariant
             {
-                return T::static_class();
+                return T::StaticClass();
             }
-            static auto get_object_class(FField* field) -> FFieldClassVariant;
-            static auto get_class_super_class(FFieldClassVariant field_class) -> FFieldClassVariant;
-            static auto is_class_valid(FFieldClassVariant field_class) -> bool;
-            static auto register_late_bind_callback(void(*callback)()) -> void;
-            static auto on_type_system_initialized() -> void;
+            static auto GetObjectClass(FField* Field) -> FFieldClassVariant;
+            static auto GetClassSuperClass(FFieldClassVariant FieldClass) -> FFieldClassVariant;
+            static auto IsClassValid(FFieldClassVariant FieldClass) -> bool;
+            static auto RegisterLateBindCallback(void(*Callback)()) -> void;
+            static auto OnTypeSystemInitialized() -> void;
         };
     }
 }
@@ -372,9 +372,9 @@ namespace RC::Unreal
 template<>
 struct std::hash<RC::Unreal::FFieldClassVariant>
 {
-    std::size_t operator()(const RC::Unreal::FFieldClassVariant& s) const noexcept
+    std::size_t operator()(const RC::Unreal::FFieldClassVariant& S) const noexcept
     {
-        return s.HashObject();
+        return S.HashObject();
     }
 };
 

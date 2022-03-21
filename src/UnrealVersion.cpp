@@ -3,93 +3,93 @@
 
 namespace RC::Unreal
 {
-    int32_t Version::major{-1};
-    int32_t Version::minor{-1};
+    int32_t Version::Major{-1};
+    int32_t Version::Minor{-1};
 
-    VersionStatus::VersionStatus(StatusCode status_code_param, std::wstring error_message_param) : status_code(status_code_param), error_message(std::move(error_message_param)) {}
+    VersionStatus::VersionStatus(StatusCode StatusParam, std::wstring ErrorMessageParam) : Status(StatusParam), ErrorMessage(std::move(ErrorMessageParam)) {}
 
-    auto Version::setup(const UnrealInitializer::Config& config, void* address) -> VersionStatus
+    auto Version::Initialize(const UnrealInitializer::Config& Config, void* Address) -> VersionStatus
     {
-        uint16_t major_version = Helper::Casting::ptr_cast_deref<uint16_t>(address);
-        uint16_t minor_version = Helper::Casting::ptr_cast_deref<uint16_t>(address, 0x2);
-        uint16_t patch_version = Helper::Casting::ptr_cast_deref<uint16_t>(address, 0x4);
+        uint16_t MajorVersion = Helper::Casting::ptr_cast_deref<uint16_t>(Address);
+        uint16_t MinorVersion = Helper::Casting::ptr_cast_deref<uint16_t>(Address, 0x2);
+        uint16_t PatchVersion = Helper::Casting::ptr_cast_deref<uint16_t>(Address, 0x4);
 
-        if (major_version < 4 || major_version > 5)
+        if (MajorVersion < 4 || MajorVersion > 5)
         {
-            return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: major version was too big or too small ({})"), major_version)};
+            return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: major version was too big or too small ({})"), MajorVersion)};
         }
 
-        if (minor_version > 30)
+        if (MinorVersion > 30)
         {
-            return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: minor version was too big ({})"), minor_version)};
+            return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: minor version was too big ({})"), MinorVersion)};
         }
 
-        if (patch_version > 10)
+        if (PatchVersion > 10)
         {
-            return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: patch version was too big ({})"), patch_version)};
+            return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: patch version was too big ({})"), PatchVersion)};
         }
 
-        const File::CharType* branch = Helper::Casting::ptr_cast_deref<const File::CharType*>(address, 0x10);
-        void* branch_test = Helper::Casting::ptr_cast_deref_safe<void*>(branch, 0x0, config.process_handle);
-        if (!branch_test)
+        const File::CharType* Branch = Helper::Casting::ptr_cast_deref<const File::CharType*>(Address, 0x10);
+        void* BranchTest = Helper::Casting::ptr_cast_deref_safe<void*>(Branch, 0x0, Config.ProcessHandle);
+        if (!BranchTest)
         {
             return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: 'Branch' member variable FString data was nullptr"))};
         }
 
-        auto branch_view = File::StringViewType{branch};
-        if (!branch_view.starts_with(STR("++")) && // Occurs in most games
-            !branch_view.starts_with(STR("main")) && // Occurs in Dead Rock Galactic
-            !branch_view.starts_with(STR("UE4"))) // Occurs in the 4.12 demo game
+        auto BranchView = File::StringViewType{Branch};
+        if (!BranchView.starts_with(STR("++")) && // Occurs in most games
+            !BranchView.starts_with(STR("main")) && // Occurs in Dead Rock Galactic
+            !BranchView.starts_with(STR("UE4"))) // Occurs in the 4.12 demo game
         {
             return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: 'Branch' member variable FString does not start with '++'"))};
         }
 
-        major = static_cast<int32_t>(major_version);
-        minor = static_cast<int32_t>(minor_version);
+        Major = static_cast<int32_t>(MajorVersion);
+        Minor = static_cast<int32_t>(MinorVersion);
 
 #if UNREAL_VERSION_RUN_TESTS == 1
-        run_tests();
+        RunTests();
 #endif
 
         return {VersionStatus::SUCCESS, STR("")};
     }
 
 #if UNREAL_VERSION_RUN_TESTS == 1
-    auto Version::run_tests() -> void
+    auto Version::RunTests() -> void
     {
-        int32_t stashed_major = major;
-        int32_t stashed_minor = minor;
+        int32_t StashedMajor = Major;
+        int32_t StashedMinor = Minor;
 
-        major = 4;
-        minor = 25;
+        Major = 4;
+        Minor = 25;
 
-        if (!is_equal(4, 25))
+        if (!IsEqual(4, 25))
         {
             throw std::runtime_error{"[UnrealVersion] Failed test #1 - !is_equal(4, 25) || Test ran with major = 4 and minor = 25"};
         }
 
-        if (!is_atleast(4, 24))
+        if (!IsAtLeast(4, 24))
         {
             throw std::runtime_error{"[UnrealVersion] Failed test #2 - !is_atleast(4, 24) || Test ran with major = 4 and minor = 25"};
         }
 
-        if (is_atmost(4, 24))
+        if (IsAtMost(4, 24))
         {
             throw std::runtime_error{"[UnrealVersion] Failed test #3 - is_atmost(4, 24) || Test ran with major = 4 and minor = 25"};
         }
 
-        if (is_below(4, 24))
+        if (IsBelow(4, 24))
         {
             throw std::runtime_error{"[UnrealVersion] Failed test #4 - is_below(4, 24) || Test ran with major = 4 and minor = 25"};
         }
 
-        if (!is_above(4, 24))
+        if (!IsAbove(4, 24))
         {
             throw std::runtime_error{"[UnrealVersion] Failed test #5 - !is_above(4, 24) || Test ran with major = 4 and minor = 25"};
         }
 
-        major = stashed_major;
-        minor = stashed_minor;
+        Major = StashedMajor;
+        Minor = StashedMinor;
     }
 #endif
 }

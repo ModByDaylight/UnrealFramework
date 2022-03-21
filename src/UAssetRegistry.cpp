@@ -12,105 +12,105 @@ namespace RC::Unreal
 {
     auto UAssetRegistry::GetAllAssets(TArray <FAssetData>& OutAssetData, bool bIncludeOnlyOnDiskAssets) -> bool
     {
-        if (!Functions::get_all_assets.is_valid()) { return false; }
+        if (!Functions::GetAllAssets.IsValid()) { return false; }
 
-        GetAllAssets_Params params{OutAssetData, bIncludeOnlyOnDiskAssets};
-        Functions::get_all_assets(this, params);
+        GetAllAssets_Params Params{OutAssetData, bIncludeOnlyOnDiskAssets};
+        Functions::GetAllAssets(this, Params);
 
         // Copy here because we can't actually make the variable in the params struct a reference
         // This is because UE4 expects the TArray to be inlined into the struct
         // This may be a design problem with UE4SS, but it would be annoying to have to construct the params variable outside this wrapper function
         // With TArray it's not super slow because we can simply copy the pointer and the num/max integers
         // We don't own the data pointer, so it won't get deallocated by doing this
-        OutAssetData.copy_fast(params.OutAssetData);
-        return params.ReturnValue;
+        OutAssetData.CopyFast(Params.OutAssetData);
+        return Params.ReturnValue;
     }
 
     FAssetData UAssetRegistry::GetAssetByObjectPath(const FName ObjectPath, bool bIncludeOnlyOnDiskAssets)
     {
-        if (!Functions::GetAssetByObjectPath.is_valid()) { return FAssetData{}; }
+        if (!Functions::GetAssetByObjectPath.IsValid()) { return FAssetData{}; }
 
-        GetAssetByObjectPath_Params params{ObjectPath, bIncludeOnlyOnDiskAssets};
-        Functions::GetAssetByObjectPath(this, params);
+        GetAssetByObjectPath_Params Params{ObjectPath, bIncludeOnlyOnDiskAssets};
+        Functions::GetAssetByObjectPath(this, Params);
 
-        return params.ReturnValue;
+        return Params.ReturnValue;
     }
 
     bool UAssetRegistry::GetAssetsByClass(FName ClassName, TArray<FAssetData>& OutAssetData, bool bSearchSubClasses)
     {
-        if (!Functions::GetAssetsByClass.is_valid()) { return false; }
+        if (!Functions::GetAssetsByClass.IsValid()) { return false; }
 
-        GetAssetsByClass_Params params{ClassName, OutAssetData, bSearchSubClasses};
-        Functions::GetAssetsByClass(this, params);
+        GetAssetsByClass_Params Params{ClassName, OutAssetData, bSearchSubClasses};
+        Functions::GetAssetsByClass(this, Params);
 
-        OutAssetData.copy_fast(params.OutAssetData);
-        return params.ReturnValue;
+        OutAssetData.CopyFast(Params.OutAssetData);
+        return Params.ReturnValue;
     }
 
-    auto UAssetRegistry::load_all_assets_thread() -> void
+    auto UAssetRegistry::LoadAllAssetsThread() -> void
     {
-        set_assets_are_loading(true);
+        SetAssetsAreLoading(true);
 
-        UAssetRegistry* asset_registry = static_cast<UAssetRegistry*>(UAssetRegistryHelpers::GetAssetRegistry().ObjectPointer);
-        if (!asset_registry)
+        UAssetRegistry* AssetRegistry = static_cast<UAssetRegistry*>(UAssetRegistryHelpers::GetAssetRegistry().ObjectPointer);
+        if (!AssetRegistry)
         {
             Output::send(STR("Did not load assets because asset_registry was nullptr\n"));
-            set_assets_are_loading(false);
+            SetAssetsAreLoading(false);
             return;
         }
 
-        TArray<FAssetData> all_assets{nullptr, 0, 0};
-        asset_registry->GetAllAssets(all_assets, false);
+        TArray<FAssetData> AllAssets{nullptr, 0, 0};
+        AssetRegistry->GetAllAssets(AllAssets, false);
 
-        auto* asset_data_script_struct = UObjectGlobals::static_find_object<UScriptStruct*>(nullptr, nullptr, STR("/Script/CoreUObject.AssetData"));
-        if (!asset_data_script_struct)
+        auto* AssetDataScriptStruct = UObjectGlobals::StaticFindObject<UScriptStruct*>(nullptr, nullptr, STR("/Script/CoreUObject.AssetData"));
+        if (!AssetDataScriptStruct)
         {
-            asset_data_script_struct = UObjectGlobals::static_find_object<UScriptStruct*>(nullptr, nullptr, STR("/Script/AssetRegistry.AssetData"));
+            AssetDataScriptStruct = UObjectGlobals::StaticFindObject<UScriptStruct*>(nullptr, nullptr, STR("/Script/AssetRegistry.AssetData"));
         }
 
-        if (!asset_data_script_struct)
+        if (!AssetDataScriptStruct)
         {
             Output::send(STR("Did not load assets because could not get size of AssetData ScriptStruct because the pointer was nullptr\n"));
         }
 
-        all_assets.for_each([](FAssetData* asset) {
-            if (!asset) { return LoopAction::Continue; }
+        AllAssets.ForEach([](FAssetData* Asset) {
+            if (!Asset) { return LoopAction::Continue; }
 
-            UObject* loaded_asset = UAssetRegistryHelpers::GetAsset(*asset);
-            if (!loaded_asset) { return LoopAction::Continue; }
+            UObject* LoadedAsset = UAssetRegistryHelpers::GetAsset(*Asset);
+            if (!LoadedAsset) { return LoopAction::Continue; }
 
-            if (auto* object_item = loaded_asset->get_object_item(); object_item)
+            if (auto* ObjectItem = LoadedAsset->GetObjectItem(); ObjectItem)
             {
-                StaticStorage::forcefully_loaded_assets.emplace_back(object_item);
+                StaticStorage::ForcefullyLoadedAssets.emplace_back(ObjectItem);
                 // TODO: Undo this, it's very important or we leak multiple gigabytes of memory
-                object_item->set_root_set();
-                object_item->set_gc_keep();
+                ObjectItem->SetRootSet();
+                ObjectItem->SetGCKeep();
             }
 
             return LoopAction::Continue;
         });
 
-        set_assets_are_loading(false);
+        SetAssetsAreLoading(false);
     }
 
-    auto UAssetRegistry::free_all_forcefully_loaded_assets() -> void
+    auto UAssetRegistry::FreeAllForcefullyLoadedAssets() -> void
     {
-        std::erase_if(StaticStorage::forcefully_loaded_assets, [&](FUObjectItem* item) -> bool {
-            item->unset_root_set();
-            item->unset_gc_keep();
+        std::erase_if(StaticStorage::ForcefullyLoadedAssets, [&](FUObjectItem* ObjectItem) -> bool {
+            ObjectItem->UnsetRootSet();
+            ObjectItem->UnsetGCKeep();
             return true;
         });
     }
 
-    auto UAssetRegistry::load_all_assets() -> void
+    auto UAssetRegistry::LoadAllAssets() -> void
     {
-        if (!assets_are_loading())
+        if (!AssetsAreLoading())
         {
-            set_should_load_all_assets(true);
+            SetShouldLoadAllAssets(true);
         }
 
         // Wait for all assets to load
-        while (should_load_all_assets())
+        while (ShouldLoadAllAssets())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }

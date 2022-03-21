@@ -14,13 +14,13 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_PropertiesSize));
     }
 
-    auto UScriptStruct::get_struct_flags() -> EStructFlags
+    auto UScriptStruct::GetStructFlags() -> EStructFlags
     {
         return Helper::Casting::offset_deref<EStructFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UScriptStruct_StructFlags));
     }
 
-    auto UScriptStruct::get_super_script_struct() -> UScriptStruct*
+    auto UScriptStruct::GetSuperScriptStruct() -> UScriptStruct*
     {
-        return cast_object<UScriptStruct>(get_super_struct());
+        return Cast<UScriptStruct>(GetSuperStruct());
     }
 }

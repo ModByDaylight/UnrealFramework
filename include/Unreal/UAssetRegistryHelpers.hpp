@@ -16,11 +16,11 @@ namespace RC::Unreal
     public:
         using StaticReflectedFunction = StaticReflectedFunctionBase<UAssetRegistryHelpers>;
 
-        static inline UAssetRegistryHelpers* self{nullptr};
+        static inline UAssetRegistryHelpers* Self{nullptr};
         struct StaticFunctions
         {
-            static inline StaticReflectedFunction get_asset_registry{STR("/Script/AssetRegistry.AssetRegistryHelpers:GetAssetRegistry")};
-            static inline StaticReflectedFunction get_asset{STR("/Script/AssetRegistry.AssetRegistryHelpers:GetAsset")};
+            static inline StaticReflectedFunction GetAssetRegistry{STR("/Script/AssetRegistry.AssetRegistryHelpers:GetAssetRegistry")};
+            static inline StaticReflectedFunction GetAsset{STR("/Script/AssetRegistry.AssetRegistryHelpers:GetAsset")};
         };
 
     public:
@@ -42,11 +42,11 @@ namespace RC::Unreal
         };
 
     private:
-        auto static verify_self() -> bool;
+        auto static VerifySelf() -> bool;
 
     public:
         auto static GetAssetRegistry() -> FScriptInterface;
-        auto static GetAsset(FAssetData& in_asset_data) -> UObject*;
+        auto static GetAsset(FAssetData& InAssetData) -> UObject*;
     };
 }
 

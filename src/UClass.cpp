@@ -8,39 +8,38 @@ namespace RC::Unreal
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UBlueprintGeneratedClass)
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UAnimBlueprintGeneratedClass)
 
-    auto UClass::has_any_class_flags(EClassFlags flags_to_check) -> bool
+    auto UClass::HasAnyClassFlags(EClassFlags FlagsToCheck) -> bool
     {
-        return (get_class_flags() & flags_to_check) != 0;
+        return (GetClassFlags() & FlagsToCheck) != 0;
     }
 
-    auto UClass::has_all_class_flags(EClassFlags flags_to_check) -> bool
+    auto UClass::HasAllClassFlags(EClassFlags FlagsToCheck) -> bool
     {
-        return (get_class_flags() & flags_to_check) == flags_to_check;
+        return (GetClassFlags() & FlagsToCheck) == FlagsToCheck;
     }
 
-    auto UClass::get_class_flags() -> EClassFlags
+    auto UClass::GetClassFlags() -> EClassFlags
     {
         return Helper::Casting::offset_deref<EClassFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_ClassFlags));
     }
 
-    auto UClass::get_class_within() -> UClass*
+    auto UClass::GetClassWithin() -> UClass*
     {
         return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_ClassWithin));
     }
 
-    auto UClass::get_class_config_name() -> FName
+    auto UClass::GetClassConfigName() -> FName
     {
         return Helper::Casting::offset_deref<FName>(this, Offset::class_config_name);
     }
 
-    auto UClass::get_class_default_object() -> UObject*
+    auto UClass::GetClassDefaultObject() -> UObject*
     {
         return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_ClassDefaultObject));
     }
 
-    auto UClass::get_interfaces() -> TArray<FImplementedInterface>&
+    auto UClass::GetInterfaces() -> TArray<FImplementedInterface>&
     {
-        //return Helper::Casting::offset_deref<TArray<FImplementedInterface>>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_Interfaces));
         return *Helper::Casting::ptr_cast<TArray<FImplementedInterface>*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_Interfaces));
     }
 }

@@ -42,7 +42,7 @@ namespace RC::Unreal
 
     auto FProperty::IsInContainer(UStruct* ContainerClass) -> bool
     {
-        return GetOffset_ForInternal() + GetSize() <= (ContainerClass ? ContainerClass->get_properties_size() : INT32_MAX);
+        return GetOffset_ForInternal() + GetSize() <= (ContainerClass ? ContainerClass->GetPropertiesSize() : INT32_MAX);
     }
 
     auto FProperty::GetCPPMacroType(FString& ExtendedTypeText) const -> FString
@@ -300,7 +300,7 @@ namespace RC::Unreal
 
     auto FProperty::ContainsObjectReference(TArray<const FStructProperty*>& EncounteredStructProps, EPropertyObjectReferenceType InReferenceType) const -> bool
     {
-        if (Version::is_atleast(4, 26))
+        if (Version::IsAtLeast(4, 26))
         {
             // In 4.26, the second param was added
             // This branch uses the 4.26 function signature that includes this param
@@ -321,7 +321,7 @@ namespace RC::Unreal
 
     auto FProperty::ContainsObjectReference(TArray<const FStructProperty*>& EncounteredStructProps) const -> bool
     {
-        if (Version::is_atleast(4, 26))
+        if (Version::IsAtLeast(4, 26))
         {
             // In 4.26, the second param was added
             // This branch uses the 4.26 function signature that includes this param

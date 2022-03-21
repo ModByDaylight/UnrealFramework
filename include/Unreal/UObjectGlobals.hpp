@@ -26,7 +26,7 @@ namespace RC::Unreal
 
     /** Casts the object to the provided type if possible, returns nullptr otherwise */
     template<UObjectDerivative CastResultType>
-    auto cast_object(UObject* object) -> CastResultType*;
+    auto Cast(UObject* Object) -> CastResultType*;
 
     // Adapted from UE source
     // This struct becomes deprecated in 4.26+ and as such is only used if <=4.25 is detected
@@ -92,65 +92,65 @@ namespace RC::Unreal::UObjectGlobals
     // Internal game functions
     struct GlobalState
     {
-        static inline Function<UObject*(StaticConstructObject_Internal_Params_Deprecated)> static_construct_object_internal_deprecated{};
-        static inline Function<UObject*(const FStaticConstructObjectParameters&)> static_construct_object_internal{};
+        static inline Function<UObject*(StaticConstructObject_Internal_Params_Deprecated)> StaticConstructObjectInternalDeprecated{};
+        static inline Function<UObject*(const FStaticConstructObjectParameters&)> StaticConstructObjectInternal{};
     };
 
     // Setup internal game functions
-    auto RC_UE_API setup_static_construct_object_internal_address(void* function_address) -> void;
+    auto RC_UE_API SetupStaticConstructObjectInternalAddress(void* FunctionAddress) -> void;
 
     //Iterates object array and calls the provided function for each object
-    auto ForEachUObject(const std::function<LoopAction(UObject* object, int32 object_index, int32 chunk_index)>& callable) -> void;
+    auto ForEachUObject(const std::function<LoopAction(UObject* object, int32 object_index, int32 chunk_index)>& RawObject) -> void;
 
     // Internal work-around for not having access to UnrealVersion due to circ-inclusion
-    auto RC_UE_API version_is_atmost(uint32_t major_p, uint32_t minor_p) -> bool;
+    auto RC_UE_API VersionIsAtMost(uint32_t Major, uint32_t Minor) -> bool;
 
     // Internal game function implementations
     // Slow implementation that's to be avoided whenever possible
     // This only exists for compatibility reasons with old Lua scripts
     // All params except 'orig_in_name' are also just there for compatibility reasons and do not have any effect
-    auto static_find_object_impl(UClass* object_class, UObject* in_object_package, const wchar_t* orig_in_name, bool exact_class = false) -> UObject*;
+    auto StaticFindObjectImpl(UClass* Object, UObject* ChunkIndex, const wchar_t* ObjectIndex, bool bExactClass = false) -> UObject*;
 
     template<UObjectPointerDerivative ObjectType = UObject*>
-    auto static_find_object(UClass* object_class, UObject* in_object_package, const wchar_t* orig_in_name, bool exact_class = false) -> ObjectType
+    auto StaticFindObject(UClass* ObjectClass, UObject* InObjectPackage, const wchar_t* OrigInName, bool bExactClass = false) -> ObjectType
     {
-        return static_cast<ObjectType>(static_find_object_impl(object_class, in_object_package, orig_in_name, exact_class));
+        return static_cast<ObjectType>(StaticFindObjectImpl(ObjectClass, InObjectPackage, OrigInName, bExactClass));
     }
     template<UObjectPointerDerivative ObjectType = UObject*>
-    auto static_find_object(UClass* object_class, UObject* in_object_package, std::wstring_view orig_in_name, bool exact_class = false) -> ObjectType
+    auto StaticFindObject(UClass* ObjectClass, UObject* InObjectPackage, std::wstring_view OrigInName, bool bExactClass = false) -> ObjectType
     {
-        return static_cast<ObjectType>(static_find_object_impl(object_class, in_object_package, orig_in_name.data(), exact_class));
-    }
-
-    template<UObjectPointerDerivative ObjectType = UObject*>
-    auto static_find_object(UClass* object_class, UObject* in_object_package, const std::wstring& orig_in_name, bool exact_class = false) -> ObjectType
-    {
-        return static_cast<ObjectType>(static_find_object_impl(object_class, in_object_package, orig_in_name.c_str(), exact_class));
+        return static_cast<ObjectType>(StaticFindObjectImpl(ObjectClass, InObjectPackage, OrigInName.data(), bExactClass));
     }
 
     template<UObjectPointerDerivative ObjectType = UObject*>
-    auto static_construct_object(const FStaticConstructObjectParameters& params) -> ObjectType
+    auto StaticFindObject(UClass* ObjectClass, UObject* InObjectPackage, const std::wstring& OrigInName, bool bExactClass = false) -> ObjectType
     {
-        if (!GlobalState::static_construct_object_internal.is_ready()) { return nullptr; }
+        return static_cast<ObjectType>(StaticFindObjectImpl(ObjectClass, InObjectPackage, OrigInName.c_str(), bExactClass));
+    }
 
-        if (version_is_atmost(4, 25))
+    template<UObjectPointerDerivative ObjectType = UObject*>
+    auto StaticConstructObject(const FStaticConstructObjectParameters& Params) -> ObjectType
+    {
+        if (!GlobalState::StaticConstructObjectInternal.is_ready()) { return nullptr; }
+
+        if (VersionIsAtMost(4, 25))
         {
-            return static_cast<ObjectType>(GlobalState::static_construct_object_internal_deprecated(
-                    params.Class,
-                    params.Outer,
-                    params.Name,
-                    params.SetFlags,
-                    params.InternalSetFlags,
-                    params.Template,
-                    params.bCopyTransientsFromClassDefaults,
-                    params.InstanceGraph,
-                    params.bAssumeTemplateIsArchetype,
-                    params.ExternalPackage
+            return static_cast<ObjectType>(GlobalState::StaticConstructObjectInternalDeprecated(
+                    Params.Class,
+                    Params.Outer,
+                    Params.Name,
+                    Params.SetFlags,
+                    Params.InternalSetFlags,
+                    Params.Template,
+                    Params.bCopyTransientsFromClassDefaults,
+                    Params.InstanceGraph,
+                    Params.bAssumeTemplateIsArchetype,
+                    Params.ExternalPackage
             ));
         }
         else
         {
-            return static_cast<ObjectType>(GlobalState::static_construct_object_internal(params));
+            return static_cast<ObjectType>(GlobalState::StaticConstructObjectInternal(Params));
         }
     }
 
@@ -159,21 +159,21 @@ namespace RC::Unreal::UObjectGlobals
     // Does not find ClassDefaultObjects (CDO) or non-instances of classes
     // Takes inheritance into account, that means you can give it an FName of "Controller" and
     // it will also find instances of "PlayerController" and any instances from any other derived class
-    auto RC_UE_API find_first_of(FName class_name) -> UObject*;
-    auto RC_UE_API find_first_of(const wchar_t* class_name) -> UObject*;
-    auto RC_UE_API find_first_of(std::wstring_view class_name) -> UObject*;
-    auto RC_UE_API find_first_of(const std::wstring& class_name) -> UObject*;
-    auto RC_UE_API find_first_of(std::string_view class_name) -> UObject*;
-    auto RC_UE_API find_first_of(const std::string& class_name) -> UObject*;
+    auto RC_UE_API FindFirstOf(FName Object) -> UObject*;
+    auto RC_UE_API FindFirstOf(const wchar_t* ClassName) -> UObject*;
+    auto RC_UE_API FindFirstOf(std::wstring_view ClassName) -> UObject*;
+    auto RC_UE_API FindFirstOf(const std::wstring& ClassName) -> UObject*;
+    auto RC_UE_API FindFirstOf(std::string_view ClassName) -> UObject*;
+    auto RC_UE_API FindFirstOf(const std::string& ClassName) -> UObject*;
 
     // Find all instances of a class
     // Follows the same rules as 'find_first_of'
-    auto RC_UE_API find_all_of(FName class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_UE_API find_all_of(const wchar_t* class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_UE_API find_all_of(std::wstring_view class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_UE_API find_all_of(const std::wstring& class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_UE_API find_all_of(std::string_view class_name, std::vector<UObject*>& out_storage) -> void;
-    auto RC_UE_API find_all_of(const std::string& class_name, std::vector<UObject*>& out_storage) -> void;
+    auto RC_UE_API FindAllOf(FName SuperStruct, std::vector<UObject*>& ChunkIndex) -> void;
+    auto RC_UE_API FindAllOf(const wchar_t* ClassName, std::vector<UObject*>& OutStorage) -> void;
+    auto RC_UE_API FindAllOf(std::wstring_view ClassName, std::vector<UObject*>& OutStorage) -> void;
+    auto RC_UE_API FindAllOf(const std::wstring& ClassName, std::vector<UObject*>& OutStorage) -> void;
+    auto RC_UE_API FindAllOf(std::string_view ClassName, std::vector<UObject*>& OutStorage) -> void;
+    auto RC_UE_API FindAllOf(const std::string& ClassName, std::vector<UObject*>& OutStorage) -> void;
 
     // Find a specified number of objects with the specified class (or none) and name (or none)
     // Must have at least either class or name, or both
@@ -181,15 +181,15 @@ namespace RC::Unreal::UObjectGlobals
     // Find one or specified amount of objects
     // Specify 0 for 'num_objects_to_find' to not limit to number of objects to find
     // The 'flags' parameters for the following functions are of type EObjectFlags
-    auto RC_UE_API find_objects(size_t num_objects_to_find, const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, int32 required_flags = {}, int32 banned_flags = {}) -> void;
-    auto RC_UE_API find_objects(size_t num_objects_to_find, const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, int32 required_flags = {}, int32 banned_flags = {}) -> void;
-    auto RC_UE_API find_object(const FName class_name, const FName object_short_name, int32 required_flags = {}, int32 banned_flags = {}) -> UObject*;
-    auto RC_UE_API find_object(const wchar_t* class_name, const wchar_t* object_short_name, int32 required_flags = {}, int32 banned_flags = {}) -> UObject*;
+    auto RC_UE_API FindObjects(size_t Object, const FName ClassName, const FName ObjectShortName, std::vector<UObject*>& OutStorage, int32 RequiredFlags = {}, int32 BannedFlags = {}) -> void;
+    auto RC_UE_API FindObjects(size_t NumObjectsToFind, const wchar_t* ClassName, const wchar_t* ObjectShortName, std::vector<UObject*>& OutStorage, int32 RequiredFlags = {}, int32 BannedFlags = {}) -> void;
+    auto RC_UE_API FindObject(const FName ClassName, const FName ObjectShortName, int32 RequiredFlags = {}, int32 BannedFlags = {}) -> UObject*;
+    auto RC_UE_API FindObject(const wchar_t* ClassName, const wchar_t* ObjectShortName, int32 RequiredFlags = {}, int32 BannedFlags = {}) -> UObject*;
 
     // Find all objects
     // The 'flags' parameters for the following functions are of type EObjectFlags
-    auto RC_UE_API find_objects(const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, int32 required_flags = {}, int32 banned_flags = {}) -> void;
-    auto RC_UE_API find_objects(const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, int32 required_flags = {}, int32 banned_flags = {}) -> void;
+    auto RC_UE_API FindObjects(const FName ClassName, const FName ObjectShortName, std::vector<UObject*>& OutStorage, int32 RequiredFlags = {}, int32 BannedFlags = {}) -> void;
+    auto RC_UE_API FindObjects(const wchar_t* ClassName, const wchar_t* ObjectShortName, std::vector<UObject*>& OutStorage, int32 RequiredFlags = {}, int32 BannedFlags = {}) -> void;
     // Custom Helpers -> END
 }
 

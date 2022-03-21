@@ -19,17 +19,17 @@
 
 namespace RC::Unreal::UnrealInitializer
 {
-    auto setup_unreal_modules(const Config& config) -> void
+    auto SetupUnrealModules(const Config& config) -> void
     {
         // Setup all modules for the aob scanner
-        MODULEINFO module_info;
-        K32GetModuleInformation(config.process_handle, config.module_handle, &module_info, sizeof(MODULEINFO));
-        SigScannerStaticData::m_modules_info[ScanTarget::MainExe] = module_info;
+        MODULEINFO ModuleInfo;
+        K32GetModuleInformation(config.ProcessHandle, config.ModuleHandle, &ModuleInfo, sizeof(MODULEINFO));
+        SigScannerStaticData::m_modules_info[ScanTarget::MainExe] = ModuleInfo;
 
-        HMODULE modules[1024];
-        DWORD bytes_required;
+        HMODULE Modules[1024];
+        DWORD BytesRequired;
 
-        if (K32EnumProcessModules(config.process_handle, modules, sizeof(modules), &bytes_required) == 0)
+        if (K32EnumProcessModules(config.ProcessHandle, Modules, sizeof(Modules), &BytesRequired) == 0)
         {
             throw std::runtime_error{std::format("Was unable to enumerate game modules. Error Code: {}", GetLastError())};
         }
@@ -38,139 +38,139 @@ namespace RC::Unreal::UnrealInitializer
         // This is because most UE4 games only have the MainExe module
         for (size_t i = 0; i < static_cast<size_t>(ScanTarget::Max); ++i)
         {
-            SigScannerStaticData::m_modules_info.array[i] = module_info;
+            SigScannerStaticData::m_modules_info.array[i] = ModuleInfo;
         }
 
         // Check for modules and save the module info if they exist
-        for (auto i = 0; i < bytes_required / sizeof(HMODULE); ++i)
+        for (auto i = 0; i < BytesRequired / sizeof(HMODULE); ++i)
         {
-            char module_raw_name[MAX_PATH];
+            char ModuleRawName[MAX_PATH];
             // TODO: Fix an occasional error: "Call to K32GetModuleBaseNameA failed. Error Code: 6 (ERROR_INVALID_HANDLE)"
-            if (K32GetModuleBaseNameA(config.process_handle, modules[i], module_raw_name, sizeof(module_raw_name) / sizeof(char)) == 0)
+            if (K32GetModuleBaseNameA(config.ProcessHandle, Modules[i], ModuleRawName, sizeof(ModuleRawName) / sizeof(char)) == 0)
             {
                 throw std::runtime_error{std::format("Call to K32GetModuleBaseNameA failed. Error Code: {}", GetLastError())};
             }
 
-            std::string module_name{module_raw_name};
+            std::string ModuleName{ModuleRawName};
 
             for (size_t i2 = 0; i2 < static_cast<size_t>(ScanTarget::Max); ++i2)
             {
-                std::string module_to_find{"-"};
-                module_to_find.append(ScanTargetToString(i2));
-                module_to_find.append("-Win64-Shipping.dll");
+                std::string ModuleToFind{"-"};
+                ModuleToFind.append(ScanTargetToString(i2));
+                ModuleToFind.append("-Win64-Shipping.dll");
 
-                size_t occurrence = module_name.find(module_to_find);
-                if (occurrence != module_name.npos)
+                size_t Occurrence = ModuleName.find(ModuleToFind);
+                if (Occurrence != ModuleName.npos)
                 {
                     if (!SigScannerStaticData::m_is_modular) { SigScannerStaticData::m_is_modular = true; }
 
-                    K32GetModuleInformation(config.process_handle, modules[i], &SigScannerStaticData::m_modules_info.array[i2], sizeof(MODULEINFO));
+                    K32GetModuleInformation(config.ProcessHandle, Modules[i], &SigScannerStaticData::m_modules_info.array[i2], sizeof(MODULEINFO));
                 }
             }
         }
     }
 
-    auto verify_module_cache(const Config& config) -> CacheInfo
+    auto VerifyModuleCache(const Config& config) -> CacheInfo
     {
-        bool use_cache{};
-        bool should_serialize_cache{true};
-        bool should_serialize_cache_override{};
-        File::Handle game_exe_file;
-        File::Handle self_file;
+        bool bUseCache{};
+        bool bShouldSerializeCache{true};
+        bool bShouldSerializeCacheOverride{};
+        File::Handle GameExeFile;
+        File::Handle SelfFile;
 
         // Check if the self file (the injected dll that this code is contained within) has changed
         // and whether that means that we should invalidate the cache
         try
         {
-            self_file = File::open(config.self_file);
+            SelfFile = File::open(config.SelfFile);
 
-            std::filesystem::path self_cache_path_and_file = config.cache_path;
-            self_cache_path_and_file /= config.self_file.filename();
-            self_cache_path_and_file.replace_extension(".cache");
+            std::filesystem::path SelfCachePathAndFile = config.CachePath;
+            SelfCachePathAndFile /= config.SelfFile.filename();
+            SelfCachePathAndFile.replace_extension(".cache");
 
-            self_file.set_serialization_output_file(self_cache_path_and_file);
+            SelfFile.set_serialization_output_file(SelfCachePathAndFile);
 
-            if (!self_file.is_deserialized_and_live_equal())
+            if (!SelfFile.is_deserialized_and_live_equal())
             {
                 // The self file has changed, invalidate the cache
                 // This could also mean that the cache file didn't exist
 
-                bool should_invalidate = !std::filesystem::exists(self_cache_path_and_file) || config.invalidate_cache_if_self_changed;
+                bool bShouldInvalidate = !std::filesystem::exists(SelfCachePathAndFile) || config.bInvalidateCacheIfSelfChanged;
 
-                if (should_invalidate)
+                if (bShouldInvalidate)
                 {
                     // Invalidate all caches
-                    for (const auto& item : std::filesystem::directory_iterator(config.cache_path))
+                    for (const auto& Item : std::filesystem::directory_iterator(config.CachePath))
                     {
                         std::error_code ec;
-                        if (item.is_directory()) { continue; }
+                        if (Item.is_directory()) { continue; }
                         if (ec.value() != 0) { throw std::runtime_error{""}; }
 
-                        if (item.path().extension() == ".cache")
+                        if (Item.path().extension() == ".cache")
                         {
-                            File::Handle game_cache_file = File::open(item.path());
-                            game_cache_file.delete_file();
+                            File::Handle GameCacheFile = File::open(Item.path());
+                            GameCacheFile.delete_file();
                         }
                     }
 
                     // If the self cache file didn't exist, then we must create it
                     // If it does exist then this means that the self file has changed
                     // We invalidate depending on a setting in the config
-                    self_file.serialize_identifying_properties();
-                    should_serialize_cache_override = true;
+                    SelfFile.serialize_identifying_properties();
+                    bShouldSerializeCacheOverride = true;
                 }
             }
 
-            self_file.close();
+            SelfFile.close();
         }
         catch (std::runtime_error&)
         {
             // Make sure we don't load the cache if there was an error while checking the self file
-            should_serialize_cache_override = true;
+            bShouldSerializeCacheOverride = true;
         }
 
         // Check whether the game has a usable cache or whether we need to create one
-        if (!config.cache_path.empty() && !config.game_exe.empty())
+        if (!config.CachePath.empty() && !config.GameExe.empty())
         {
-            std::filesystem::path cache_path_and_file = config.cache_path;
-            cache_path_and_file /= config.game_exe.filename();
-            cache_path_and_file.replace_extension(".cache");
+            std::filesystem::path CachePathAndFile = config.CachePath;
+            CachePathAndFile /= config.GameExe.filename();
+            CachePathAndFile.replace_extension(".cache");
 
-            game_exe_file = File::open(config.game_exe);
-            game_exe_file.set_serialization_output_file(cache_path_and_file);
+            GameExeFile = File::open(config.GameExe);
+            GameExeFile.set_serialization_output_file(CachePathAndFile);
 
-            if (game_exe_file.is_deserialized_and_live_equal() && !should_serialize_cache_override)
+            if (GameExeFile.is_deserialized_and_live_equal() && !bShouldSerializeCacheOverride)
             {
-                use_cache = true;
-                should_serialize_cache = false;
+                bUseCache = true;
+                bShouldSerializeCache = false;
             }
             else
             {
                 // Invalidate the serialization file if it already exists
                 // The deserialization not matching may be due to the serialization file not existing
-                game_exe_file.invalidate_serialization();
+                GameExeFile.invalidate_serialization();
 
-                use_cache = false;
-                should_serialize_cache = true;
+                bUseCache = false;
+                bShouldSerializeCache = true;
             }
         }
 
-        return {game_exe_file, use_cache, should_serialize_cache};
+        return {GameExeFile, bUseCache, bShouldSerializeCache};
     }
 
-    auto create_cache(CacheInfo& cache_info) -> void
+    auto CreateCache(CacheInfo& CacheInfo) -> void
     {
-        auto get_module_offset = [&](ScanTarget scan_target, void* address) -> unsigned long {
-            MODULEINFO module = SigScannerStaticData::m_modules_info[scan_target];
-            return Helper::Integer::to<unsigned long>(reinterpret_cast<uintptr_t>(address) - reinterpret_cast<uintptr_t>(module.lpBaseOfDll));
+        auto GetModuleOffset = [&](ScanTarget Target, void* Address) -> unsigned long {
+            MODULEINFO Module = SigScannerStaticData::m_modules_info[Target];
+            return Helper::Integer::to<unsigned long>(reinterpret_cast<uintptr_t>(Address) - reinterpret_cast<uintptr_t>(Module.lpBaseOfDll));
         };
 
-        auto serialize = [&](ScanTarget scan_target, void* address) -> void {
+        auto Serialize = [&](ScanTarget Target, void* Address) -> void {
             // Serialize user data
             // This automatically creates the serialization file if it doesn't yet exist
             // This will also automatically serialize identifying properties if they aren't already serialized
-            cache_info.game_exe_file.serialize_item(static_cast<unsigned long>(scan_target));
-            cache_info.game_exe_file.serialize_item(get_module_offset(scan_target, address));
+            CacheInfo.GameExeFile.serialize_item(static_cast<unsigned long>(Target));
+            CacheInfo.GameExeFile.serialize_item(GetModuleOffset(Target, Address));
         };
 
         // IMPORTANT: The ScanTarget does NOT have to be the same as they are in 'Signatures.cpp'
@@ -178,7 +178,7 @@ namespace RC::Unreal::UnrealInitializer
         // But when serializing, we're serializing the module offset into the module that contains the actual final data
         // So for example, ~FString(), exists the 'Core' module but the scanner scans in the MainExe module
 
-        serialize(ScanTarget::CoreUObject, Container::m_unreal_vc_base->UObjectArray_get_internal_storage_ptr());
+        Serialize(ScanTarget::CoreUObject, Container::UnrealVC->UObjectArray_get_internal_storage_ptr());
 
 #if 0
         // This is test code that shouldn't be compiled for release
@@ -189,31 +189,31 @@ namespace RC::Unreal::UnrealInitializer
 #endif
 
         // Version is special, it's major/minor instead of ScanTarget/ModuleOffset
-        cache_info.game_exe_file.serialize_item(Version::major);
-        cache_info.game_exe_file.serialize_item(Version::minor);
+        CacheInfo.GameExeFile.serialize_item(Version::Major);
+        CacheInfo.GameExeFile.serialize_item(Version::Minor);
 
-        serialize(ScanTarget::Core, FName::to_string_internal.get_function_address());
-        serialize(ScanTarget::Core, FName::constructor_internal.get_function_address());
-        serialize(ScanTarget::CoreUObject, UObjectGlobals::GlobalState::static_construct_object_internal.get_function_address());
-        serialize(ScanTarget::Core, FMalloc::UnrealStaticGMalloc);
+        Serialize(ScanTarget::Core, FName::ToStringInternal.get_function_address());
+        Serialize(ScanTarget::Core, FName::ConstructorInternal.get_function_address());
+        Serialize(ScanTarget::CoreUObject, UObjectGlobals::GlobalState::StaticConstructObjectInternal.get_function_address());
+        Serialize(ScanTarget::Core, FMalloc::UnrealStaticGMalloc);
     }
 
-    auto load_cache(CacheInfo& cache_info) -> void
+    auto LoadCache(CacheInfo& CacheInfo) -> void
     {
-        auto module_offset_to_address = [](ScanTarget scan_target, unsigned long module_offset) -> void* {
-            MODULEINFO module = SigScannerStaticData::m_modules_info[scan_target];
-            return static_cast<void*>(static_cast<unsigned char*>(module.lpBaseOfDll) + module_offset);
+        auto ModuleOffsetToAddress = [](ScanTarget Target, unsigned long ModuleOffset) -> void* {
+            MODULEINFO module = SigScannerStaticData::m_modules_info[Target];
+            return static_cast<void*>(static_cast<unsigned char*>(module.lpBaseOfDll) + ModuleOffset);
         };
 
-        auto deserialize = [&]() -> void* {
-            ScanTarget scan_target = static_cast<ScanTarget>(cache_info.game_exe_file.get_serialized_item<unsigned long>());
-            auto module_offset = cache_info.game_exe_file.get_serialized_item<unsigned long>();
+        auto Deserialize = [&]() -> void* {
+            ScanTarget Target = static_cast<ScanTarget>(CacheInfo.GameExeFile.get_serialized_item<unsigned long>());
+            auto ModuleOffset = CacheInfo.GameExeFile.get_serialized_item<unsigned long>();
 
-            return module_offset_to_address(scan_target, module_offset);
+            return ModuleOffsetToAddress(Target, ModuleOffset);
         };
 
 
-        void* guobjectarray = deserialize();
+        void* GUObjectArray = Deserialize();
 
 #if 0
         // This is test code that shouldn't be compiled for release
@@ -228,39 +228,39 @@ namespace RC::Unreal::UnrealInitializer
 #endif
 
         // Version is special, it's major/minor instead of ScanTarget/ModuleOffset
-       auto major = cache_info.game_exe_file.get_serialized_item<unsigned int>();
-       auto minor = cache_info.game_exe_file.get_serialized_item<unsigned int>();
-        if (Version::major == -1)
+       auto Major = CacheInfo.GameExeFile.get_serialized_item<unsigned int>();
+       auto Minor = CacheInfo.GameExeFile.get_serialized_item<unsigned int>();
+        if (Version::Major == -1)
         {
             // Only set the version if it's not already been set elsewhere
-            Version::major = major;
-            Version::minor = minor;
+            Version::Major = Major;
+            Version::Minor = Minor;
         }
 
-        initialize_versioned_container();
-        Container::m_unreal_vc_base->UObjectArray_set_internal_storage_ptr(guobjectarray);
+        InitializeVersionedContainer();
+        Container::UnrealVC->UObjectArray_set_internal_storage_ptr(GUObjectArray);
 
-        FName::to_string_internal.assign_address(deserialize());
-        FName::constructor_internal.assign_address(deserialize());
-        void* static_construct_object_address = deserialize();
-        UObjectGlobals::GlobalState::static_construct_object_internal.assign_address(static_construct_object_address);
-        UObjectGlobals::GlobalState::static_construct_object_internal_deprecated.assign_address(static_construct_object_address);
-        FMalloc::UnrealStaticGMalloc = static_cast<FMalloc**>(deserialize());
+        FName::ToStringInternal.assign_address(Deserialize());
+        FName::ConstructorInternal.assign_address(Deserialize());
+        void* StaticConstructObjectAddress = Deserialize();
+        UObjectGlobals::GlobalState::StaticConstructObjectInternal.assign_address(StaticConstructObjectAddress);
+        UObjectGlobals::GlobalState::StaticConstructObjectInternalDeprecated.assign_address(StaticConstructObjectAddress);
+        FMalloc::UnrealStaticGMalloc = static_cast<FMalloc**>(Deserialize());
         GMalloc = *FMalloc::UnrealStaticGMalloc;
 
-        Output::send(STR("Deserialized FName::ToString address: {}\n"), FName::to_string_internal.get_function_address());
-        Output::send(STR("Deserialized StaticConstructObject_Internal address: {}\n"), static_construct_object_address);
-        Output::send(STR("Deserialized FName::FName address: {}\n"), FName::constructor_internal.get_function_address());
-        Output::send(STR("Deserialized GUObjectArray address: {}\n"), guobjectarray);
+        Output::send(STR("Deserialized FName::ToString address: {}\n"), FName::ToStringInternal.get_function_address());
+        Output::send(STR("Deserialized StaticConstructObject_Internal address: {}\n"), StaticConstructObjectAddress);
+        Output::send(STR("Deserialized FName::FName address: {}\n"), FName::ConstructorInternal.get_function_address());
+        Output::send(STR("Deserialized GUObjectArray address: {}\n"), GUObjectArray);
         Output::send(STR("Deserialized GMalloc address: {}\n"), static_cast<void*>(GMalloc));
     }
 
-    auto initialize_versioned_container() -> void
+    auto InitializeVersionedContainer() -> void
     {
-        Container::set_derived_base_objects();
+        Container::SetDerivedBaseObjects();
     }
 
-    auto static post_initialize() -> void
+    auto static PostInitialize() -> void
     {
         if (!GMalloc && FMalloc::UnrealStaticGMalloc)
         {
@@ -270,7 +270,7 @@ namespace RC::Unreal::UnrealInitializer
 
         // FAssetData was not reflected before 4.17
         // We'll need to manually add FAssetData for every engine version eventually
-        if (Version::is_atleast(4, 17))
+        if (Version::IsAtLeast(4, 17))
         {
             if (FAssetData::FAssetDataAssumedStaticSize < FAssetData::StaticSize())
             {
@@ -279,11 +279,11 @@ namespace RC::Unreal::UnrealInitializer
         }
     }
 
-    auto initialize(const Config& config) -> void
+    auto Initialize(const Config& Config) -> void
     {
         // Setup scanner
-        SinglePassScanner::m_num_threads = config.num_scan_threads;
-        SinglePassScanner::m_multithreading_module_size_threshold = config.multithreading_module_size_threshold;
+        SinglePassScanner::m_num_threads = Config.NumScanThreads;
+        SinglePassScanner::m_multithreading_module_size_threshold = Config.MultithreadingModuleSizeThreshold;
 
         // Setup all modules for the aob scanner
         // This is currently done outside the Unreal API in order to over come a problem
@@ -291,11 +291,11 @@ namespace RC::Unreal::UnrealInitializer
         //setup_unreal_modules(config);
 
         // Check if we have a valid cache or if a cache should be created after scanning
-        CacheInfo cache_info = verify_module_cache(config);
+        CacheInfo CacheInfo = VerifyModuleCache(Config);
 
-        if (cache_info.should_use_cache)
+        if (CacheInfo.ShouldUseCache)
         {
-            load_cache(cache_info);
+            LoadCache(CacheInfo);
         }
         else
         {
@@ -303,126 +303,126 @@ namespace RC::Unreal::UnrealInitializer
             enum class OutputErrorsByThrowing { Yes, No };
             enum class ErrorsOnly { Yes, No };
 
-            auto output_result = [](Signatures::ScanResult& scan_result, OutputErrorsByThrowing output_errors_by_throwing = OutputErrorsByThrowing::No, ErrorsOnly errors_only = ErrorsOnly::No) {
-                if (scan_result.scan_status == Signatures::ScanStatus::Failed)
+            auto OutputResult = [](Signatures::ScanResult& ScanResult, OutputErrorsByThrowing OutputErrorsByThrowing = OutputErrorsByThrowing::No, ErrorsOnly ErrorsOnly = ErrorsOnly::No) {
+                if (ScanResult.Status == Signatures::ScanStatus::Failed)
                 {
-                    std::string all_errors{"AOB scans could not be completed because of the following reasons:\n"};
-                    std::string fatal_errors{};
-                    std::string non_fatal_errors{};
-                    for (const auto& error : scan_result.errors)
+                    std::string AllErrors{"AOB scans could not be completed because of the following reasons:\n"};
+                    std::string FatalErrors{};
+                    std::string NonFatalErrors{};
+                    for (const auto& Error : ScanResult.Errors)
                     {
-                        if (error.is_fatal)
+                        if (Error.bIsFatal)
                         {
-                            fatal_errors.append(error.message + "\n\n");
+                            FatalErrors.append(Error.Message + "\n\n");
                         }
                         else
                         {
-                            non_fatal_errors.append(error.message + "\n\n");
+                            NonFatalErrors.append(Error.Message + "\n\n");
                         }
                     }
 
-                    all_errors.append(fatal_errors);
-                    all_errors.append(non_fatal_errors);
+                    AllErrors.append(FatalErrors);
+                    AllErrors.append(NonFatalErrors);
 
-                    if (!fatal_errors.empty() && output_errors_by_throwing == OutputErrorsByThrowing::Yes)
+                    if (!FatalErrors.empty() && OutputErrorsByThrowing == OutputErrorsByThrowing::Yes)
                     {
-                        throw std::runtime_error{all_errors};
+                        throw std::runtime_error{AllErrors};
                     }
                     else
                     {
-                        Output::send(to_wstring(all_errors));
+                        Output::send(to_wstring(AllErrors));
                     }
                 }
 
-                if (errors_only == ErrorsOnly::No)
+                if (ErrorsOnly == ErrorsOnly::No)
                 {
-                    for (const auto& success_message : scan_result.success_messages)
+                    for (const auto& SuccessMessage : ScanResult.SuccessMessage)
                     {
-                        Output::send(success_message);
+                        Output::send(SuccessMessage);
                     }
 
-                    for (const auto& info_message : scan_result.info_messages)
+                    for (const auto& InfoMessage : ScanResult.InfoMessages)
                     {
-                        Output::send(STR("Info: {}"), info_message);
+                        Output::send(STR("Info: {}"), InfoMessage);
                     }
                 }
             };
 
-            auto do_scan = [&](auto scanner_function, SuppressScanAttemptMessage suppress_scan_attempt_message = SuppressScanAttemptMessage::No) {
+            auto DoScan = [&](auto ScannerFunction, SuppressScanAttemptMessage SuppressScanAttemptMessage = SuppressScanAttemptMessage::No) {
                 // Modular games have much smaller binaries, therefore many scans can be completed very quickly
-                static const int64_t num_scans_before_fatal_failure = SigScannerStaticData::m_is_modular ? config.num_scan_attempts_modular : config.num_scan_attempts_normal;
+                static const int64_t NumScansBeforeFatalFailure = SigScannerStaticData::m_is_modular ? Config.NumScanAttemptsModular : Config.NumScanAttemptsNormal;
 
-                Signatures::ScanResult scan_result{};
-                for (int i = 0; scan_result.scan_status == Signatures::ScanStatus::Failed && i < num_scans_before_fatal_failure; ++i)
+                Signatures::ScanResult ScanResult{};
+                for (int i = 0; ScanResult.Status == Signatures::ScanStatus::Failed && i < NumScansBeforeFatalFailure; ++i)
                 {
-                    if (suppress_scan_attempt_message == SuppressScanAttemptMessage::No)
+                    if (SuppressScanAttemptMessage == SuppressScanAttemptMessage::No)
                     {
-                        Output::send<LogLevel::Verbose>(STR("Scan attempt {}/{}\n"), i + 1, num_scans_before_fatal_failure);
+                        Output::send<LogLevel::Verbose>(STR("Scan attempt {}/{}\n"), i + 1, NumScansBeforeFatalFailure);
                     }
 
-                    scan_result = scanner_function(config);
-                    output_result(scan_result);
+                    ScanResult = ScannerFunction(Config);
+                    OutputResult(ScanResult);
 
-                    bool has_fatal_error{};
-                    for (const auto& error : scan_result.errors)
+                    bool bHasFatalError{};
+                    for (const auto& Error : ScanResult.Errors)
                     {
-                        if (error.is_fatal)
+                        if (Error.bIsFatal)
                         {
-                            has_fatal_error = true;
+                            bHasFatalError = true;
                             break;
                         }
                     }
-                    if (!has_fatal_error) { break; }
+                    if (!bHasFatalError) { break; }
                 }
 
-                output_result(scan_result, OutputErrorsByThrowing::Yes, ErrorsOnly::Yes);
+                OutputResult(ScanResult, OutputErrorsByThrowing::Yes, ErrorsOnly::Yes);
             };
 
-            do_scan(&Signatures::scan_for_game_functions_and_data);
-            initialize_versioned_container();
-            do_scan(&Signatures::scan_for_guobjectarray, SuppressScanAttemptMessage::Yes);
+            DoScan(&Signatures::ScanForGameFunctionsAndData);
+            InitializeVersionedContainer();
+            DoScan(&Signatures::ScanForGUObjectArray, SuppressScanAttemptMessage::Yes);
         }
 
-        if (cache_info.should_serialize_cache)
+        if (CacheInfo.ShouldSerializeCache)
         {
-            create_cache(cache_info);
+            CreateCache(CacheInfo);
         }
 
-        cache_info.game_exe_file.close();
+        CacheInfo.GameExeFile.close();
 
         // Find offsets that are required for the StaticOffsetInternal implementation
         // These do not require that any objects in GUObjectArray to be initialized
-        StaticOffsetFinder::find_independent_offsets(config.process_handle);
+        StaticOffsetFinder::find_independent_offsets(Config.ProcessHandle);
 
         // Objects that are required to exist before we can continue
         // Add objects to here before you use them in StaticOffsetFinder
-        Hook::add_required_object(STR("/Script/CoreUObject.Class"));
-        Hook::add_required_object(STR("/Script/CoreUObject"));
-        Hook::add_required_object(STR("/Script/CoreUObject.Struct"));
-        Hook::add_required_object(STR("/Script/Engine.Pawn"));
-        Hook::add_required_object(STR("/Script/Engine.Character"));
-        Hook::add_required_object(STR("/Script/Engine.Actor"));
-        Hook::add_required_object(STR("/Script/CoreUObject.Vector"));
-        Hook::add_required_object(STR("/Script/Engine.Default__DefaultPawn"));
-        Hook::add_required_object(STR("/Script/Engine.HitResult"));
-        Hook::add_required_object(STR("/Script/Engine.Default__MaterialExpression"));
-        Hook::add_required_object(STR("/Script/Engine.ActorComponent"));
-        Hook::add_required_object(STR("/Script/CoreUObject.OrientedBox"));
-        Hook::add_required_object(STR("/Script/Engine.MovementComponent"));
-        Hook::add_required_object(STR("/Script/Engine.HUD"));
-        Hook::add_required_object(STR("/Script/Engine.PlayerController"));
-        Hook::add_required_object(STR("/Script/Engine.PlayerCameraManager"));
-        Hook::add_required_object(STR("/Script/CoreUObject.EInterpCurveMode"));
-        Hook::add_required_object(STR("/Script/Engine.ENetRole"));
-        Hook::add_required_object(STR("/Script/MovieScene.MovieSceneEditorData"));
-        Hook::add_required_object(STR("/Script/UMG.Widget"));
-        Hook::add_required_object(STR("/Script/UMG.ComboBoxString"));
-        Hook::add_required_object(STR("/Script/CoreUObject.Interface"));
-        Hook::add_required_object(STR("/Script/CoreUObject.DynamicClass"));
+        Hook::AddRequiredObject(STR("/Script/CoreUObject.Class"));
+        Hook::AddRequiredObject(STR("/Script/CoreUObject"));
+        Hook::AddRequiredObject(STR("/Script/CoreUObject.Struct"));
+        Hook::AddRequiredObject(STR("/Script/Engine.Pawn"));
+        Hook::AddRequiredObject(STR("/Script/Engine.Character"));
+        Hook::AddRequiredObject(STR("/Script/Engine.Actor"));
+        Hook::AddRequiredObject(STR("/Script/CoreUObject.Vector"));
+        Hook::AddRequiredObject(STR("/Script/Engine.Default__DefaultPawn"));
+        Hook::AddRequiredObject(STR("/Script/Engine.HitResult"));
+        Hook::AddRequiredObject(STR("/Script/Engine.Default__MaterialExpression"));
+        Hook::AddRequiredObject(STR("/Script/Engine.ActorComponent"));
+        Hook::AddRequiredObject(STR("/Script/CoreUObject.OrientedBox"));
+        Hook::AddRequiredObject(STR("/Script/Engine.MovementComponent"));
+        Hook::AddRequiredObject(STR("/Script/Engine.HUD"));
+        Hook::AddRequiredObject(STR("/Script/Engine.PlayerController"));
+        Hook::AddRequiredObject(STR("/Script/Engine.PlayerCameraManager"));
+        Hook::AddRequiredObject(STR("/Script/CoreUObject.EInterpCurveMode"));
+        Hook::AddRequiredObject(STR("/Script/Engine.ENetRole"));
+        Hook::AddRequiredObject(STR("/Script/MovieScene.MovieSceneEditorData"));
+        Hook::AddRequiredObject(STR("/Script/UMG.Widget"));
+        Hook::AddRequiredObject(STR("/Script/UMG.ComboBoxString"));
+        Hook::AddRequiredObject(STR("/Script/CoreUObject.Interface"));
+        Hook::AddRequiredObject(STR("/Script/CoreUObject.DynamicClass"));
 
-        hook_static_construct_object();
+        HookStaticConstructObject();
 
-        for (int32_t i = 0; i < 2000 && !Hook::StaticStorage::all_required_objects_constructed; ++i)
+        for (int32_t i = 0; i < 2000 && !Hook::StaticStorage::bAllRequiredObjectsConstructed; ++i)
         {
             // The control variable for this loop is controlled from the game thread in a
             // hook created in the function call right above this loop
@@ -432,39 +432,39 @@ namespace RC::Unreal::UnrealInitializer
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
 
-        Container::m_unreal_virtual_base->set_virtual_offsets();
+        Container::UnrealVirtualVC->set_virtual_offsets();
 
-        auto* object = UObjectGlobals::static_find_object(nullptr, nullptr, STR("/Script/CoreUObject.Default__Object"));
-        if (!object)
+        auto* Object = UObjectGlobals::StaticFindObject(nullptr, nullptr, STR("/Script/CoreUObject.Default__Object"));
+        if (!Object)
         {
             throw std::runtime_error{"Post-initialization: Was unable to find 'CoreUObject.Default__Object' to use to retrieve the address of ProcessEvent"};
         }
 
-        UObject::process_event_internal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessEvent, object));
-        UObject::ProcessConsoleExecInternal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessConsoleExec, object));
-        hook_process_event();
+        UObject::ProcessEventInternal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessEvent, Object));
+        UObject::ProcessConsoleExecInternal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessConsoleExec, Object));
+        HookProcessEvent();
         HookProcessConsoleExec();
 
         TypeChecker::store_all_object_names();
 
-        Output::send(STR("Constructed {} of {} objects\n"), Hook::StaticStorage::num_required_objects_constructed, Hook::StaticStorage::required_objects_for_init.size());
-        if (!Hook::StaticStorage::all_required_objects_constructed)
+        Output::send(STR("Constructed {} of {} objects\n"), Hook::StaticStorage::NumRequiredObjectsConstructed, Hook::StaticStorage::RequiredObjectsForInit.size());
+        if (!Hook::StaticStorage::bAllRequiredObjectsConstructed)
         {
             Output::send(STR("Fatal error! The following objects were never constructed:\n"));
-            for (const auto& required_object : Hook::StaticStorage::required_objects_for_init)
+            for (const auto& RequiredObject : Hook::StaticStorage::RequiredObjectsForInit)
             {
-                if (required_object.object_constructed) { continue; }
-                Output::send(STR("{}\n"), required_object.object_name);
+                if (RequiredObject.ObjectConstructed) { continue; }
+                Output::send(STR("{}\n"), RequiredObject.ObjectName);
             }
             throw std::runtime_error{""};
         }
 
-        StaticOffsetFinder::find_offsets(config.process_handle);
+        StaticOffsetFinder::find_offsets(Config.ProcessHandle);
         StaticOffsetFinder::output_all_member_offsets();
 
-        FMalloc::IsInitialized = true;
-        StaticStorage::is_initialized = true;
+        FMalloc::bIsInitialized = true;
+        StaticStorage::bIsInitialized = true;
 
-        post_initialize();
+        PostInitialize();
     }
 }

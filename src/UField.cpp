@@ -9,14 +9,14 @@ namespace RC::Unreal
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
-    auto UField::get_next_ufield() -> UField*
+    auto UField::GetNextField() -> UField*
     {
         return Helper::Casting::offset_deref<UField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UField_Next));
     }
 
-    auto UField::as_ffield_unsafe() -> FField*
+    auto UField::AsFFieldUnsafe() -> FField*
     {
-        if (!Version::is_below(4, 25))
+        if (!Version::IsBelow(4, 25))
         {
             throw std::runtime_error("Cannot convert UField to FField in UE versions above 4.25");
         }

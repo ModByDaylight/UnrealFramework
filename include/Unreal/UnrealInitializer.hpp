@@ -47,45 +47,46 @@ namespace RC::Unreal::UnrealInitializer
     struct RC_UE_API Config
     {
     public:
-        HANDLE process_handle;
-        HMODULE module_handle;
+        // TODO: These should be removed as part of the UnrealInit simplification change
+        HANDLE ProcessHandle;
+        HMODULE ModuleHandle;
 
-        uint32_t num_scan_threads{8};
-        uint32_t multithreading_module_size_threshold{0x1000000};
+        uint32_t NumScanThreads{8};
+        uint32_t MultithreadingModuleSizeThreshold{0x1000000};
 
         // Functions to be called if you want to override one or more scans
-        ScanOverrides scan_overrides{};
+        ScanOverrides ScanOverrides{};
 
-        std::filesystem::path self_file{};
-        std::filesystem::path game_exe{};
+        std::filesystem::path SelfFile{};
+        std::filesystem::path GameExe{};
 
         // Path to cache files, used to bypass aob scanning when the module hasn't changed from the last time it was scanned
-        std::filesystem::path cache_path{};
+        std::filesystem::path CachePath{};
 
-        bool invalidate_cache_if_self_changed{true};
+        bool bInvalidateCacheIfSelfChanged{true};
 
-        int64_t num_scan_attempts_normal{20};
-        int64_t num_scan_attempts_modular{2000};
+        int64_t NumScanAttemptsNormal{60};
+        int64_t NumScanAttemptsModular{2500};
     };
 
     struct RC_UE_API CacheInfo
     {
-        File::Handle game_exe_file;
-        bool should_use_cache;
-        bool should_serialize_cache;
+        File::Handle GameExeFile;
+        bool ShouldUseCache;
+        bool ShouldSerializeCache;
     };
 
     struct RC_UE_API StaticStorage
     {
-        static inline bool is_initialized{false};
+        static inline bool bIsInitialized{false};
     };
 
-    auto RC_UE_API setup_unreal_modules(const Config&) -> void;
-    auto RC_UE_API verify_module_cache(const Config&) -> CacheInfo;
-    auto RC_UE_API create_cache(CacheInfo&) -> void;
-    auto RC_UE_API load_cache(CacheInfo&) -> void;
-    auto RC_UE_API initialize_versioned_container() -> void;
-    auto RC_UE_API initialize(const Config&) -> void;
+    auto RC_UE_API SetupUnrealModules(const Config&) -> void;
+    auto RC_UE_API VerifyModuleCache(const Config&) -> CacheInfo;
+    auto RC_UE_API CreateCache(CacheInfo&) -> void;
+    auto RC_UE_API LoadCache(CacheInfo&) -> void;
+    auto RC_UE_API InitializeVersionedContainer() -> void;
+    auto RC_UE_API Initialize(const Config&) -> void;
 }
 
 

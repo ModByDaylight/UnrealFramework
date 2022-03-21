@@ -11,8 +11,8 @@ namespace RC::Unreal
     DECLARE_EXTERNAL_OBJECT_CLASS(AActor, Engine)
 
     public:
-        auto get_level() -> UObject*;
-        auto get_world() -> UObject*;
+        auto GetLevel() -> UObject*;
+        auto GetWorld() -> UObject*;
 
     public:
         // UFunction interfaces -> START

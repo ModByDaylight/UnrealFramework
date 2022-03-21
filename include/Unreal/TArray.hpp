@@ -17,9 +17,6 @@
 #include <Unreal/VersionedContainer/Base.hpp>
 #include <Unreal/TypeChecker.hpp>
 
-//#include <Unreal/Property/FArrayProperty.hpp>
-//#include <Unreal/Property/FStructProperty.hpp>
-
 namespace RC::Unreal
 {
     class XStructData;
@@ -28,7 +25,7 @@ namespace RC::Unreal
     template<typename ArrayInnerType>
     constexpr bool ArraySizeIsImplicit = !(std::is_same_v<ArrayInnerType, struct FAssetData>);
 
-    auto RC_UE_API get_struct_data_at(void* data_param, size_t index) -> XStructData*;
+    auto RC_UE_API GetStructDataAt(void* data_param, size_t index) -> XStructData*;
 
     /*
      * Problems with TArray:
@@ -224,12 +221,12 @@ namespace RC::Unreal
         // Memory related -> END
 
     public:
-        auto get_data_ptr() const -> InElementType*
+        auto GetDataPtr() const -> InElementType*
         {
             return std::bit_cast<InElementType*>(AllocatorInstance.GetAllocation());
         }
 
-        auto set_data_ptr(InElementType* new_data_ptr) -> void
+        auto SetDataPtr(InElementType* new_data_ptr) -> void
         {
             if constexpr (IsTInlineAllocator<InAllocator>)
             {
@@ -241,26 +238,14 @@ namespace RC::Unreal
             }
         }
 
-        // Temporary function to keep compatibility with UE4SS before UE4SS is fully updated
-        auto get_array_num() const -> int32_t
-        {
-            return ArrayNum;
-        }
-
         SizeType Num() const
         {
             return ArrayNum;
         }
 
-        auto set_array_num(int32_t new_array_num) -> void
+        auto SetNum(int32_t new_array_num) -> void
         {
             ArrayNum = new_array_num;
-        }
-
-        // Temporary function to keep compatibility with UE4SS before UE4SS is fully updated
-        auto get_array_max() const -> int32_t
-        {
-            return ArrayMax;
         }
 
         SizeType Max() const
@@ -268,7 +253,7 @@ namespace RC::Unreal
             return ArrayMax;
         }
 
-        auto set_array_max(int32_t new_array_max) -> void
+        auto SetMax(int32_t new_array_max) -> void
         {
             ArrayMax = new_array_max;
         }
@@ -276,7 +261,7 @@ namespace RC::Unreal
         // Temporary function
         // Transfers ownership of another data ptr to this instance of TArray
         // The 'other' TArray becomes zeroed
-        auto copy_fast(TArray<InElementType, Allocator>& other) -> void
+        auto CopyFast(TArray<InElementType, Allocator>& other) -> void
         {
             if constexpr (IsTInlineAllocator<InAllocator>)
             {
@@ -293,13 +278,13 @@ namespace RC::Unreal
             other.ArrayMax = 0;
         }
 
-        auto at(size_t index) -> InElementType*
+        auto At(size_t Index) -> InElementType*
         {
             // Index is zero-based and the stored max is one-based
             // Anything after ArrayMax is uninitialized, but it must succeed still so that operator[] can be used to initialize the element
-            if (get_array_max() == 0 || index > get_array_max() - 1)
+            if (Max() == 0 || Index > Max() - 1)
             {
-                throw std::runtime_error{fmt("[TArrayImpl::at] out of range (num elements: %d | requested elem: %d)", (get_array_num() - 1 < 0 ? 0 : get_array_num() - 1), index)};
+                throw std::runtime_error{fmt("[TArray::at] out of range (num elements: %d | requested elem: %d)", (Num() - 1 < 0 ? 0 : Num() - 1), Index)};
             }
 
             // Need to know the type here so that we can calculate the location of each array element
@@ -307,43 +292,43 @@ namespace RC::Unreal
             // I've hardcoded the StructProperty implementation for now but at least it's constexpr.
             if constexpr (std::is_same_v<InElementType, class XStructData>)
             {
-                return get_struct_data_at(get_data_ptr(), index);
+                return GetStructDataAt(GetDataPtr(), Index);
             }
             else
             {
-                return std::bit_cast<InElementType*>(&AllocatorInstance.GetAllocation()[index * GetElementSize()]);
+                return std::bit_cast<InElementType*>(&AllocatorInstance.GetAllocation()[Index * GetElementSize()]);
             }
         }
 
-        auto operator[](size_t index) -> InElementType&
+        auto operator[](size_t Index) -> InElementType&
         {
-            return *static_cast<InElementType*>(at(index));
+            return *static_cast<InElementType*>(At(Index));
         }
 
     private:
         template<typename Callable>
-        auto for_each_internal(Callable callable) -> void
+        auto ForEachInternal(Callable callable) -> void
         {
-            for (size_t i = 0; i < get_array_num(); ++i)
+            for (size_t i = 0; i < Num(); ++i)
             {
-                if (callable(at(i), i) == LoopAction::Break) { break; }
+                if (callable(At(i), i) == LoopAction::Break) { break; }
             }
         }
 
     public:
         using TArrayForEachCallableAllParamsImpl = const std::function<LoopAction(InElementType*, size_t)>&;
-        auto for_each(TArrayForEachCallableAllParamsImpl callable) -> void
+        auto ForEach(TArrayForEachCallableAllParamsImpl Callable) -> void
         {
-            for_each_internal([&](auto elem, auto index) {
-                return callable(elem, index);
+            ForEachInternal([&](auto Elem, auto Index) {
+                return Callable(Elem, Index);
             });
         }
 
         using TArrayForEachCallableParamElemOnlyImpl = const std::function<LoopAction(InElementType*)>&;
-        auto for_each(TArrayForEachCallableParamElemOnlyImpl callable) -> void
+        auto ForEach(TArrayForEachCallableParamElemOnlyImpl Callable) -> void
         {
-            for_each_internal([&](auto elem, [[maybe_unused]]auto index) {
-                return callable(elem);
+            ForEachInternal([&](auto Elem, [[maybe_unused]]auto Index) {
+                return Callable(Elem);
             });
         }
     };

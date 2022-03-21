@@ -6,30 +6,30 @@
 
 namespace RC::Unreal::UObjectGlobals
 {
-    auto setup_static_construct_object_internal_address(void* function_address) -> void
+    auto SetupStaticConstructObjectInternalAddress(void* FunctionAddress) -> void
     {
-        GlobalState::static_construct_object_internal.assign_address(function_address);
-        GlobalState::static_construct_object_internal_deprecated.assign_address(function_address);
+        GlobalState::StaticConstructObjectInternal.assign_address(FunctionAddress);
+        GlobalState::StaticConstructObjectInternalDeprecated.assign_address(FunctionAddress);
     }
 
-    auto version_is_atmost(uint32_t major_p, uint32_t minor_p) -> bool
+    auto VersionIsAtMost(uint32_t Major, uint32_t Minor) -> bool
     {
-        return Unreal::Version::is_atmost(major_p, minor_p);
+        return Unreal::Version::IsAtMost(Major, Minor);
     }
 
-    auto static_find_object_impl([[maybe_unused]]UClass* object_class, [[maybe_unused]]UObject* in_object_package, const wchar_t* orig_in_name, [[maybe_unused]]bool exact_class) -> UObject*
+    auto StaticFindObjectImpl([[maybe_unused]]UClass* ObjectClass, [[maybe_unused]]UObject* InObjectPackage, const wchar_t* OrigInName, [[maybe_unused]]bool bExactClass) -> UObject*
     {
-        UObject* found_object{};
+        UObject* FoundObject{};
 
-        UObjectGlobals::ForEachUObject([&](void* obj, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t obj_index) {
+        UObjectGlobals::ForEachUObject([&](UObject* Object, [[maybe_unused]]int32_t ChunkIndex, [[maybe_unused]]int32_t ObjectIndex) {
             // This call to 'get_full_name' is a problem because it relies on offsets already being found
             // This function is called before offsets have been found as a way to check if required objects have been initialized
-            auto obj_name = static_cast<UObject*>(obj)->get_full_name();
-            auto obj_name_no_type = obj_name.substr(obj_name.find(STR(" ")) + 1);
+            auto ObjFullName = Object->GetFullName();
+            auto ObjFullNameNoType = ObjFullName.substr(ObjFullName.find(STR(" ")) + 1);
 
-            if (obj_name_no_type == orig_in_name)
+            if (ObjFullNameNoType == OrigInName)
             {
-                found_object = static_cast<UObject*>(obj);
+                FoundObject = static_cast<UObject*>(Object);
                 return LoopAction::Break;
             }
             else
@@ -38,35 +38,34 @@ namespace RC::Unreal::UObjectGlobals
             }
         });
 
-        return found_object;
+        return FoundObject;
     }
 
-    auto static is_valid_object_for_find_x_of(UObject* object) -> bool
+    auto static IsValidObjectForFindXOf(UObject* object) -> bool
     {
-        return !object->has_any_flag(static_cast<EObjectFlags>(RF_ClassDefaultObject | RF_ArchetypeObject)) && !object->is_a<UClass>();
+        return !object->HasAnyFlags(static_cast<EObjectFlags>(RF_ClassDefaultObject | RF_ArchetypeObject)) && !object->IsA<UClass>();
     }
 
-    auto find_first_of(FName class_name) -> UObject*
+    auto FindFirstOf(FName ClassName) -> UObject*
     {
-        UObject* object_found{nullptr};
+        UObject* ObjectFound{nullptr};
 
-        UObjectGlobals::ForEachUObject([&](void* object, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t object_index) {
-            UObject* typed_object = static_cast<UObject*>(object);
-            UClass* typed_class = static_cast<UObject*>(object)->get_uclass();
+        UObjectGlobals::ForEachUObject([&](UObject* Object, [[maybe_unused]]int32_t ChunkIndex, [[maybe_unused]]int32_t ObjectIndex) {
+            UClass* Class = Object->GetClass();
 
-            if (typed_class->get_fname().equals(class_name) && is_valid_object_for_find_x_of(typed_object))
+            if (Class->GetFName().Equals(ClassName) && IsValidObjectForFindXOf(Object))
             {
-                object_found = typed_object;
+                ObjectFound = Object;
                 return LoopAction::Break;
 
             }
 
-            if (!is_valid_object_for_find_x_of(typed_object)) { return LoopAction::Continue; }
+            if (!IsValidObjectForFindXOf(Object)) { return LoopAction::Continue; }
 
-            typed_class->for_each_super_struct([&](UStruct* super_struct) {
-                if (super_struct->get_fname().equals(class_name))
+            Class->ForEachSuperStruct([&](UStruct* super_struct) {
+                if (super_struct->GetFName().Equals(ClassName))
                 {
-                    object_found = typed_object;
+                    ObjectFound = Object;
                     return LoopAction::Break;
                 }
 
@@ -76,54 +75,53 @@ namespace RC::Unreal::UObjectGlobals
             return LoopAction::Continue;
         });
 
-        return object_found;
+        return ObjectFound;
     }
 
-    auto find_first_of(const wchar_t* class_name) -> UObject*
+    auto FindFirstOf(const wchar_t* ClassName) -> UObject*
     {
-        return find_first_of(FName(class_name));
+        return FindFirstOf(FName(ClassName));
     }
 
-    auto find_first_of(std::wstring_view class_name) -> UObject*
+    auto FindFirstOf(std::wstring_view ClassName) -> UObject*
     {
-        return find_first_of(FName(class_name));
+        return FindFirstOf(FName(ClassName));
     }
 
-    auto find_first_of(const std::wstring& class_name) -> UObject*
+    auto FindFirstOf(const std::wstring& ClassName) -> UObject*
     {
-        return find_first_of(FName(class_name));
+        return FindFirstOf(FName(ClassName));
     }
 
-    auto find_first_of(std::string_view class_name) -> UObject*
+    auto FindFirstOf(std::string_view ClassName) -> UObject*
     {
-        return find_first_of(FName(to_wstring(class_name)));
+        return FindFirstOf(FName(to_wstring(ClassName)));
     }
 
-    auto find_first_of(const std::string& class_name) -> UObject*
+    auto FindFirstOf(const std::string& ClassName) -> UObject*
     {
-        return find_first_of(FName(to_wstring(class_name)));
+        return FindFirstOf(FName(to_wstring(ClassName)));
     }
 
-    auto find_all_of(FName class_name, std::vector<UObject*>& out_storage) -> void
+    auto FindAllOf(FName ClassName, std::vector<UObject*>& OutStorage) -> void
     {
-        UObjectGlobals::ForEachUObject([&](void* object, [[maybe_unused]]int32_t chunk_index, [[maybe_unused]]int32_t object_index) {
-            if (!object) { return LoopAction::Continue; }
+        UObjectGlobals::ForEachUObject([&](UObject* Object, [[maybe_unused]]int32_t ChunkIndex, [[maybe_unused]]int32_t ObjectIndex) {
+            if (!Object) { return LoopAction::Continue; }
 
-            UObject* typed_object = static_cast<UObject*>(object);
-            UClass* typed_class = static_cast<UObject*>(object)->get_uclass();
+            UClass* Class = Object->GetClass();
 
-            if (typed_class->get_fname().equals(class_name) && is_valid_object_for_find_x_of(typed_object))
+            if (Class->GetFName().Equals(ClassName) && IsValidObjectForFindXOf(Object))
             {
-                out_storage.emplace_back(typed_object);
+                OutStorage.emplace_back(Object);
                 return LoopAction::Continue;
             }
 
-            if (!is_valid_object_for_find_x_of(typed_object)) { return LoopAction::Continue; }
+            if (!IsValidObjectForFindXOf(Object)) { return LoopAction::Continue; }
 
-            typed_class->for_each_super_struct([&](UStruct* super_struct) {
-                if (super_struct->get_fname().equals(class_name))
+            Class->ForEachSuperStruct([&](UStruct* SuperStruct) {
+                if (SuperStruct->GetFName().Equals(ClassName))
                 {
-                    out_storage.emplace_back(typed_object);
+                    OutStorage.emplace_back(Object);
                     return LoopAction::Break;
                 }
 
@@ -134,71 +132,71 @@ namespace RC::Unreal::UObjectGlobals
         });
     }
 
-    auto find_all_of(const wchar_t* class_name, std::vector<UObject*>& out_storage) -> void
+    auto FindAllOf(const wchar_t* ClassName, std::vector<UObject*>& OutStorage) -> void
     {
-        find_all_of(FName(class_name), out_storage);
+        FindAllOf(FName(ClassName), OutStorage);
     }
 
-    auto find_all_of(std::wstring_view class_name, std::vector<UObject*>& out_storage) -> void
+    auto FindAllOf(std::wstring_view ClassName, std::vector<UObject*>& OutStorage) -> void
     {
-        find_all_of(FName(class_name), out_storage);
+        FindAllOf(FName(ClassName), OutStorage);
     }
 
-    auto find_all_of(const std::wstring& class_name, std::vector<UObject*>& out_storage) -> void
+    auto FindAllOf(const std::wstring& ClassName, std::vector<UObject*>& OutStorage) -> void
     {
-        find_all_of(FName(class_name), out_storage);
+        FindAllOf(FName(ClassName), OutStorage);
     }
 
-    auto find_all_of(std::string_view class_name, std::vector<UObject*>& out_storage) -> void
+    auto FindAllOf(std::string_view ClassName, std::vector<UObject*>& OutStorage) -> void
     {
-        find_all_of(FName(to_wstring(class_name)), out_storage);
+        FindAllOf(FName(to_wstring(ClassName)), OutStorage);
     }
 
-    auto find_all_of(const std::string& class_name, std::vector<UObject*>& out_storage) -> void
+    auto FindAllOf(const std::string& ClassName, std::vector<UObject*>& OutStorage) -> void
     {
-        find_all_of(FName(to_wstring(class_name)), out_storage);
+        FindAllOf(FName(to_wstring(ClassName)), OutStorage);
     }
 
-    auto find_objects(size_t num_objects_to_find, const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, int32 required_flags, int32 banned_flags) -> void
+    auto FindObjects(size_t NumObjectsToFind, const FName ClassName, const FName ObjectShortName, std::vector<UObject*>& OutStorage, int32 RequiredFlags, int32 BannedFlags) -> void
     {
-        bool care_about_class = class_name != FName(0u, 0u);
-        bool care_about_name = object_short_name != FName(0u, 0u);
+        bool bCareAboutClass = ClassName != FName(0u, 0u);
+        bool bCareAboutName = ObjectShortName != FName(0u, 0u);
 
-        if (!care_about_class && !care_about_name)
+        if (!bCareAboutClass && !bCareAboutName)
         {
             throw std::runtime_error{"[UObjectGlobals::find_objects] Must supply class_name, object_short_name, or both"};
         }
 
-        size_t num_objects_found{};
+        size_t NumObjectsFound{};
 
-        ForEachUObject([&](UObject* object, int32, int32) {
-            bool name_matches{};
-            if (care_about_name && object->get_fname().equals(object_short_name))
+        ForEachUObject([&](UObject* Object, int32, int32) {
+            bool bNameMatches{};
+            if (bCareAboutName && Object->GetFName().Equals(ObjectShortName))
             {
-                name_matches = true;
+                bNameMatches = true;
             }
 
-            bool class_matches{};
-            if (care_about_class && object->get_uclass()->get_fname().equals(class_name))
+            bool bClassMatches{};
+            if (bCareAboutClass && Object->GetClass()->GetFName().Equals(ClassName))
             {
-                class_matches = true;
+                bClassMatches = true;
             }
 
-            if ((care_about_class && class_matches && care_about_name && name_matches) ||
-                (!care_about_name && care_about_class && class_matches) ||
-                (!care_about_class && care_about_name && name_matches))
+            if ((bCareAboutClass && bClassMatches && bCareAboutName && bNameMatches) ||
+                (!bCareAboutName && bCareAboutClass && bClassMatches) ||
+                (!bCareAboutClass && bCareAboutName && bNameMatches))
             {
-                bool required_flags_passes = required_flags == EObjectFlags::RF_NoFlags || object->has_all_flags(static_cast<EObjectFlags>(required_flags));
-                bool banned_flags_passes = banned_flags == EObjectFlags::RF_NoFlags || !object->has_any_flag(static_cast<EObjectFlags>(banned_flags));
+                bool bRequiredFlagsPasses = RequiredFlags == EObjectFlags::RF_NoFlags || Object->HasAllFlags(static_cast<EObjectFlags>(RequiredFlags));
+                bool bBannedFlagsPasses = BannedFlags == EObjectFlags::RF_NoFlags || !Object->HasAnyFlags(static_cast<EObjectFlags>(BannedFlags));
 
-                if (required_flags_passes && banned_flags_passes)
+                if (bRequiredFlagsPasses && bBannedFlagsPasses)
                 {
-                    out_storage.emplace_back(object);
-                    ++num_objects_found;
+                    OutStorage.emplace_back(Object);
+                    ++NumObjectsFound;
                 }
             }
 
-            if (num_objects_to_find != 0 && num_objects_found >= num_objects_to_find)
+            if (NumObjectsToFind != 0 && NumObjectsFound >= NumObjectsToFind)
             {
                 return LoopAction::Break;
             }
@@ -209,51 +207,51 @@ namespace RC::Unreal::UObjectGlobals
         });
     }
 
-    auto find_objects(size_t num_objects_to_find, const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, int32 required_flags, int32 banned_flags) -> void
+    auto FindObjects(size_t NumObjectsToFind, const wchar_t* ClassName, const wchar_t* ObjectShortName, std::vector<UObject*>& OutStorage, int32 RequiredFlags, int32 BannedFlags) -> void
     {
-        find_objects(num_objects_to_find, FName(class_name), FName(object_short_name), out_storage, required_flags, banned_flags);
+        FindObjects(NumObjectsToFind, FName(ClassName), FName(ObjectShortName), OutStorage, RequiredFlags, BannedFlags);
     }
 
-    auto find_objects(size_t num_objects_to_find, const wchar_t* class_name, std::vector<UObject*>& out_storage) -> void
+    auto find_objects(size_t NumObjectsToFind, const wchar_t* ClassName, std::vector<UObject*>& OutStorage) -> void
     {
-        find_objects(num_objects_to_find, FName(class_name), FName(0u, 0u), out_storage);
+        FindObjects(NumObjectsToFind, FName(ClassName), FName(0u, 0u), OutStorage);
     }
 
-    auto find_object(const FName class_name, const FName object_short_name, int32 required_flags, int32 banned_flags) -> UObject*
+    auto FindObject(const FName ClassName, const FName ObjectShortName, int32 RequiredFlags, int32 BannedFlags) -> UObject*
     {
-        std::vector<UObject*> found_object{};
-        find_objects(1, class_name, object_short_name, found_object, required_flags, banned_flags);
+        std::vector<UObject*> FoundObject{};
+        FindObjects(1, ClassName, ObjectShortName, FoundObject, RequiredFlags, BannedFlags);
 
-        if (found_object.empty())
+        if (FoundObject.empty())
         {
             return nullptr;
         }
         else
         {
-            return found_object[0];
+            return FoundObject[0];
         }
     };
 
-    auto find_objects(const FName class_name, const FName object_short_name, std::vector<UObject*>& out_storage, int32 required_flags, int32 banned_flags) -> void
+    auto FindObjects(const FName ClassName, const FName ObjectShortName, std::vector<UObject*>& OutStorage, int32 RequiredFlags, int32 BannedFlags) -> void
     {
-        find_objects(0, class_name, object_short_name, out_storage, required_flags, banned_flags);
+        FindObjects(0, ClassName, ObjectShortName, OutStorage, RequiredFlags, BannedFlags);
     }
 
-    auto find_objects(const wchar_t* class_name, const wchar_t* object_short_name, std::vector<UObject*>& out_storage, int32 required_flags, int32 banned_flags) -> void
+    auto FindObjects(const wchar_t* ClassName, const wchar_t* ObjectShortName, std::vector<UObject*>& OutStorage, int32 RequiredFlags, int32 BannedFlags) -> void
     {
-        find_objects(0, class_name, object_short_name, out_storage, required_flags, banned_flags);
+        FindObjects(0, ClassName, ObjectShortName, OutStorage, RequiredFlags, BannedFlags);
     }
 
-    auto find_object(const wchar_t* class_name, const wchar_t* object_short_name, int32 required_flags, int32 banned_flags) -> UObject*
+    auto FindObject(const wchar_t* ClassName, const wchar_t* ObjectShortName, int32 RequiredFlags, int32 BannedFlags) -> UObject*
     {
-        return find_object(FName(class_name), FName(object_short_name), required_flags, banned_flags);
+        return FindObject(FName(ClassName), FName(ObjectShortName), RequiredFlags, BannedFlags);
     }
 
-    auto ForEachUObject(const std::function<LoopAction(UObject*, int32, int32)>& callable) -> void
+    auto ForEachUObject(const std::function<LoopAction(UObject*, int32, int32)>& Callable) -> void
     {
-        Container::m_unreal_vc_base->UObjectArray_for_each_uobject([&](void* raw_object, int32 object_index, int32 chunk_index)
+        Container::UnrealVC->UObjectArray_for_each_uobject([&](void* RawObject, int32 ObjectIndex, int32 ChunkIndex)
         {
-            return callable(static_cast<UObject*>(raw_object), object_index, chunk_index);
+            return Callable(static_cast<UObject*>(RawObject), ObjectIndex, ChunkIndex);
         });
     };
 }

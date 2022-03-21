@@ -17,25 +17,25 @@ namespace RC::Unreal::Signatures
 
     struct RC_UE_API ScanError
     {
-        std::string message;
-        bool is_fatal{true};
+        std::string Message;
+        bool bIsFatal{true};
 
-        ScanError(std::string_view error) : message(error) {}
+        ScanError(std::string_view Error) : Message(Error) {}
     };
 
     struct RC_UE_API ScanResult
     {
-        std::vector<std::wstring> success_messages{};
-        std::unordered_set<std::wstring> info_messages{};
-        std::vector<ScanError> errors;
-        ScanStatus scan_status{ScanStatus::Failed};
+        std::vector<std::wstring> SuccessMessage{};
+        std::unordered_set<std::wstring> InfoMessages{};
+        std::vector<ScanError> Errors;
+        ScanStatus Status{ScanStatus::Failed};
     };
 
-    auto RC_UE_API scan_for_game_functions_and_data(const UnrealInitializer::Config&) -> ScanResult;
-    auto RC_UE_API scan_for_guobjectarray(const UnrealInitializer::Config&) -> ScanResult;
+    auto RC_UE_API ScanForGameFunctionsAndData(const UnrealInitializer::Config&) -> ScanResult;
+    auto RC_UE_API ScanForGUObjectArray(const UnrealInitializer::Config&) -> ScanResult;
 
-    auto RC_UE_API scan_for_game_functions_and_data_impl(const UnrealInitializer::Config&) -> ScanResult;
-    auto RC_UE_API scan_for_guobjectarray_impl(const UnrealInitializer::Config&) -> ScanResult;
+    auto RC_UE_API ScanForGameFunctionsAndDataImpl(const UnrealInitializer::Config&) -> ScanResult;
+    auto RC_UE_API ScnForGUObjectArrayImpl(const UnrealInitializer::Config&) -> ScanResult;
 }
 
 

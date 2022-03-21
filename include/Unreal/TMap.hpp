@@ -14,35 +14,35 @@ namespace RC::Unreal
     class TMapElement
     {
     public:
-        MapInnerKeyType key;
-        MapInnerValueType value;
-        int64_t padding; // Figure out what this is later
+        MapInnerKeyType Key;
+        MapInnerValueType Value;
+        int64_t Padding; // Figure out what this is later
     };
 
     template<typename MapInnerKeyType, typename MapInnerValueType>
     class TMap
     {
     public:
-        constexpr static inline InternalType internal_type = InternalType::Map;
+        constexpr static inline InternalType InternalType = InternalType::Map;
         using MapElement = TMapElement<MapInnerKeyType, MapInnerValueType>;
 
     protected:
-        MapElement* elements{};
-        int32_t map_num{};
-        int32_t map_max{};
+        MapElement* Elements{};
+        int32_t MapNum{};
+        int32_t MapMax{};
 
     public:
-        TMap(MapElement* elements_ptr, int32_t current_size, int32_t capacity) : elements(elements_ptr), map_num(current_size), map_max(capacity) {}
+        TMap(MapElement* ElementsPtr, int32_t CurrentSize, int32_t Capacity) : Elements(ElementsPtr), MapNum(CurrentSize), MapMax(Capacity) {}
 
     protected:
         template<typename Callable>
-        auto for_each(Callable callable) -> void
+        auto ForEach(Callable Callable_) -> void
         {
-            if (!elements) { return; }
+            if (!Elements) { return; }
 
-            for (int32_t i = 0; i < get_map_num(); ++i)
+            for (int32_t i = 0; i < Num(); ++i)
             {
-                if (callable(&elements[i]) == LoopAction::Break)
+                if (Callable_(&Elements[i]) == LoopAction::Break)
                 {
                     break;
                 }
@@ -50,35 +50,35 @@ namespace RC::Unreal
         }
 
     public:
-        auto get_map_num() -> int32_t
+        auto Num() -> int32_t
         {
-            return map_num;
+            return MapNum;
         }
 
-        auto get_map_max() -> int32_t
+        auto Max() -> int32_t
         {
-            return map_max;
+            return MapMax;
         }
 
-        auto get_elements_ptr() -> MapElement*
+        auto GetElementsPtr() -> MapElement*
         {
-            return elements;
+            return Elements;
         }
 
-        auto at(MapInnerKeyType key) -> MapInnerValueType*
+        auto At(MapInnerKeyType Key) -> MapInnerValueType*
         {
             // Map is empty, figure out what to do here
-            if (get_map_num() == 0)
+            if (Num() == 0)
             {
 
             }
 
-            MapInnerValueType* found_value{};
+            MapInnerValueType* FoundValue{};
 
-            for_each([&](MapElement* element) {
-                if (element->key == key)
+            ForEach([&](MapElement* Element) {
+                if (Element->Key == Key)
                 {
-                    found_value = &element->value;
+                    FoundValue = &Element->Value;
                     return LoopAction::Break;
                 }
                 else
@@ -87,12 +87,12 @@ namespace RC::Unreal
                 }
             });
 
-            return found_value;
+            return FoundValue;
         }
 
-        auto operator[](MapInnerKeyType key) -> MapInnerValueType*
+        auto operator[](MapInnerKeyType Key) -> MapInnerValueType*
         {
-            return static_cast<MapInnerValueType*>(at(key));
+            return static_cast<MapInnerValueType*>(At(Key));
         }
     };
 }

@@ -1,18 +1,18 @@
 #include <Unreal/VirtualFunctionHelper.hpp>
 
-auto get_shared_objects() -> std::unordered_map<std::string, void*>&
+auto GetSharedObjects() -> std::unordered_map<std::string, void*>&
 {
-    static std::unordered_map<std::string, void*> g_shared_objects;
-    return g_shared_objects;
+    static std::unordered_map<std::string, void*> SSharedObjects;
+    return SSharedObjects;
 }
 
-void* SharedObjectManager::get_shared_object_internal(const char* id)
+void* SharedObjectManager::GetSharedObjectInternal(const char* Id)
 {
-    const auto iterator = get_shared_objects().find(std::string(id));
-    return iterator != get_shared_objects().end() ? iterator->second : nullptr;
+    const auto Iterator = GetSharedObjects().find(std::string(Id));
+    return Iterator != GetSharedObjects().end() ? Iterator->second : nullptr;
 }
 
-void SharedObjectManager::set_shared_object_internal(const char* id, void* new_value)
+void SharedObjectManager::SetSharedObjectInternal(const char* Id, void* NewValue)
 {
-    get_shared_objects().insert({std::string(id), new_value});
+    GetSharedObjects().insert({std::string(Id), NewValue});
 }

@@ -61,27 +61,27 @@ namespace RC::Unreal
          * Keep in mind that enumeration can have gaps as well as negative values
          * The last entry of the array will always be a _MAX constant
          */
-        auto get_enum_names() -> FEnumNameArray&;
+        auto GetEnumNames() -> FEnumNameArray&;
 
         /**
          * Returns the C++ form using which the enum has been originally declared
          * See ECppForm for possible values
          */
-        auto get_cpp_form() -> ECppForm;
+        auto GetCppForm() -> ECppForm;
 
         /**
          * Returns the flags set on the enumeration object
          * Will return EEnumFlags::None on older UE versions
          */
-        auto get_enum_flags() -> EEnumFlags;
+        auto GetEnumFlags() -> EEnumFlags;
 
         /**
          * Retrieves the enumeration index associated with the provided enum name
          * Returns INDEX_NONE if there is no enumeration constant with the provided name
          */
-        auto get_index_by_name(const std::wstring& name) -> int32_t;
+        auto GetIndexByName(const std::wstring& name) -> int32_t;
 
-        auto get_value_by_name(const std::wstring& name) -> int64_t;
+        auto GetValueByName(const std::wstring& name) -> int64_t;
     };
 
     class RC_UE_API UUserDefinedEnum : public UEnum

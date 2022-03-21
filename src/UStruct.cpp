@@ -10,130 +10,130 @@ namespace RC::Unreal
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
-    auto UStruct::get_children() -> UField*
+    auto UStruct::GetChildren() -> UField*
     {
         return Helper::Casting::offset_deref<UField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XField_Children));
     }
 
-    auto UStruct::get_child_properties() -> FField*
+    auto UStruct::GetChildProperties() -> FField*
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
             throw std::runtime_error("UStruct::ChildProperties is not available before UE 4.25");
         }
         return Helper::Casting::offset_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XField_ChildProperties));
     }
 
-    auto UStruct::get_super_struct() -> UStruct*
+    auto UStruct::GetSuperStruct() -> UStruct*
     {
         return Helper::Casting::offset_deref<UStruct*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_SuperStruct));
     }
 
-    auto UStruct::get_properties_size() -> int32_t
+    auto UStruct::GetPropertiesSize() -> int32_t
     {
         return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_PropertiesSize));
     }
 
-    auto UStruct::get_min_alignment() -> int32_t
+    auto UStruct::GetMinAlignment() -> int32_t
     {
         return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_MinAlignment));
     }
 
-    auto UStruct::is_child_of(UStruct* a_struct) -> bool
+    auto UStruct::IsChildOf(UStruct* Struct) -> bool
     {
-        UStruct* current_struct = this;
+        UStruct* CurrentStruct = this;
         do {
-            if (current_struct == a_struct)
+            if (CurrentStruct == Struct)
             {
                 return true;
             }
-            current_struct = current_struct->get_super_struct();
+            CurrentStruct = CurrentStruct->GetSuperStruct();
         }
-        while (current_struct);
+        while (CurrentStruct);
         return false;
     }
 
-    auto UStruct::for_each_function(const std::function<LoopAction(UFunction*)>& callable) -> void
+    auto UStruct::ForEachFunction(const std::function<LoopAction(UFunction*)>& Callable) -> void
     {
-        UField* current_field = get_children();
+        UField* CurrentField = GetChildren();
 
-        while (current_field != nullptr) {
+        while (CurrentField != nullptr) {
             //Only trigger the callable on UFunction objects
-            if (UFunction* function = cast_object<UFunction>(current_field)) {
-                LoopAction loop_action = callable(function);
+            if (UFunction* Function = Cast<UFunction>(CurrentField)) {
+                LoopAction LoopAction = Callable(Function);
 
-                if (loop_action == LoopAction::Break) {
+                if (LoopAction == LoopAction::Break) {
                     break;
                 }
             }
-            current_field = current_field->get_next_ufield();
+            CurrentField = CurrentField->GetNextField();
         }
     }
 
-    auto UStruct::for_each_property(const std::function<LoopAction(FProperty* property)>& callable) -> void
+    auto UStruct::ForEachProperty(const std::function<LoopAction(FProperty* Property)>& Callable) -> void
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
-            UField* current_field = get_children();
+            UField* CurrentField = GetChildren();
 
-            while (current_field != nullptr) {
-                FField* current_field_as_ffield = current_field->as_ffield_unsafe();
+            while (CurrentField != nullptr) {
+                FField* CurrentFieldAsFField = CurrentField->AsFFieldUnsafe();
 
                 //Only trigger the callable on UProperty objects
-                if (FProperty* property = CastField<FProperty>(current_field_as_ffield)) {
-                    LoopAction loop_action = callable(property);
+                if (FProperty* Property = CastField<FProperty>(CurrentFieldAsFField)) {
+                    LoopAction LoopAction = Callable(Property);
 
-                    if (loop_action == LoopAction::Break) {
+                    if (LoopAction == LoopAction::Break) {
                         break;
                     }
                 }
-                current_field = current_field->get_next_ufield();
+                CurrentField = CurrentField->GetNextField();
             }
         }
         else
         {
-            FField* current_field = get_child_properties();
+            FField* CurrentField = GetChildProperties();
 
-            while (current_field != nullptr) {
+            while (CurrentField != nullptr) {
                 //Only trigger the callable on FProperty objects
-                if (FProperty* property = CastField<FProperty>(current_field)) {
-                    LoopAction loop_action = callable(property);
+                if (FProperty* Property = CastField<FProperty>(CurrentField)) {
+                    LoopAction LoopAction = Callable(Property);
 
-                    if (loop_action == LoopAction::Break) {
+                    if (LoopAction == LoopAction::Break) {
                         break;
                     }
                 }
-                current_field = current_field->GetNextFFieldUnsafe();
+                CurrentField = CurrentField->GetNextFFieldUnsafe();
             }
         }
     }
 
-    auto UStruct::for_each_super_struct(const ForEachSuperStructCallable& callable) -> void
+    auto UStruct::ForEachSuperStruct(const ForEachSuperStructCallable& Callable) -> void
     {
-        UStruct* super_struct = get_super_struct();
-        LoopAction loop_action{};
+        UStruct* SuperStruct = GetSuperStruct();
+        LoopAction LoopAction{};
 
-        while (super_struct)
+        while (SuperStruct)
         {
-            loop_action = callable(super_struct);
-            if (loop_action == LoopAction::Break) { break; }
+            LoopAction = Callable(SuperStruct);
+            if (LoopAction == LoopAction::Break) { break; }
 
-            super_struct = super_struct->get_super_struct();
+            SuperStruct = SuperStruct->GetSuperStruct();
         }
     }
 
-    auto UStruct::ForEachPropertyInChain(const ForEachPropertyInChainCallable& callable) -> void
+    auto UStruct::ForEachPropertyInChain(const ForEachPropertyInChainCallable& Callable) -> void
     {
-        UStruct* uclass = this;
+        UStruct* Class = this;
 
-        while (uclass)
+        while (Class)
         {
-            bool should_outer_loop_break{};
+            bool bShouldOuterLoopBreak{};
 
-            uclass->for_each_property([&](FProperty* child) {
-                if (callable(child) == LoopAction::Break)
+            Class->ForEachProperty([&](FProperty* child) {
+                if (Callable(child) == LoopAction::Break)
                 {
-                    should_outer_loop_break = true;
+                    bShouldOuterLoopBreak = true;
                     return LoopAction::Break;
                 }
                 else
@@ -142,16 +142,16 @@ namespace RC::Unreal
                 }
             });
 
-            if (should_outer_loop_break) { break; }
+            if (bShouldOuterLoopBreak) { break; }
 
-            uclass->for_each_super_struct([&](UStruct* super_struct) {
-                if (!super_struct) { return LoopAction::Continue; }
+            Class->ForEachSuperStruct([&](UStruct* SuperStruct) {
+                if (!SuperStruct) { return LoopAction::Continue; }
 
-                super_struct->for_each_property([&](FProperty* child) {
-                    auto loop_action = callable(child);
+                SuperStruct->ForEachProperty([&](FProperty* Property) {
+                    auto loop_action = Callable(Property);
                     if (loop_action == LoopAction::Break)
                     {
-                        should_outer_loop_break = true;
+                        bShouldOuterLoopBreak = true;
                         return LoopAction::Break;
                     }
                     else
@@ -160,17 +160,17 @@ namespace RC::Unreal
                     }
                 });
 
-                if (should_outer_loop_break) { return LoopAction::Break; }
+                if (bShouldOuterLoopBreak) { return LoopAction::Break; }
 
                 return LoopAction::Continue;
             });
 
-            if (should_outer_loop_break) { break; }
+            if (bShouldOuterLoopBreak) { break; }
 
-            UStruct* next_uclass = uclass->get_uclass();
-            if (next_uclass != uclass)
+            UStruct* NextClass = Class->GetClass();
+            if (NextClass != Class)
             {
-                uclass = next_uclass;
+                Class = NextClass;
             }
             else
             {
@@ -199,19 +199,19 @@ namespace RC::Unreal
 
     bool UStruct::HasChildren()
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
-            return get_children();
+            return GetChildren();
         }
         else
         {
-            return get_child_properties() || get_children();
+            return GetChildProperties() || GetChildren();
         }
     }
 
     FProperty* UStruct::GetFirstProperty()
     {
-        if (Version::is_below(4, 25))
+        if (Version::IsBelow(4, 25))
         {
             // In <4.25, this is safe if a UField is a property, which 'CastField' checks
             // In <4.25, all properties are of type UField
@@ -220,7 +220,7 @@ namespace RC::Unreal
         }
         else
         {
-            return CastField<FProperty>(get_child_properties());
+            return CastField<FProperty>(GetChildProperties());
         }
     }
 }

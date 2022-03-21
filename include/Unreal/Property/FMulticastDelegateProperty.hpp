@@ -13,7 +13,7 @@ namespace RC::Unreal
         using FInvocationList = TArray<TScriptDelegate>;
 
     public:
-        FInvocationList invocation_list;
+        FInvocationList InvocationList;
     };
     using FMulticastScriptDelegate = TMulticastScriptDelegate/*<>*/;
 

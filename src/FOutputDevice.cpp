@@ -48,4 +48,9 @@ namespace RC::Unreal
 
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FOutputDevice, CanBeUsedOnMultipleThreads, bool)
     }
+
+    void FOutputDevice::Log(const TCHAR* Str)
+    {
+        Serialize(Str, ELogVerbosity::Verbose, FName(), 0);
+    }
 }

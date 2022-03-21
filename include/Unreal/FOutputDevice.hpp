@@ -33,6 +33,9 @@ namespace RC::Unreal
         bool CanBeUsedOnAnyThread() const;
         // Added in 4.21, throws in lesser versions
         bool CanBeUsedOnMultipleThreads() const;
+
+    public:
+        void Log(const TCHAR* Str);
     };
 }
 

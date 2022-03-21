@@ -36,14 +36,12 @@ namespace RC::Unreal
         throw_missed_offset(std::vector<StaticOffsetFinder::MemberOffsets>{member_offset}, message);
     }
 
-    auto StaticOffsetFinder::initialize(HANDLE process_handle) -> void
+    auto StaticOffsetFinder::initialize() -> void
     {
         if (is_initialized())
         {
             throw std::runtime_error{"[StaticOffsetFinder::initialize] Attempted to initialize twice"};
         }
-
-        m_process_handle = process_handle;
 
         // Fill arrays with default values
         m_static_offsets.fill(-1);
@@ -117,11 +115,11 @@ namespace RC::Unreal
         return prop;
     }
 
-    auto StaticOffsetFinder::find_independent_offsets(HANDLE process_handle) -> void
+    auto StaticOffsetFinder::find_independent_offsets() -> void
     {
         if (!is_initialized())
         {
-            initialize(process_handle);
+            initialize();
         }
 
         find_class_private();
@@ -129,7 +127,7 @@ namespace RC::Unreal
         find_uobject_fname();
     }
 
-    auto StaticOffsetFinder::find_offsets(HANDLE process_handle) -> void
+    auto StaticOffsetFinder::find_offsets() -> void
     {
         find_super_struct();
 
@@ -440,7 +438,7 @@ namespace RC::Unreal
             // Safely attempt to dereference the value at 'AActor+i'
             // If the value is non-pointer then the return value of 'offset_deref_safe' will be nullptr
             // This line also adds the 'Owner' offset and dereferences the pointer if it's not a non-pointer value
-            UClass* potential_ffield_owner_ptr = Helper::Casting::offset_deref_safe<UClass*>(potential_child_properties_ptr, ffield_owner_offset, m_process_handle);
+            UClass* potential_ffield_owner_ptr = Helper::Casting::offset_deref_safe<UClass*>(potential_child_properties_ptr, ffield_owner_offset, GetCurrentProcess());
 
             // If the value is a pointer
             if (potential_ffield_owner_ptr)
@@ -555,7 +553,7 @@ namespace RC::Unreal
             // UClass of child_properties
             UObject* unreal_class = Helper::Casting::offset_deref<UObject*>(child_properties, i);
 
-            UObject* unreal_class2 = Helper::Casting::offset_deref_safe<UObject*>(unreal_class, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Owner), m_process_handle);
+            UObject* unreal_class2 = Helper::Casting::offset_deref_safe<UObject*>(unreal_class, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Owner), GetCurrentProcess());
 
             if (unreal_class2 == aactor)
             {
@@ -1359,7 +1357,7 @@ namespace RC::Unreal
             // If pointer is valid, then this could be 'Func' but we cannot confirm it yet because 'EventGraphFunction' is also a ptr type that may be non-nullptr
             bool was_event_graph_function_or_func_valid_ptr;
             unsigned char* even_graph_function_or_func_dbl_ptr = static_cast<unsigned char*>(*static_cast<void**>(static_cast<void*>(event_graph_function_or_func)));
-            if (Helper::Casting::offset_deref_safe<unsigned char*>(even_graph_function_or_func_dbl_ptr, 0, m_process_handle) != 0)
+            if (Helper::Casting::offset_deref_safe<unsigned char*>(even_graph_function_or_func_dbl_ptr, 0, GetCurrentProcess()) != 0)
             {
                 was_event_graph_function_or_func_valid_ptr = true;
             }
@@ -1395,8 +1393,8 @@ namespace RC::Unreal
             // If pointer is valid, then this could be the 'Func' pointer
             // Checking both the pointer and the pointer that pointer is pointing to, because we might be out of bounds of the struct here
             unsigned char* func_or_oob_dbl_ptr = static_cast<unsigned char*>(*static_cast<void**>(static_cast<void*>(func_or_oob)));
-            if (Helper::Casting::offset_deref_safe<unsigned char*>(func_or_oob, 0, m_process_handle) != 0 &&
-                Helper::Casting::offset_deref_safe<unsigned char*>(func_or_oob_dbl_ptr, 0, m_process_handle) != 0)
+            if (Helper::Casting::offset_deref_safe<unsigned char*>(func_or_oob, 0, GetCurrentProcess()) != 0 &&
+                Helper::Casting::offset_deref_safe<unsigned char*>(func_or_oob_dbl_ptr, 0, GetCurrentProcess()) != 0)
             {
                 // Pointer is valid
 
@@ -1732,10 +1730,10 @@ namespace RC::Unreal
                                 for (int32_t i2 = 0x0; i2 < 0x80; i2 += sizeof(void*))
                                 {
                                     // Safely deref to get the data at this address
-                                    wchar_t* cpp_type = Helper::Casting::offset_deref_safe<wchar_t*>(obj_enum, i2, m_process_handle);
+                                    wchar_t* cpp_type = Helper::Casting::offset_deref_safe<wchar_t*>(obj_enum, i2, GetCurrentProcess());
 
                                     // Safely deref again to confirm that the data is a valid pointer
-                                    void* is_valid_ptr = Helper::Casting::offset_deref_safe<wchar_t*>(cpp_type, 0, m_process_handle);
+                                    void* is_valid_ptr = Helper::Casting::offset_deref_safe<wchar_t*>(cpp_type, 0, GetCurrentProcess());
 
                                     // In the wcscmp call, keep the known string as param 2
                                     // This is because wcscmp only checks param 2 for a null terminator
@@ -1900,7 +1898,7 @@ namespace RC::Unreal
             char* pointer = Helper::Casting::offset_deref<char*>(map_property, i);
 
             // Check if the value at MapProperty+i is a valid pointer
-            void* maybe_pointer = Helper::Casting::offset_deref_safe<void*>(pointer, 0, m_process_handle);
+            void* maybe_pointer = Helper::Casting::offset_deref_safe<void*>(pointer, 0, GetCurrentProcess());
             if (maybe_pointer)
             {
                 // The value at MapProperty+i is a valid pointer
@@ -2087,7 +2085,7 @@ namespace RC::Unreal
             constexpr int32_t ffieldclass_name_offset = 0x0;
 
             // Check if 'maybe_pointer' is a valid pointer
-            int64_t maybe_property_class_name = Helper::Casting::offset_deref_safe<int64_t>(maybe_pointer, ffieldclass_name_offset, m_process_handle);
+            int64_t maybe_property_class_name = Helper::Casting::offset_deref_safe<int64_t>(maybe_pointer, ffieldclass_name_offset, GetCurrentProcess());
             if (!maybe_property_class_name) { continue; }
 
             if (FName(maybe_property_class_name).Equals(property_class_name))
@@ -2139,7 +2137,7 @@ namespace RC::Unreal
             FProperty* maybe_element_prop = Helper::Casting::offset_deref<FProperty*>(setproperty, i);
 
             // Check if 'maybe_element_prop' is a valid pointer
-            void* is_pointer = Helper::Casting::offset_deref_safe<void*>(maybe_element_prop, 0, m_process_handle);
+            void* is_pointer = Helper::Casting::offset_deref_safe<void*>(maybe_element_prop, 0, GetCurrentProcess());
             if (!is_pointer) { continue; }
 
             if (maybe_element_prop->GetFName().Equals(element_property_name))
@@ -2269,7 +2267,7 @@ namespace RC::Unreal
             unsigned char* maybe_interfaces = Helper::Casting::offset_deref<unsigned char*>(pawn, i);
             if (!maybe_interfaces) { continue; }
 
-            UClass* maybe_nav_agent_interface = Helper::Casting::offset_deref_safe<UClass*>(maybe_interfaces, 0, m_process_handle);
+            UClass* maybe_nav_agent_interface = Helper::Casting::offset_deref_safe<UClass*>(maybe_interfaces, 0, GetCurrentProcess());
 
             if (maybe_nav_agent_interface == nav_agent_interface)
             {

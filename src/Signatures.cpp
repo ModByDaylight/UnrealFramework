@@ -57,7 +57,7 @@ namespace RC::Unreal::Signatures
                     },
                     // On Match Found
                     [&]([[maybe_unused]]SignatureContainer& self) {
-                        version_status = Unreal::Version::Initialize(config, self.get_match_address());
+                        version_status = Unreal::Version::Initialize(self.get_match_address());
 
                         if (version_status.Status == VersionStatus::SUCCESS)
                         {

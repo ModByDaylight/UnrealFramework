@@ -23,13 +23,13 @@ namespace RC::Unreal::UnrealInitializer
     {
         // Setup all modules for the aob scanner
         MODULEINFO ModuleInfo;
-        K32GetModuleInformation(config.ProcessHandle, config.ModuleHandle, &ModuleInfo, sizeof(MODULEINFO));
+        K32GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &ModuleInfo, sizeof(MODULEINFO));
         SigScannerStaticData::m_modules_info[ScanTarget::MainExe] = ModuleInfo;
 
         HMODULE Modules[1024];
         DWORD BytesRequired;
 
-        if (K32EnumProcessModules(config.ProcessHandle, Modules, sizeof(Modules), &BytesRequired) == 0)
+        if (K32EnumProcessModules(GetCurrentProcess(), Modules, sizeof(Modules), &BytesRequired) == 0)
         {
             throw std::runtime_error{std::format("Was unable to enumerate game modules. Error Code: {}", GetLastError())};
         }
@@ -46,7 +46,7 @@ namespace RC::Unreal::UnrealInitializer
         {
             char ModuleRawName[MAX_PATH];
             // TODO: Fix an occasional error: "Call to K32GetModuleBaseNameA failed. Error Code: 6 (ERROR_INVALID_HANDLE)"
-            if (K32GetModuleBaseNameA(config.ProcessHandle, Modules[i], ModuleRawName, sizeof(ModuleRawName) / sizeof(char)) == 0)
+            if (K32GetModuleBaseNameA(GetCurrentProcess(), Modules[i], ModuleRawName, sizeof(ModuleRawName) / sizeof(char)) == 0)
             {
                 throw std::runtime_error{std::format("Call to K32GetModuleBaseNameA failed. Error Code: {}", GetLastError())};
             }
@@ -64,7 +64,7 @@ namespace RC::Unreal::UnrealInitializer
                 {
                     if (!SigScannerStaticData::m_is_modular) { SigScannerStaticData::m_is_modular = true; }
 
-                    K32GetModuleInformation(config.ProcessHandle, Modules[i], &SigScannerStaticData::m_modules_info.array[i2], sizeof(MODULEINFO));
+                    K32GetModuleInformation(GetCurrentProcess(), Modules[i], &SigScannerStaticData::m_modules_info.array[i2], sizeof(MODULEINFO));
                 }
             }
         }
@@ -392,7 +392,7 @@ namespace RC::Unreal::UnrealInitializer
 
         // Find offsets that are required for the StaticOffsetInternal implementation
         // These do not require that any objects in GUObjectArray to be initialized
-        StaticOffsetFinder::find_independent_offsets(Config.ProcessHandle);
+        StaticOffsetFinder::find_independent_offsets();
 
         // Objects that are required to exist before we can continue
         // Add objects to here before you use them in StaticOffsetFinder
@@ -459,7 +459,7 @@ namespace RC::Unreal::UnrealInitializer
             throw std::runtime_error{""};
         }
 
-        StaticOffsetFinder::find_offsets(Config.ProcessHandle);
+        StaticOffsetFinder::find_offsets();
         StaticOffsetFinder::output_all_member_offsets();
 
         FMalloc::bIsInitialized = true;

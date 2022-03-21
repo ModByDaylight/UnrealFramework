@@ -93,8 +93,6 @@ namespace RC::Unreal
         inline static std::array<int32_t, static_cast<std::underlying_type<MemberOffsets>::type>(MemberOffsets::Max)> m_static_offsets;
         inline static std::array<const wchar_t*, static_cast<std::underlying_type<MemberOffsets>::type>(MemberOffsets::Max)> m_debug_static_offset_names;
 
-        inline static HANDLE m_process_handle;
-
         inline static bool m_initialized{false};
         inline static bool UE_BLUEPRINT_EVENTGRAPH_FASTCALLS{};
 
@@ -135,7 +133,7 @@ namespace RC::Unreal
         static auto find_uscriptstruct_structflags() -> void;
 
     public:
-        static auto initialize(HANDLE process_handle) -> void;
+        static auto initialize() -> void;
         static auto is_initialized() -> bool;
 
         static auto add_static_offset(MemberOffsets member, int32_t offset, const wchar_t* debug_name) -> void;
@@ -144,10 +142,10 @@ namespace RC::Unreal
         static auto output_all_member_offsets() -> void;
 
         // Find offsets that don't depend on the existence of any objects
-        static auto find_independent_offsets(HANDLE process_handle) -> void;
+        static auto find_independent_offsets() -> void;
 
         // Find offsets that may or may not depend on the existence of one or more objects
-        static auto find_offsets(HANDLE process_handle) -> void;
+        static auto find_offsets() -> void;
     };
 }
 

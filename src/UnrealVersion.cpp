@@ -8,7 +8,7 @@ namespace RC::Unreal
 
     VersionStatus::VersionStatus(StatusCode StatusParam, std::wstring ErrorMessageParam) : Status(StatusParam), ErrorMessage(std::move(ErrorMessageParam)) {}
 
-    auto Version::Initialize(const UnrealInitializer::Config& Config, void* Address) -> VersionStatus
+    auto Version::Initialize(void* Address) -> VersionStatus
     {
         uint16_t MajorVersion = Helper::Casting::ptr_cast_deref<uint16_t>(Address);
         uint16_t MinorVersion = Helper::Casting::ptr_cast_deref<uint16_t>(Address, 0x2);
@@ -30,7 +30,7 @@ namespace RC::Unreal
         }
 
         const File::CharType* Branch = Helper::Casting::ptr_cast_deref<const File::CharType*>(Address, 0x10);
-        void* BranchTest = Helper::Casting::ptr_cast_deref_safe<void*>(Branch, 0x0, Config.ProcessHandle);
+        void* BranchTest = Helper::Casting::ptr_cast_deref_safe<void*>(Branch, 0x0, GetCurrentProcess());
         if (!BranchTest)
         {
             return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: 'Branch' member variable FString data was nullptr"))};

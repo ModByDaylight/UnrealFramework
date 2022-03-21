@@ -47,10 +47,6 @@ namespace RC::Unreal::UnrealInitializer
     struct RC_UE_API Config
     {
     public:
-        // TODO: These should be removed as part of the UnrealInit simplification change
-        HANDLE ProcessHandle;
-        HMODULE ModuleHandle;
-
         uint32_t NumScanThreads{8};
         uint32_t MultithreadingModuleSizeThreshold{0x1000000};
 

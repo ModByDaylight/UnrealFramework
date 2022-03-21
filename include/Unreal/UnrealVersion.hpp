@@ -17,11 +17,6 @@
 
 namespace RC::Unreal
 {
-    namespace UnrealInitializer
-    {
-        struct Config;
-    }
-
     struct RC_UE_API VersionStatus
     {
         enum StatusCode
@@ -43,7 +38,7 @@ namespace RC::Unreal
         static int32_t Major;
         static int32_t Minor;
 
-        auto static Initialize(const UnrealInitializer::Config& Config, void* Address) -> VersionStatus;
+        auto static Initialize(void* Address) -> VersionStatus;
 
         [[nodiscard]]
         auto static IsEqual(int32_t major_p, int32_t minor_p) -> bool { return (Major == major_p && Minor == minor_p); }

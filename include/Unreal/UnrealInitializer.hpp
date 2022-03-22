@@ -77,7 +77,7 @@ namespace RC::Unreal::UnrealInitializer
         static inline bool bIsInitialized{false};
     };
 
-    auto RC_UE_API SetupUnrealModules(const Config&) -> void;
+    auto RC_UE_API SetupUnrealModules() -> void;
     auto RC_UE_API VerifyModuleCache(const Config&) -> CacheInfo;
     auto RC_UE_API CreateCache(CacheInfo&) -> void;
     auto RC_UE_API LoadCache(CacheInfo&) -> void;

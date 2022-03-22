@@ -19,7 +19,7 @@
 
 namespace RC::Unreal::UnrealInitializer
 {
-    auto SetupUnrealModules(const Config& config) -> void
+    auto SetupUnrealModules() -> void
     {
         // Setup all modules for the aob scanner
         MODULEINFO ModuleInfo;
@@ -288,7 +288,7 @@ namespace RC::Unreal::UnrealInitializer
         // Setup all modules for the aob scanner
         // This is currently done outside the Unreal API in order to over come a problem
         // TODO: Put an option here to check if the modules are initialized and initialize if they aren't
-        //setup_unreal_modules(config);
+        SetupUnrealModules();
 
         // Check if we have a valid cache or if a cache should be created after scanning
         CacheInfo CacheInfo = VerifyModuleCache(Config);

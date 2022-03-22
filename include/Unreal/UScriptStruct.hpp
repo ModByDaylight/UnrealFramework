@@ -1,8 +1,6 @@
 #ifndef RC_UNREAL_USCRIPTSTRUCT_HPP
 #define RC_UNREAL_USCRIPTSTRUCT_HPP
 
-#include <Helpers/Casting.hpp>
-
 #include <Unreal/StaticOffsetFinder.hpp>
 #include <Unreal/UStruct.hpp>
 #include <Unreal/TypeChecker.hpp>

@@ -1,5 +1,6 @@
 #include <Unreal/StaticOffsetFinder.hpp>
 #include <Unreal/Property/NumericPropertyTypes.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

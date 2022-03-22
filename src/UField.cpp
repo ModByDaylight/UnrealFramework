@@ -2,6 +2,7 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

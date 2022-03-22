@@ -1,6 +1,7 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/TArray.hpp>
 #include <Unreal/FProperty.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

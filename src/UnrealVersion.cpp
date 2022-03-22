@@ -1,5 +1,6 @@
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/UClass.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

@@ -9,6 +9,7 @@
 #include <SigScanner/SinglePassSigScanner.hpp>
 #include <File/File.hpp>
 #include <Helpers/ASM.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal::Signatures
 {

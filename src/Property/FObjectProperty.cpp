@@ -1,6 +1,7 @@
 #include <Unreal/Property/FObjectProperty.hpp>
 #include <Unreal/VersionedContainer/UnrealVirtualImpl/UnrealVirtualBaseVC.hpp>
 #include <Unreal/FString.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

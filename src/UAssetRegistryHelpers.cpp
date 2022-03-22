@@ -1,6 +1,7 @@
 #include <DynamicOutput/DynamicOutput.hpp>
 #include <Unreal/UAssetRegistryHelpers.hpp>
 #include <Unreal/UFunction.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

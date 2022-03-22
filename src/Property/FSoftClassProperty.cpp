@@ -1,4 +1,5 @@
 #include <Unreal/Property/FSoftClassProperty.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

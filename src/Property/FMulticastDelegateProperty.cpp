@@ -1,5 +1,6 @@
 #include <Unreal/Property/FMulticastDelegateProperty.hpp>
 #include <Unreal/VersionedContainer/UnrealVirtualImpl/UnrealVirtualBaseVC.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

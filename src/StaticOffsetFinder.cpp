@@ -3,6 +3,7 @@
 #include <format>
 
 #include <Unreal/StaticOffsetFinder.hpp>
+#include <Helpers/Casting.hpp>
 #include <Helpers/Integer.hpp>
 #include <Unreal/UObjectGlobals.hpp>
 #include <Unreal/UObject.hpp>

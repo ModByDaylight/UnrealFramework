@@ -3,6 +3,7 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/UFunction.hpp>
 #include <Unreal/FProperty.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

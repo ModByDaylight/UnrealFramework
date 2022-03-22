@@ -3,7 +3,6 @@
 
 #include <array>
 
-#include <Helpers/Casting.hpp>
 #include <Unreal/UnrealFlags.hpp>
 
 namespace RC::Unreal
@@ -29,11 +28,7 @@ namespace RC::Unreal
         virtual auto UObject_has_all_flags(UObject* p_this, const EObjectFlags flags_to_check) -> bool = 0;
         virtual bool UObject_HasAnyInternalFlags(UObject* p_this, const EInternalObjectFlags FlagsToCheck) = 0;
 
-        virtual auto UObject_get_internal_index(const UObject* p_this) const -> int32_t
-        {
-            // TODO: Automate this offset
-            return Helper::Casting::offset_deref<uint32_t>(p_this, 0xC);
-        }
+        virtual auto UObject_get_internal_index(const UObject* p_this) const -> int32_t;
     };
 }
 

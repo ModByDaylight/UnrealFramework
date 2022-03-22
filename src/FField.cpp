@@ -3,6 +3,7 @@
 #include <Unreal/UFunction.hpp>
 #include <Unreal/FProperty.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
+#include <Helpers/Casting.hpp>
 
 #define IMPLEMENT_FFIELD_VIRTUAL_WRAPPER(class_name, function_name, return_type, params, args) \
 if (Version::IsBelow(4, 25)) \

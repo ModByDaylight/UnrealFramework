@@ -6,6 +6,7 @@
 #include <Unreal/VersionedContainer/Container.hpp>
 //#include <Unreal/UnrealStringConversions.h>
 //#include <Unreal/UnrealParsing.h>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {

@@ -15,15 +15,8 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FEnumProperty);
 
     public:
-        auto GetUnderlyingProperty() -> FNumericProperty*
-        {
-            return Helper::Casting::offset_deref<FNumericProperty*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::EnumProperty_UnderlyingType));
-        }
-
-        auto GetEnum() -> UEnum*
-        {
-            return Helper::Casting::offset_deref<UEnum*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::EnumProperty_Enum));
-        }
+        auto GetUnderlyingProperty() -> FNumericProperty*;
+        auto GetEnum() -> UEnum*;
     };
 }
 

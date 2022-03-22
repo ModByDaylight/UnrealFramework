@@ -73,22 +73,42 @@ namespace RC::Unreal::UnrealInitializer
         }
     }
 
-    auto VerifyModuleCache(const Config& config) -> CacheInfo
+    auto VerifyModuleCache(const Config& UnrealConfig) -> CacheInfo
     {
+        if (!UnrealConfig.bEnableCache) { return {.GameExeFile = {}, .bShouldUseCache = false, .bShouldSerializeCache = false}; }
+
         bool bUseCache{};
         bool bShouldSerializeCache{true};
         bool bShouldSerializeCacheOverride{};
         File::Handle GameExeFile;
         File::Handle SelfFile;
 
+        wchar_t ExePathBuffer[1024];
+        GetModuleFileNameW(GetModuleHandle(nullptr), ExePathBuffer, 1023);
+        StaticStorage::GameExe = ExePathBuffer;
+
+        HMODULE SelfModule;
+        wchar_t SelfPathBuffer[1024];
+        GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, reinterpret_cast<LPCWSTR>(&VerifyModuleCache), &SelfModule);
+        GetModuleFileNameW(SelfModule, SelfPathBuffer, sizeof(SelfPathBuffer));
+        std::filesystem::path SelfPath = SelfPathBuffer;
+
+        std::filesystem::path CachePath = UnrealConfig.CachePath;
+        if (CachePath.empty())
+        {
+            Output::send(STR("Cache path is empty, using default\n"));
+            CachePath = StaticStorage::GameExe.parent_path();
+            CachePath.append("cache");
+        }
+
         // Check if the self file (the injected dll that this code is contained within) has changed
         // and whether that means that we should invalidate the cache
         try
         {
-            SelfFile = File::open(config.SelfFile);
+            SelfFile = File::open(SelfPath);
 
-            std::filesystem::path SelfCachePathAndFile = config.CachePath;
-            SelfCachePathAndFile /= config.SelfFile.filename();
+            std::filesystem::path SelfCachePathAndFile = CachePath;
+            SelfCachePathAndFile /= SelfPath.filename();
             SelfCachePathAndFile.replace_extension(".cache");
 
             SelfFile.set_serialization_output_file(SelfCachePathAndFile);
@@ -98,12 +118,12 @@ namespace RC::Unreal::UnrealInitializer
                 // The self file has changed, invalidate the cache
                 // This could also mean that the cache file didn't exist
 
-                bool bShouldInvalidate = !std::filesystem::exists(SelfCachePathAndFile) || config.bInvalidateCacheIfSelfChanged;
+                bool bShouldInvalidate = !std::filesystem::exists(SelfCachePathAndFile) || UnrealConfig.bInvalidateCacheIfSelfChanged;
 
                 if (bShouldInvalidate)
                 {
                     // Invalidate all caches
-                    for (const auto& Item : std::filesystem::directory_iterator(config.CachePath))
+                    for (const auto& Item : std::filesystem::directory_iterator(CachePath))
                     {
                         std::error_code ec;
                         if (Item.is_directory()) { continue; }
@@ -130,16 +150,17 @@ namespace RC::Unreal::UnrealInitializer
         {
             // Make sure we don't load the cache if there was an error while checking the self file
             bShouldSerializeCacheOverride = true;
+            SelfFile.close();
         }
 
         // Check whether the game has a usable cache or whether we need to create one
-        if (!config.CachePath.empty() && !config.GameExe.empty())
+        if (!CachePath.empty() && !StaticStorage::GameExe.empty())
         {
-            std::filesystem::path CachePathAndFile = config.CachePath;
-            CachePathAndFile /= config.GameExe.filename();
+            std::filesystem::path CachePathAndFile = CachePath;
+            CachePathAndFile /= StaticStorage::GameExe.filename();
             CachePathAndFile.replace_extension(".cache");
 
-            GameExeFile = File::open(config.GameExe);
+            GameExeFile = File::open(StaticStorage::GameExe);
             GameExeFile.set_serialization_output_file(CachePathAndFile);
 
             if (GameExeFile.is_deserialized_and_live_equal() && !bShouldSerializeCacheOverride)
@@ -282,11 +303,11 @@ namespace RC::Unreal::UnrealInitializer
         }
     }
 
-    auto Initialize(const Config& Config) -> void
+    auto Initialize(const Config& UnrealConfig) -> void
     {
         // Setup scanner
-        SinglePassScanner::m_num_threads = Config.NumScanThreads;
-        SinglePassScanner::m_multithreading_module_size_threshold = Config.MultithreadingModuleSizeThreshold;
+        SinglePassScanner::m_num_threads = UnrealConfig.NumScanThreads;
+        SinglePassScanner::m_multithreading_module_size_threshold = UnrealConfig.MultithreadingModuleSizeThreshold;
 
         // Setup all modules for the aob scanner
         // This is currently done outside the Unreal API in order to over come a problem
@@ -294,9 +315,9 @@ namespace RC::Unreal::UnrealInitializer
         SetupUnrealModules();
 
         // Check if we have a valid cache or if a cache should be created after scanning
-        CacheInfo CacheInfo = VerifyModuleCache(Config);
+        CacheInfo CacheInfo = VerifyModuleCache(UnrealConfig);
 
-        if (CacheInfo.ShouldUseCache)
+        if (UnrealConfig.bEnableCache && CacheInfo.bShouldUseCache)
         {
             LoadCache(CacheInfo);
         }
@@ -353,7 +374,7 @@ namespace RC::Unreal::UnrealInitializer
 
             auto DoScan = [&](auto ScannerFunction, SuppressScanAttemptMessage SuppressScanAttemptMessage = SuppressScanAttemptMessage::No) {
                 // Modular games have much smaller binaries, therefore many scans can be completed very quickly
-                static const int64_t NumScansBeforeFatalFailure = SigScannerStaticData::m_is_modular ? Config.NumScanAttemptsModular : Config.NumScanAttemptsNormal;
+                static const int64_t NumScansBeforeFatalFailure = SigScannerStaticData::m_is_modular ? UnrealConfig.NumScanAttemptsModular : UnrealConfig.NumScanAttemptsNormal;
 
                 Signatures::ScanResult ScanResult{};
                 for (int i = 0; ScanResult.Status == Signatures::ScanStatus::Failed && i < NumScansBeforeFatalFailure; ++i)
@@ -363,7 +384,7 @@ namespace RC::Unreal::UnrealInitializer
                         Output::send<LogLevel::Verbose>(STR("Scan attempt {}/{}\n"), i + 1, NumScansBeforeFatalFailure);
                     }
 
-                    ScanResult = ScannerFunction(Config);
+                    ScanResult = ScannerFunction(UnrealConfig);
                     OutputResult(ScanResult);
 
                     bool bHasFatalError{};
@@ -386,12 +407,16 @@ namespace RC::Unreal::UnrealInitializer
             DoScan(&Signatures::ScanForGUObjectArray, SuppressScanAttemptMessage::Yes);
         }
 
-        if (CacheInfo.ShouldSerializeCache)
+        if (UnrealConfig.bEnableCache)
         {
-            CreateCache(CacheInfo);
+            if (CacheInfo.bShouldSerializeCache)
+            {
+                CreateCache(CacheInfo);
+            }
+
+            CacheInfo.GameExeFile.close();
         }
 
-        CacheInfo.GameExeFile.close();
 
         // Find offsets that are required for the StaticOffsetInternal implementation
         // These do not require that any objects in GUObjectArray to be initialized

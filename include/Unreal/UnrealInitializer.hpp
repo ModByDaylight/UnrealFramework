@@ -45,27 +45,27 @@ namespace RC::Unreal::UnrealInitializer
         // Functions to be called if you want to override one or more scans
         ScanOverrides ScanOverrides{};
 
-        std::filesystem::path SelfFile{};
-        std::filesystem::path GameExe{};
-
-        // Path to cache files, used to bypass aob scanning when the module hasn't changed from the last time it was scanned
-        std::filesystem::path CachePath{};
-
-        bool bInvalidateCacheIfSelfChanged{true};
-
         int64_t NumScanAttemptsNormal{60};
         int64_t NumScanAttemptsModular{2500};
+
+        // Cache settings
+        // Path to cache files, used to bypass aob scanning when the module hasn't changed from the last time it was scanned
+        // If empty, this default will be used: <GameExeDirectory>/cache
+        std::filesystem::path CachePath{};
+        bool bEnableCache{false};
+        bool bInvalidateCacheIfSelfChanged{true};
     };
 
     struct RC_UE_API CacheInfo
     {
         File::Handle GameExeFile;
-        bool ShouldUseCache;
-        bool ShouldSerializeCache;
+        bool bShouldUseCache;
+        bool bShouldSerializeCache;
     };
 
     struct RC_UE_API StaticStorage
     {
+        static inline std::filesystem::path GameExe;
         static inline bool bIsInitialized{false};
     };
 

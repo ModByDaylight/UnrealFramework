@@ -424,7 +424,7 @@ namespace RC::Unreal::Signatures
         {
             SignatureContainer guobjectarray = [&]() -> SignatureContainer {
                 // Custom AOBs for specific games
-                if (config.GameExe.filename() == STR("FactoryGame-Win64-Shipping.exe") && Version::IsAtLeast(4, 26))
+                if (UnrealInitializer::StaticStorage::GameExe.filename() == STR("FactoryGame-Win64-Shipping.exe") && Version::IsAtLeast(4, 26))
                 {
                     // Satisfactory is special, maybe it's because it's modular ?
                     return {

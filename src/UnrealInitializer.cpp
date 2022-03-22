@@ -16,6 +16,9 @@
 #include <Unreal/FMemory.hpp>
 #include <Unreal/FAssetData.hpp>
 
+#define NOMINMAX
+#include <Windows.h>
+#include <Psapi.h>
 
 namespace RC::Unreal::UnrealInitializer
 {
@@ -64,7 +67,7 @@ namespace RC::Unreal::UnrealInitializer
                 {
                     if (!SigScannerStaticData::m_is_modular) { SigScannerStaticData::m_is_modular = true; }
 
-                    K32GetModuleInformation(GetCurrentProcess(), Modules[i], &SigScannerStaticData::m_modules_info.array[i2], sizeof(MODULEINFO));
+                    K32GetModuleInformation(GetCurrentProcess(), Modules[i], &SigScannerStaticData::m_modules_info[static_cast<ScanTarget>(i2)], sizeof(MODULEINFO));
                 }
             }
         }

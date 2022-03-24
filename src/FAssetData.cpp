@@ -194,6 +194,156 @@ namespace RC::Unreal
         }
     }
 
+    void FAssetData::SetObjectPath(FName NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            std::bit_cast<FAssetData427Plus*>(this)->ObjectPath = NewValue;
+        }
+        else
+        {
+            std::bit_cast<FAssetDataPre427*>(this)->ObjectPath = NewValue;
+        }
+    }
+
+    void FAssetData::SetPackageName(FName NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            std::bit_cast<FAssetData427Plus*>(this)->PackageName = NewValue;
+        }
+        else
+        {
+            std::bit_cast<FAssetDataPre427*>(this)->PackageName = NewValue;
+        }
+    }
+
+    void FAssetData::SetPackagePath(FName NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            std::bit_cast<FAssetData427Plus*>(this)->PackagePath = NewValue;
+        }
+        else
+        {
+            std::bit_cast<FAssetDataPre427*>(this)->PackagePath = NewValue;
+        }
+    }
+
+    void FAssetData::SetAssetName(FName NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            std::bit_cast<FAssetData427Plus*>(this)->AssetName = NewValue;
+        }
+        else
+        {
+            std::bit_cast<FAssetDataPre427*>(this)->AssetName = NewValue;
+        }
+
+    }
+
+    void FAssetData::SetAssetClass(FName NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            std::bit_cast<FAssetData427Plus*>(this)->AssetClass = NewValue;
+        }
+        else
+        {
+            std::bit_cast<FAssetDataPre427*>(this)->AssetClass = NewValue;
+        }
+    }
+
+    void FAssetData::SetTagsAndValues(FAssetDataTagMapSharedView NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            std::bit_cast<FAssetData427Plus*>(this)->TagsAndValues = NewValue;
+        }
+        else
+        {
+            std::bit_cast<FAssetDataPre427*>(this)->TagsAndValues = NewValue;
+        }
+    }
+
+    void FAssetData::SetTaggedAssetBundles(FAssetBundleData* NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            std::bit_cast<FAssetData427Plus*>(this)->TaggedAssetBundles = NewValue;
+        }
+        else
+        {
+            throw std::runtime_error{"FAssetData::TaggedAssetBundles is not available in <4.27"};
+        }
+    }
+
+    void FAssetData::SetChunkIDs(/*TArray<int32>*/)
+    {
+        // This isn't implemented because we need some sort of abstraction of the return value which we don't have
+        // The reason we need this is because:
+        // In <4.27, the return type was TArray<int32>, and in 4.27+ it's TArray<int32, TInlineAllocator<2>>
+        throw std::runtime_error{"FAssetData:ChunkIDs is not implemented"};
+    }
+
+    void FAssetData::SetOldChunkIDsUnsafe(TArray<int32>& NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            throw std::runtime_error{"FAssetData::OldChunkIDsUnsafe can only be used in pre-4.27"};
+        }
+        else
+        {
+            std::bit_cast<FAssetDataPre427*>(this)->ChunkIDs = NewValue;
+        }
+    }
+
+    void FAssetData::SetNewChunkIDsUnsafe(TArray<int32, TInlineAllocator<2>>& NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            std::bit_cast<FAssetData427Plus*>(this)->ChunkIDs = NewValue;
+        }
+        else
+        {
+            throw std::runtime_error{"FAssetData::NewChunkIDsUnsafe can only be used in 4.27+"};
+        }
+    }
+
+    void FAssetData::SetPackageFlags(uint32 NewValue)
+    {
+        if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }
+
+        if (Version::IsAtLeast(4, 27))
+        {
+            std::bit_cast<FAssetData427Plus*>(this)->PackageFlags = NewValue;
+        }
+        else
+        {
+            std::bit_cast<FAssetDataPre427*>(this)->PackageFlags = NewValue;
+        }
+    }
+
     int32 FAssetData::StaticSize()
     {
         if (Version::IsBelow(4, 17)) { throw std::runtime_error{"FAssetData only available in 4.17+"}; }

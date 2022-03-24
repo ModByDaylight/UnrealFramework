@@ -98,6 +98,18 @@ namespace RC::Unreal
         TArray<int32, TInlineAllocator<2>>& NewChunkIDsUnsafe();
         uint32 PackageFlags();
 
+        void SetObjectPath(FName);
+        void SetPackageName(FName);
+        void SetPackagePath(FName);
+        void SetAssetName(FName);
+        void SetAssetClass(FName);
+        void SetTagsAndValues(FAssetDataTagMapSharedView);
+        void SetTaggedAssetBundles(FAssetBundleData*);
+        void SetChunkIDs(/*TArray<int32>*/);
+        void SetOldChunkIDsUnsafe(TArray<int32>&);
+        void SetNewChunkIDsUnsafe(TArray<int32, TInlineAllocator<2>>&);
+        void SetPackageFlags(uint32);
+
         static int32 StaticSize();
 
 

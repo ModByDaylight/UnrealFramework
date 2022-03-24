@@ -61,7 +61,8 @@ namespace RC::Unreal
 
         TArray([[maybe_unused]]InElementType* data_ptr, int32_t current_size, int32_t capacity) : ArrayNum(current_size), ArrayMax(capacity)
         {
-            //AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(data_ptr);
+            // This is currently used in FString to allow construction of strings
+            AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(data_ptr);
         }
 
         // Constructor for when we want to allocate a new TArray in the games memory

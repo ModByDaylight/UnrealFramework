@@ -63,9 +63,15 @@ namespace RC::Unreal
         }
     };
 
+    // TODO: Move these elsewhere
     class RC_UE_API UBlueprintGeneratedClass : public UClass
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UBlueprintGeneratedClass, Engine);
+    };
+
+    class RC_UE_API UWidgetBlueprintGeneratedClass : public UClass
+    {
+        DECLARE_EXTERNAL_OBJECT_CLASS(UWidgetBlueprintGeneratedClass, Engine);
     };
 
     class RC_UE_API UAnimBlueprintGeneratedClass : public UClass

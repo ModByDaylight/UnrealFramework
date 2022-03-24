@@ -7,6 +7,7 @@ namespace RC::Unreal
 {
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UClass)
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UBlueprintGeneratedClass)
+    IMPLEMENT_EXTERNAL_OBJECT_CLASS(UWidgetBlueprintGeneratedClass)
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UAnimBlueprintGeneratedClass)
 
     auto UClass::HasAnyClassFlags(EClassFlags FlagsToCheck) -> bool

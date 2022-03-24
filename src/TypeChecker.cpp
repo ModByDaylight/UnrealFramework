@@ -17,6 +17,7 @@
 #include <Unreal/UActorComponent.hpp>
 #include <Unreal/UGameViewportClient.hpp>
 #include <Unreal/UPackage.hpp>
+#include <Unreal/CanvasPanel.hpp>
 #include <Unreal/Property/FNumericProperty.hpp>
 #include <Unreal/Property/NumericPropertyTypes.hpp>
 #include <Unreal/Property/FObjectProperty.hpp>
@@ -91,11 +92,14 @@ namespace RC::Unreal
         UClass* bp_generated_class_ptr = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/Engine.BlueprintGeneratedClass");
         UBlueprintGeneratedClass::StaticClassStorage = bp_generated_class_ptr;
 
+        UClass* widget_bp_generated_class_ptr = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/UMG.WidgetBlueprintGeneratedClass");
+        UWidgetBlueprintGeneratedClass::StaticClassStorage = widget_bp_generated_class_ptr;
+
         UClass* anim_bp_generated_class_ptr = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/Engine.AnimBlueprintGeneratedClass");
         UAnimBlueprintGeneratedClass::StaticClassStorage = anim_bp_generated_class_ptr;
 
-        //UClass* widget_bp_generated_class_ptr = UObjectGlobals::static_find_object<UClass*>(nullptr, nullptr, L"/Script/Engine.WidgetBlueprintGeneratedClass");
-        //UAnimBlueprintGeneratedClass::StaticClassStorage = widget_bp_generated_class_ptr;
+        UClass* canvas_panel_ptr = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/UMG.CanvasPanel");
+        UCanvasPanel::StaticClassStorage = canvas_panel_ptr;
 
         // Not available in 4.12 (I've not checked exactly when it starts being available)
         UClass* asset_data_ptr = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/AssetRegistry.AssetData"));

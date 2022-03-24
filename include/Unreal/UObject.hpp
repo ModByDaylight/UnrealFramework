@@ -300,6 +300,22 @@ namespace RC::Unreal
 
         size_t HashObject();
 
+        void* GetValuePtrByPropertyName(const TCHAR*);
+
+        template<typename ReturnType>
+        ReturnType* GetValuePtrByPropertyName(const TCHAR* PropertyName)
+        {
+            return static_cast<ReturnType*>(GetValuePtrByPropertyName(PropertyName));
+        }
+
+        void* GetValuePtrByPropertyNameInChain(const TCHAR*);
+
+        template<typename ReturnType>
+        ReturnType* GetValuePtrByPropertyNameInChain(const TCHAR* PropertyName)
+        {
+            return static_cast<ReturnType*>(GetValuePtrByPropertyNameInChain(PropertyName));
+        }
+
         static bool IsReal(const void* RawObject);
     };
 

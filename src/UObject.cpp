@@ -529,6 +529,48 @@ namespace RC::Unreal
         }
     }
 
+    void* UObject::GetValuePtrByPropertyName(const TCHAR* PropertyName)
+    {
+        FProperty* FoundProperty{};
+        FName PropertyFName = FName(PropertyName);
+        GetClass()->ForEachProperty([&](FProperty* Property) {
+            if (Property->GetFName() == PropertyFName)
+            {
+                FoundProperty = Property;
+                return LoopAction::Break;
+            }
+            else
+            {
+                return LoopAction::Continue;
+            }
+        });
+
+        if (!FoundProperty) { return nullptr; }
+
+        return FoundProperty->ContainerPtrToValuePtr<void>(this);
+    }
+
+    void* UObject::GetValuePtrByPropertyNameInChain(const TCHAR* PropertyName)
+    {
+        FProperty* FoundProperty{};
+        FName PropertyFName = FName(PropertyName);
+        GetClass()->ForEachPropertyInChain([&](FProperty* Property) {
+            if (Property->GetFName() == PropertyFName)
+            {
+                FoundProperty = Property;
+                return LoopAction::Break;
+            }
+            else
+            {
+                return LoopAction::Continue;
+            }
+        });
+
+        if (!FoundProperty) { return nullptr; }
+
+        return FoundProperty->ContainerPtrToValuePtr<void>(this);
+    }
+
     bool UObject::IsReal(const void* pThis)
     {
         bool ObjectWasFound{};

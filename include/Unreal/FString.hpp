@@ -26,9 +26,13 @@ namespace RC::Unreal
 
     public:
         FString() = default;
-        explicit FString(wchar_t* Str);
+        explicit FString(TCHAR* Str);
+        explicit FString(const TCHAR* Str);
+
+        bool operator==(FString& Other);
 
         [[nodiscard]] auto GetCharArray() const -> const wchar_t*;
+        auto SetCharArray(TArray<TCHAR>& NewArray) -> void;
         auto Clear() -> void;
     };
 

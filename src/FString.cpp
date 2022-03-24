@@ -5,17 +5,36 @@
 
 namespace RC::Unreal
 {
-    FString::FString(wchar_t* Str) : Data(TArray<wchar_t>(Str, 0, 0))
+    FString::FString(TCHAR* Str) : Data(TArray<wchar_t>(Str, 0, 0))
     {
         size_t StrLength = wcslen(Str);
 
-        // IDE, how the heck is this condition always true ???
         if (StrLength > std::numeric_limits<int32_t>::max())
         {
             throw std::runtime_error{"Tried to construct an FString with a size larger than int32"};
         }
 
         int32_t SafeStrLength = static_cast<int32_t>(StrLength);
+        Data.SetDataPtr(static_cast<TCHAR*>(FMemory::Malloc(StrLength * sizeof(TCHAR))));
+        std::memcpy(Data.GetDataPtr(), Str, StrLength * sizeof(TCHAR));
+
+        Data.SetMax(SafeStrLength);
+        Data.SetNum(SafeStrLength);
+    }
+
+    FString::FString(const TCHAR* Str)
+    {
+        size_t StrLength = wcslen(Str);
+
+        if (StrLength > std::numeric_limits<int32_t>::max())
+        {
+            throw std::runtime_error{"Tried to construct an FString with a size larger than int32"};
+        }
+
+        int32_t SafeStrLength = static_cast<int32_t>(StrLength);
+        Data.SetDataPtr(static_cast<TCHAR*>(FMemory::Malloc(StrLength * sizeof(TCHAR))));
+        std::memcpy(Data.GetDataPtr(), Str, StrLength * sizeof(TCHAR));
+
         Data.SetMax(SafeStrLength);
         Data.SetNum(SafeStrLength);
     }
@@ -36,9 +55,23 @@ namespace RC::Unreal
         Other.Data.SetDataPtr(nullptr);
     }
 
+    bool FString::operator==(FString& Other)
+    {
+        File::StringType A{};
+        File::StringType B{};
+        if (Data.GetDataPtr()) { A = Data.GetDataPtr(); }
+        if (Other.Data.GetDataPtr()) { B = Other.Data.GetDataPtr(); }
+        return A == B;
+    }
+
     auto FString::GetCharArray() const -> const wchar_t*
     {
         return Data.Num() ? Data.GetDataPtr() : STR("");
+    }
+
+    auto FString::SetCharArray(TArray<TCHAR>& NewArray) -> void
+    {
+        Data = NewArray;
     }
 
     auto FString::Clear() -> void

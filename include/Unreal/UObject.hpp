@@ -244,6 +244,17 @@ namespace RC::Unreal
             return Container::UnrealVC->FUObjectItem_is_object_unreachable(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()));
         }
 
+        void SetRootSet()
+        {
+            Container::UnrealVC->FUObjectItem_set_object_root_set(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()), Base::SetOrUnsetFlag::Set);
+        }
+
+
+        void ClearRootSet()
+        {
+            Container::UnrealVC->FUObjectItem_set_object_root_set(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()), Base::SetOrUnsetFlag::Unset);
+        }
+
         /**
          * Templated version of the IsA(UClass*) function
          */

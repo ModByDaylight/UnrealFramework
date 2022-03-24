@@ -13,8 +13,8 @@ namespace RC::Unreal
         // Why does this case this error: "error C2059: syntax error: '-'"
         //constexpr static int32_t INDEX_NONE = -1;
 
-        int32_t ObjectIndex;
-        int32_t ObjectSerialNumber;
+        int32_t ObjectIndex{};
+        int32_t ObjectSerialNumber{};
 
         auto InternalGetObjectItem() const -> struct FUObjectItem*;
         auto InternalGet(bool bEvenIfPendingKill) const -> class UObject*;

@@ -31,7 +31,7 @@ namespace RC::Unreal
     // Adapted from UE source
     // This struct becomes deprecated in 4.26+ and as such is only used if <=4.25 is detected
 #define StaticConstructObject_Internal_Params_Deprecated \
-    UClass* InClass_,\
+    const UClass* InClass_,\
     UObject* InOuter_,\
     FName InName_,\
     EObjectFlags InFlags_,\
@@ -46,7 +46,7 @@ namespace RC::Unreal
     struct RC_UE_API FStaticConstructObjectParameters
     {
         /** The class of the object to create */
-        /*const*/ class UClass* Class; // Making this non-const for the hook
+        const class UClass* Class;
 
         /** The object to create this object within (the Outer property for the new object will be set to the value specified here). */
         UObject* Outer;
@@ -86,7 +86,6 @@ namespace RC::Unreal
 
 namespace RC::Unreal::UObjectGlobals
 {
-
     static inline void* ANY_PACKAGE{reinterpret_cast<void*>(-1)};
 
     // Internal game functions
@@ -152,6 +151,45 @@ namespace RC::Unreal::UObjectGlobals
         {
             return static_cast<ObjectType>(GlobalState::StaticConstructObjectInternal(Params));
         }
+    }
+
+    template<typename ObjectType>
+    ObjectType* NewObject(UObject* Outer,
+                          const UClass* Class,
+                          FName Name = NAME_None,
+                          EObjectFlags Flags = RF_NoFlags,
+                          UObject* Template = nullptr,
+                          bool bCopyTransientsFromClassDefaults = false,
+                          FObjectInstancingGraph* InInstanceGraph = nullptr,
+                          UPackage* ExternalPackage = nullptr)
+    {
+        FStaticConstructObjectParameters Params{Class};
+        Params.Outer = Outer;
+        Params.Name = Name;
+        Params.SetFlags = Flags;
+        Params.Template = Template;
+        Params.bCopyTransientsFromClassDefaults = bCopyTransientsFromClassDefaults;
+        Params.InstanceGraph = InInstanceGraph;
+        Params.ExternalPackage = ExternalPackage;
+        return StaticConstructObject<ObjectType*>(Params);
+    }
+
+    template<typename ObjectType>
+    ObjectType* NewObject(UObject* Outer,
+                          FName Name,
+                          EObjectFlags Flags = RF_NoFlags,
+                          UObject* Template = nullptr,
+                          bool bCopyTransientsFromClassDefaults = false,
+                          FObjectInstancingGraph* InInstanceGraph = nullptr)
+    {
+        FStaticConstructObjectParameters Params{ObjectType::StaticClass()};
+        Params.Outer = Outer;
+        Params.Name = Name;
+        Params.SetFlags = Flags;
+        Params.Template = Template;
+        Params.bCopyTransientsFromClassDefaults = bCopyTransientsFromClassDefaults;
+        Params.InstanceGraph = InInstanceGraph;
+        return StaticConstructObject<ObjectType*>(Params);
     }
 
     // Custom Helpers -> START

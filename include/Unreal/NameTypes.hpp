@@ -80,7 +80,7 @@ namespace RC::Unreal
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        explicit FName(int64_t IndexAndNumber)
+        explicit constexpr FName(int64_t IndexAndNumber)
         {
             // Split the 64-bit integer into two 32-bit integers
             Number = (IndexAndNumber & 0xFFFFFFFF00000000LL) >> 32;
@@ -93,7 +93,7 @@ namespace RC::Unreal
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        explicit FName(uint32_t IndexParam, uint32_t NumberParam)
+        explicit constexpr FName(uint32_t IndexParam, uint32_t NumberParam)
         {
             ComparisonIndex = IndexParam;
 #ifdef WITH_CASE_PRESERVING_NAME
@@ -175,6 +175,8 @@ namespace RC::Unreal
         [[nodiscard]] auto GetNumber() const -> uint32_t { return Number; }
     };
 #pragma warning(default: 4324)
+
+    static constexpr FName NAME_None = FName(0, 0);
 }
 
 namespace std

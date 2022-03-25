@@ -22,6 +22,9 @@
 
 namespace RC::Unreal::UnrealInitializer
 {
+    std::filesystem::path StaticStorage::GameExe;
+    bool StaticStorage::bIsInitialized{false};
+
     auto SetupUnrealModules() -> void
     {
         // Setup all modules for the aob scanner

@@ -38,7 +38,7 @@ namespace RC::Unreal
     class TArray
     {
     public:
-        constexpr static inline InternalType internal_type = InternalType::Array;
+        static constexpr InternalType internal_type = InternalType::Array;
         using SizeType = typename InAllocator::SizeType;
         using ElementType = InElementType;
         using Allocator = InAllocator;

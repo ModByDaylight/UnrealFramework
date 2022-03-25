@@ -46,7 +46,7 @@ namespace RC::Unreal
                 mutable FRWLock SuperFuncMapLock;                                // 0x??? ; size 0x8
                 TArray<FImplementedInterface> Interfaces;                        // 0x1D8 ?
             //*/
-            static inline int32_t class_config_name;
+            static int32_t class_config_name;
         };
     public:
         auto HasAnyClassFlags(EClassFlags FlagsToCheck) -> bool;

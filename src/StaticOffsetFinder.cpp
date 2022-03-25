@@ -20,6 +20,11 @@
 
 namespace RC::Unreal
 {
+    std::array<int32_t, static_cast<std::underlying_type<MemberOffsets>::type>(MemberOffsets::Max)> StaticOffsetFinder::m_static_offsets{};
+    std::array<const wchar_t*, static_cast<std::underlying_type<MemberOffsets>::type>(MemberOffsets::Max)> StaticOffsetFinder::m_debug_static_offset_names{};
+    bool StaticOffsetFinder::m_initialized{false};
+    bool StaticOffsetFinder::UE_BLUEPRINT_EVENTGRAPH_FASTCALLS{};
+
     auto static throw_missed_offset(const std::vector<StaticOffsetFinder::MemberOffsets>& member_offsets, File::StringViewType message) -> void
     {
         File::StringType error{STR("Offsets not found, you'll have to override it in the ini file.\nThe keys in UE4SS-settings.ini are:\n")};

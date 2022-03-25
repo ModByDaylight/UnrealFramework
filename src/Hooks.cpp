@@ -13,6 +13,18 @@
 
 namespace RC::Unreal
 {
+    std::vector<Hook::StaticStorage::RequiredObject> Hook::StaticStorage::RequiredObjectsForInit{};
+    int32_t Hook::StaticStorage::NumRequiredObjectsConstructed{};
+    bool Hook::StaticStorage::bAllRequiredObjectsConstructed{false};
+    std::unique_ptr<::PLH::x64Detour> Hook::StaticStorage::StaticConstructObjectDetour{};
+    std::unique_ptr<::PLH::x64Detour> Hook::StaticStorage::ProcessEventDetour{};
+    std::unique_ptr<::PLH::x64Detour> Hook::StaticStorage::ProcessConsoleExecDetour{};
+    std::vector<Hook::StaticConstructObjectPreCallback> Hook::StaticStorage::StaticConstructObjectPreCallbacks{};
+    std::vector<Hook::StaticConstructObjectPostCallback> Hook::StaticStorage::StaticConstructObjectPostCallbacks{};
+    std::vector<Hook::ProcessEventCallback> Hook::StaticStorage::ProcessEventPreCallbacks{};
+    std::vector<Hook::ProcessEventCallback> Hook::StaticStorage::ProcessEventPostCallbacks{};
+    std::vector<Hook::ProcessConsoleExecCallback> Hook::StaticStorage::ProcessConsoleExecCallbacks{};
+
     uint64_t HookTrampolineProcessEvent = NULL;
     uint64_t HookTrampolineStaticConstructObject = NULL;
     uint64_t HookTrampolineProcessConsoleExec = NULL;

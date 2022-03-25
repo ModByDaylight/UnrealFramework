@@ -47,9 +47,9 @@ namespace RC::Unreal
     private:
         struct StaticStorage
         {
-            static inline bool bAssetsAreLoading{false};
-            static inline bool bShouldLoadAllAssets{false};
-            static inline std::vector<FUObjectItem*> ForcefullyLoadedAssets{};
+            static bool bAssetsAreLoading;
+            static bool bShouldLoadAllAssets;
+            static std::vector<FUObjectItem*> ForcefullyLoadedAssets;
         };
 
     public:

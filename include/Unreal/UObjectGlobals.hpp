@@ -91,8 +91,8 @@ namespace RC::Unreal::UObjectGlobals
     // Internal game functions
     struct GlobalState
     {
-        static inline Function<UObject*(StaticConstructObject_Internal_Params_Deprecated)> StaticConstructObjectInternalDeprecated{};
-        static inline Function<UObject*(const FStaticConstructObjectParameters&)> StaticConstructObjectInternal{};
+        static Function<UObject*(StaticConstructObject_Internal_Params_Deprecated)> StaticConstructObjectInternalDeprecated;
+        static Function<UObject*(const FStaticConstructObjectParameters&)> StaticConstructObjectInternal;
     };
 
     // Setup internal game functions

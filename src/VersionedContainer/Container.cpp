@@ -29,6 +29,10 @@
 
 namespace RC::Unreal
 {
+    std::unique_ptr<Base> Container::UnrealVC;
+    std::unique_ptr<UObjectBaseVC> Container::UnrealObjectVC;
+    std::unique_ptr<UnrealVirtualBaseVC> Container::UnrealVirtualVC;
+
     auto Container::SetDerivedBaseObjects() -> void
     {
         if (Version::IsEqual(4, 12))

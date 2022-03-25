@@ -10,6 +10,8 @@ namespace RC::Unreal
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UWidgetBlueprintGeneratedClass)
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UAnimBlueprintGeneratedClass)
 
+    int32_t UClass::Offset::class_config_name{};
+
     auto UClass::HasAnyClassFlags(EClassFlags FlagsToCheck) -> bool
     {
         return (GetClassFlags() & FlagsToCheck) != 0;

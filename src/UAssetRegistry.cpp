@@ -10,6 +10,10 @@
 
 namespace RC::Unreal
 {
+    bool UAssetRegistry::StaticStorage::bAssetsAreLoading{false};
+    bool UAssetRegistry::StaticStorage::bShouldLoadAllAssets{false};
+    std::vector<FUObjectItem*> UAssetRegistry::StaticStorage::ForcefullyLoadedAssets{};
+
     auto UAssetRegistry::GetAllAssets(TArray <FAssetData>& OutAssetData, bool bIncludeOnlyOnDiskAssets) -> bool
     {
         if (!Functions::GetAllAssets.IsValid()) { return false; }

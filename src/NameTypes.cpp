@@ -3,6 +3,9 @@
 
 namespace RC::Unreal
 {
+    Function<void(FName*, class FStringOut&)> FName::ToStringInternal;
+    Function<FName(const wchar_t*, EFindName)> FName::ConstructorInternal;
+
     auto FName::ToString() -> std::wstring
     {
         if (!ToStringInternal.is_ready())

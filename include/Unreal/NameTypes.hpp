@@ -46,8 +46,8 @@ namespace RC::Unreal
         uint32_t Number{};
 
     public:
-        static inline Function<void(FName*, class FStringOut&)> ToStringInternal{};
-        static inline Function<FName(const wchar_t*, EFindName)> ConstructorInternal{};
+        static Function<void(FName*, class FStringOut&)> ToStringInternal;
+        static Function<FName(const wchar_t*, EFindName)> ConstructorInternal;
 
     private:
         auto construct_with_string(const wchar_t* StrName, EFindName FindType, void* FunctionAddressOverride) -> void

@@ -6,6 +6,9 @@
 
 namespace RC::Unreal::UObjectGlobals
 {
+    Function<UObject*(StaticConstructObject_Internal_Params_Deprecated)> GlobalState::StaticConstructObjectInternalDeprecated{};
+    Function<UObject*(const FStaticConstructObjectParameters&)> GlobalState::StaticConstructObjectInternal{};
+
     auto SetupStaticConstructObjectInternalAddress(void* FunctionAddress) -> void
     {
         GlobalState::StaticConstructObjectInternal.assign_address(FunctionAddress);

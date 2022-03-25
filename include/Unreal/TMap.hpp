@@ -23,7 +23,7 @@ namespace RC::Unreal
     class TMap
     {
     public:
-        constexpr static inline InternalType InternalType = InternalType::Map;
+        static constexpr InternalType InternalType = InternalType::Map;
         using MapElement = TMapElement<MapInnerKeyType, MapInnerValueType>;
 
     protected:

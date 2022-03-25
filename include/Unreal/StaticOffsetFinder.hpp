@@ -89,11 +89,11 @@ namespace RC::Unreal
     private:
         // Contains offsets to properties that never change after game init
         // Examples of such offsets are: UProperty.Offset_Internal, UObject.ClassPrivate & UFunction.ReturnValueOffset
-        inline static std::array<int32_t, static_cast<std::underlying_type<MemberOffsets>::type>(MemberOffsets::Max)> m_static_offsets;
-        inline static std::array<const wchar_t*, static_cast<std::underlying_type<MemberOffsets>::type>(MemberOffsets::Max)> m_debug_static_offset_names;
+        static std::array<int32_t, static_cast<std::underlying_type<MemberOffsets>::type>(MemberOffsets::Max)> m_static_offsets;
+        static std::array<const wchar_t*, static_cast<std::underlying_type<MemberOffsets>::type>(MemberOffsets::Max)> m_debug_static_offset_names;
 
-        inline static bool m_initialized{false};
-        inline static bool UE_BLUEPRINT_EVENTGRAPH_FASTCALLS{};
+        static bool m_initialized;
+        static bool UE_BLUEPRINT_EVENTGRAPH_FASTCALLS;
 
         static auto get_property_from_uobject(const wchar_t* uclass_string, const wchar_t* property_string) -> void*;
 

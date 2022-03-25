@@ -65,8 +65,8 @@ namespace RC::Unreal::UnrealInitializer
 
     struct RC_UE_API StaticStorage
     {
-        static inline std::filesystem::path GameExe;
-        static inline bool bIsInitialized{false};
+        static std::filesystem::path GameExe;
+        static bool bIsInitialized;
     };
 
     auto RC_UE_API SetupUnrealModules() -> void;

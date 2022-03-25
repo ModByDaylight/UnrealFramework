@@ -43,17 +43,17 @@ namespace RC::Unreal
                 bool ObjectConstructed{false};
             };
 
-            static inline std::vector<RequiredObject> RequiredObjectsForInit{};
-            static inline int32_t NumRequiredObjectsConstructed{};
-            static inline bool bAllRequiredObjectsConstructed{false};
-            static inline std::unique_ptr<::PLH::x64Detour> StaticConstructObjectDetour;
-            static inline std::unique_ptr<::PLH::x64Detour> ProcessEventDetour;
-            static inline std::unique_ptr<::PLH::x64Detour> ProcessConsoleExecDetour;
-            static inline std::vector<StaticConstructObjectPreCallback> StaticConstructObjectPreCallbacks;
-            static inline std::vector<StaticConstructObjectPostCallback> StaticConstructObjectPostCallbacks;
-            static inline std::vector<ProcessEventCallback> ProcessEventPreCallbacks;
-            static inline std::vector<ProcessEventCallback> ProcessEventPostCallbacks;
-            static inline std::vector<ProcessConsoleExecCallback> ProcessConsoleExecCallbacks;
+            static std::vector<RequiredObject> RequiredObjectsForInit;
+            static int32_t NumRequiredObjectsConstructed;
+            static bool bAllRequiredObjectsConstructed;
+            static std::unique_ptr<::PLH::x64Detour> StaticConstructObjectDetour;
+            static std::unique_ptr<::PLH::x64Detour> ProcessEventDetour;
+            static std::unique_ptr<::PLH::x64Detour> ProcessConsoleExecDetour;
+            static std::vector<StaticConstructObjectPreCallback> StaticConstructObjectPreCallbacks;
+            static std::vector<StaticConstructObjectPostCallback> StaticConstructObjectPostCallbacks;
+            static std::vector<ProcessEventCallback> ProcessEventPreCallbacks;
+            static std::vector<ProcessEventCallback> ProcessEventPostCallbacks;
+            static std::vector<ProcessConsoleExecCallback> ProcessConsoleExecCallbacks;
         };
 
         auto RC_UE_API AddRequiredObject(const std::wstring& ObjectFullTypelessName) -> void;

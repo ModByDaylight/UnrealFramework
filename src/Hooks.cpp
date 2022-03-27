@@ -188,12 +188,9 @@ namespace RC::Unreal
     {
         bool return_value = PLH::FnCast(HookTrampolineProcessConsoleExec, UObject::ProcessConsoleExecInternal.get_function_pointer())(Context, Cmd, Ar, Executor);
 
-        if (Cast<UGameViewportClient>(Context))
+        for (const auto& callback : Hook::StaticStorage::ProcessConsoleExecCallbacks)
         {
-            for (const auto& callback : Hook::StaticStorage::ProcessConsoleExecCallbacks)
-            {
-                return_value = callback(Context, Cmd, Ar, Executor);
-            }
+            return_value = callback(Context, Cmd, Ar, Executor);
         }
 
         return return_value;

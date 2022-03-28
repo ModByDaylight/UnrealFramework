@@ -5,6 +5,20 @@
 
 NS_RC_UE_START;
 
+enum class ESpawnActorCollisionHandlingMethod : uint8
+{
+    /** Fall back to default settings. */
+    Undefined,
+    /** Actor will spawn in desired location, regardless of collisions. */
+    AlwaysSpawn,
+    /** Actor will try to find a nearby non-colliding location (based on shape components), but will always spawn even if one cannot be found. */
+    AdjustIfPossibleButAlwaysSpawn,
+    /** Actor will try to find a nearby non-colliding location (based on shape components), but will NOT spawn unless one is found. */
+    AdjustIfPossibleButDontSpawnIfColliding,
+    /** Actor will fail to spawn. */
+    DontSpawnIfColliding,
+};
+
 /**
  * Implements a globally unique identifier.
  */
@@ -132,6 +146,28 @@ struct RC_UE_API FRotator
 
     inline FRotator() : Pitch(0.0f), Yaw(0.0f), Roll(0.0f) {}
     inline FRotator(float pitch, float yaw, float roll) : Pitch(pitch), Yaw(yaw), Roll(roll) {}
+};
+
+struct RC_UE_API FQuat
+{
+    float X;
+    float Y;
+    float Z;
+    float W;
+
+    inline FQuat() : X(0.0f), Y(0.0f), Z(0.0f), W(0.0f) {}
+    inline FQuat(float X, float Y, float Z, float W) : X(X), Y(Y), Z(Z), W(W) {}
+};
+
+// TODO: Investigate FTransform and FVector in UE5.
+struct alignas(16) RC_UE_API FTransform
+{
+    FQuat Rotation;
+    FVector Translation;
+    FVector Scale3D;
+
+    inline FTransform() : Rotation(), Translation(), Scale3D() {}
+    inline FTransform(FQuat Rotation, FVector Translation, FVector Scale3D) : Rotation(Rotation), Translation(Translation), Scale3D(Scale3D) {}
 };
 
 NS_RC_UE_END;

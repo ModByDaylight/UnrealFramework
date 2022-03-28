@@ -359,7 +359,7 @@ namespace RC::Unreal
         {
             // 4.24 and earlier, just use StaticFindObject to find all of the property type pointers
 
-            auto add_property = []<typename PropertyType>(const wchar_t* full_property_name, const wchar_t* name, /*ToStringFuncs to_string_funcs,*/ [[maybe_unused]]PropertyType property_type_object) {
+            auto add_property = []<typename PropertyType>(const wchar_t* full_property_name, [[maybe_unused]]PropertyType property_type_object) {
                 UObject* property = UObjectGlobals::StaticFindObject(nullptr, nullptr, full_property_name);
                 if (!property)
                 {
@@ -376,57 +376,45 @@ namespace RC::Unreal
                 {
                     PropertyType::StaticClassStorage = static_cast<UClass*>(property);
                 }
-
-                /*
-                if (to_string_funcs.normal)
-                {
-                    m_object_to_string_functions[property] = to_string_funcs.normal;
-                }
-
-                if (to_string_funcs.complex)
-                {
-                    m_object_to_string_complex_functions[property] = to_string_funcs.complex;
-                }
-                //*/
             };
 
-            add_property(L"/Script/CoreUObject.ObjectProperty", L"ObjectProperty", /*{&FObjectProperty::to_string},*/ FObjectProperty{});
-            add_property(L"/Script/CoreUObject.NumericProperty", L"NumericProperty", /*{&FNumericProperty::to_string},*/ FNumericProperty{});
-            add_property(L"/Script/CoreUObject.Int8Property", L"Int8Property", /*{&FInt8Property::to_string},*/ FInt8Property{});
-            add_property(L"/Script/CoreUObject.Int16Property", L"Int16Property", /*{&FInt16Property::to_string},*/ FInt16Property{});
-            add_property(L"/Script/CoreUObject.IntProperty", L"IntProperty", /*{&FIntProperty::to_string},*/ FIntProperty{});
-            add_property(L"/Script/CoreUObject.Int64Property", L"Int64Property", /*{&FInt64Property::to_string},*/ FInt64Property{});
-            add_property(L"/Script/CoreUObject.NameProperty", L"NameProperty", /*{&FNameProperty::to_string},*/ FNameProperty{});
-            add_property(L"/Script/CoreUObject.FloatProperty", L"FloatProperty", /*{&FFloatProperty::to_string},*/ FFloatProperty{});
-            add_property(L"/Script/CoreUObject.DoubleProperty", L"DoubleProperty", /*{&FDoubleProperty::to_string},*/ FDoubleProperty{});
-            add_property(L"/Script/CoreUObject.ByteProperty", L"ByteProperty", /*{&FByteProperty::to_string},*/ FByteProperty{});
-            add_property(L"/Script/CoreUObject.UInt16Property", L"UInt16Property", /*{&FUInt16Property::to_string},*/ FUInt16Property{});
-            add_property(L"/Script/CoreUObject.UInt32Property", L"UInt32Property", /*{&FUInt32Property::to_string},*/ FUInt32Property{});
-            add_property(L"/Script/CoreUObject.UInt64Property", L"UInt64Property", /*{&FUInt64Property::to_string},*/ FUInt64Property{});
-            add_property(L"/Script/CoreUObject.BoolProperty", L"BoolProperty", /*{&FBoolProperty::to_string},*/ FBoolProperty{});
-            add_property(L"/Script/CoreUObject.ArrayProperty", L"ArrayProperty", /*{&FArrayProperty::to_string, &FArrayProperty::to_string_complex},*/ FArrayProperty{});
-            add_property(L"/Script/CoreUObject.MapProperty", L"MapProperty", /*{&FMapProperty::to_string, &FMapProperty::to_string_complex},*/ FMapProperty{});
-            add_property(L"/Script/CoreUObject.StructProperty", L"StructProperty", /*{&FStructProperty::to_string},*/ FStructProperty{});
-            add_property(L"/Script/CoreUObject.ClassProperty", L"ClassProperty", /*{&FClassProperty::to_string},*/ FClassProperty{});
-            add_property(L"/Script/CoreUObject.SoftClassProperty", L"SoftClassProperty", /*{&FClassProperty::to_string},*/ FSoftClassProperty{});
-            add_property(L"/Script/CoreUObject.WeakObjectProperty", L"WeakObjectProperty", /*{&FWeakObjectProperty::to_string},*/ FWeakObjectProperty{});
-            add_property(L"/Script/CoreUObject.LazyObjectProperty", L"LazyObjectProperty", /*{&FObjectProperty::to_string},*/ FLazyObjectProperty{});
-            add_property(L"/Script/CoreUObject.SoftObjectProperty", L"SoftObjectProperty", /*{&FObjectProperty::to_string},*/ FSoftObjectProperty{});
-            if (Version::IsAtLeast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", L"EnumProperty", /*{&FEnumProperty::to_string},*/ FEnumProperty{}); }
-            add_property(L"/Script/CoreUObject.TextProperty", L"TextProperty", /*{&FTextProperty::to_string},*/ FTextProperty{});
-            add_property(L"/Script/CoreUObject.StrProperty", L"StrProperty", /*{&FStrProperty::to_string},*/ FStrProperty{});
-            add_property(L"/Script/CoreUObject.DelegateProperty", L"DelegateProperty", /*{&FDelegateProperty::to_string},*/ FDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastDelegateProperty", L"MulticastDelegateProperty", /*{&FMulticastInlineDelegateProperty::to_string},*/ FMulticastDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", L"MulticastInlineDelegateProperty", /*{&FMulticastInlineDelegateProperty::to_string},*/ FMulticastInlineDelegateProperty{});
-            add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", L"MulticastSparseDelegateProperty", /*{&FMulticastSparseDelegateProperty::to_string},*/ FMulticastSparseDelegateProperty{});
-            add_property(L"/Script/CoreUObject.InterfaceProperty", L"InterfaceProperty", /*{&FInterfaceProperty::to_string},*/ FInterfaceProperty{});
+            add_property(L"/Script/CoreUObject.ObjectProperty", FObjectProperty{});
+            add_property(L"/Script/CoreUObject.NumericProperty", FNumericProperty{});
+            add_property(L"/Script/CoreUObject.Int8Property", FInt8Property{});
+            add_property(L"/Script/CoreUObject.Int16Property", FInt16Property{});
+            add_property(L"/Script/CoreUObject.IntProperty", FIntProperty{});
+            add_property(L"/Script/CoreUObject.Int64Property", FInt64Property{});
+            add_property(L"/Script/CoreUObject.NameProperty", FNameProperty{});
+            add_property(L"/Script/CoreUObject.FloatProperty", FFloatProperty{});
+            add_property(L"/Script/CoreUObject.DoubleProperty", FDoubleProperty{});
+            add_property(L"/Script/CoreUObject.ByteProperty", FByteProperty{});
+            add_property(L"/Script/CoreUObject.UInt16Property", FUInt16Property{});
+            add_property(L"/Script/CoreUObject.UInt32Property", FUInt32Property{});
+            add_property(L"/Script/CoreUObject.UInt64Property", FUInt64Property{});
+            add_property(L"/Script/CoreUObject.BoolProperty", FBoolProperty{});
+            add_property(L"/Script/CoreUObject.ArrayProperty", FArrayProperty{});
+            add_property(L"/Script/CoreUObject.MapProperty", FMapProperty{});
+            add_property(L"/Script/CoreUObject.StructProperty", FStructProperty{});
+            add_property(L"/Script/CoreUObject.ClassProperty", FClassProperty{});
+            add_property(L"/Script/CoreUObject.SoftClassProperty", FSoftClassProperty{});
+            add_property(L"/Script/CoreUObject.WeakObjectProperty", FWeakObjectProperty{});
+            add_property(L"/Script/CoreUObject.LazyObjectProperty", FLazyObjectProperty{});
+            add_property(L"/Script/CoreUObject.SoftObjectProperty", FSoftObjectProperty{});
+            if (Version::IsAtLeast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", FEnumProperty{}); }
+            add_property(L"/Script/CoreUObject.TextProperty", FTextProperty{});
+            add_property(L"/Script/CoreUObject.StrProperty", FStrProperty{});
+            add_property(L"/Script/CoreUObject.DelegateProperty", FDelegateProperty{});
+            add_property(L"/Script/CoreUObject.MulticastDelegateProperty", FMulticastDelegateProperty{});
+            if (Version::IsAtLeast(4, 23)) { add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", FMulticastInlineDelegateProperty{}); }
+            if (Version::IsAtLeast(4, 23)) { add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", FMulticastSparseDelegateProperty{}); }
+            add_property(L"/Script/CoreUObject.InterfaceProperty", FInterfaceProperty{});
 
             // Not yet supported, only here for completion and to prevent crashes
             // Not all of these will be found right now, need to call this function with more UObjects that actually have these properties
-            add_property(L"/Script/CoreUObject.SetProperty", L"SetProperty", /*{},*/ FSetProperty{});
+            add_property(L"/Script/CoreUObject.SetProperty", FSetProperty{});
 
             // Find the root 'Property' FField. This may not be necessary but I'm leaving it here for now, might be useful later.
-            add_property(L"/Script/CoreUObject.Property", L"Property", /*{},*/ FProperty{});
+            add_property(L"/Script/CoreUObject.Property", FProperty{});
         }
 
         return true;

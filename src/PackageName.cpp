@@ -12,12 +12,15 @@ namespace RC::Unreal
 
     bool FPackageName::IsValidLongPackageName(FStringView InLongPackageName, bool bIncludeReadOnlyRoots /*= false*/, EErrorCode* OutReason /*= nullptr */)
     {
+        (void)bIncludeReadOnlyRoots;
+
         if (!IsValidTextForLongPackageName(InLongPackageName, OutReason))
         {
             return false;
         }
 
         // We're supposed to be verifying that the roots are valid here, but we're skipping this step.
+        return true;
     }
 
     bool FPackageName::IsValidLongPackageName(FStringView InLongPackageName, bool bIncludeReadOnlyRoots, FText* OutReason)

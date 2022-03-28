@@ -31,6 +31,10 @@ namespace RC::Unreal {
 /** Prevent renaming of any child generated classes and CDO's in blueprints */
 #define REN_SkipGeneratedClasses	(0x0080)
 
+// Value holding the meaning for when a StaticClass doesn't exist in this engine version.
+// T::StaticClass() will return false instead of throw if 'StaticClassStorage' is set to this value.
+// The 'TypeChecker' system will set 'StaticClassStorage' to the correct pointer if one exists, or nullptr if one doesn't exist.
+static inline RC::Unreal::UClass* STATIC_CLASS_INVALID = reinterpret_cast<RC::Unreal::UClass* const>(-2);
 
 #define DECLARE_EXTERNAL_OBJECT_CLASS(ClassName, ModuleName) \
 private: \
@@ -46,7 +50,7 @@ public: \
     auto static StaticClass() -> RC::Unreal::UClass*; \
 
 #define IMPLEMENT_EXTERNAL_OBJECT_CLASS(ClassName) \
-RC::Unreal::UClass* ClassName::StaticClassStorage = nullptr; \
+RC::Unreal::UClass* ClassName::StaticClassStorage = STATIC_CLASS_INVALID; \
 static RC::Unreal::Internal::UClassRegistrarTemplate<ClassName> __class_registrar_##ClassName;\
 \
 auto ClassName::StaticClass() -> RC::Unreal::UClass* \
@@ -54,6 +58,10 @@ auto ClassName::StaticClass() -> RC::Unreal::UClass* \
     if (!StaticClassStorage) \
     { \
         throw std::runtime_error{"[" #ClassName "::StaticClass] StaticClassStorage is nullptr"}; \
+    } \
+    else if (StaticClassStorage == STATIC_CLASS_INVALID) \
+    { \
+        return nullptr; \
     } \
     return StaticClassStorage; \
 };
@@ -71,7 +79,7 @@ public: \
     auto static StaticClass() -> RC::Unreal::FFieldClassVariant;    \
 
 #define IMPLEMENT_FIELD_CLASS(ClassName) \
-RC::Unreal::FFieldClassVariant ClassName::StaticClassStorage{(RC::Unreal::FFieldClass*) nullptr}; \
+RC::Unreal::FFieldClassVariant ClassName::StaticClassStorage{(RC::Unreal::FFieldClass*) STATIC_CLASS_INVALID}; \
 static RC::Unreal::Internal::FFieldClassRegistrarTemplate<ClassName> __field_class_registrar_##ClassName;\
 \
 auto ClassName::StaticClass() -> RC::Unreal::FFieldClassVariant \
@@ -80,6 +88,10 @@ auto ClassName::StaticClass() -> RC::Unreal::FFieldClassVariant \
     { \
         throw std::runtime_error{"[" #ClassName "::StaticClass] StaticClassStorage is not valid"}; \
     } \
+    else if (StaticClassStorage == STATIC_CLASS_INVALID) \
+    { \
+        return {}; \
+    }\
     return StaticClassStorage; \
 };
 

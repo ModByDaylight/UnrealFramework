@@ -2218,7 +2218,6 @@ namespace RC::Unreal
 
         // The 'HitResult' script struct is used here because the memory layout and memory values are known, including the number and locations of the zero sets.
         UStruct* hit_result = UObjectGlobals::StaticFindObject<UStruct*>(nullptr, nullptr, L"/Script/Engine.HitResult");
-        void* ref_link_address = Helper::Casting::offset_deref<void*>(hit_result, ref_link_offset);
 
         constexpr static uint32_t zero_set_size = 0x8;
         uint32_t num_zero_sets{}; // A zero set is a set of 8 zeros

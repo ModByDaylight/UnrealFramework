@@ -7,6 +7,8 @@
 #include <Unreal/Common.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
 
+#define INVALID_LONGPACKAGE_CHARACTERS TEXT("\\:*?\"<>|' ,.&!~\n\r\t@#")
+
 namespace RC::Unreal
 {
     namespace UnrealInitializer

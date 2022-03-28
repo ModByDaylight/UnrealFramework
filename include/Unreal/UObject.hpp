@@ -25,8 +25,8 @@ namespace RC::Unreal
     namespace UnrealInitializer
     {
         struct CacheInfo;
-        auto CreateCache(CacheInfo&) -> void;
-        auto LoadCache(CacheInfo&) -> void;
+        RC_UE_API auto CreateCache(CacheInfo&) -> void;
+        RC_UE_API auto LoadCache(CacheInfo&) -> void;
     }
 
     // Placeholder types for virtual functions
@@ -77,9 +77,9 @@ namespace RC::Unreal
         static Function<ProcessConsoleExecSignature> ProcessConsoleExecInternal;
 
     protected:
-        friend void UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo&);
-        friend void UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo&);
-        friend void HookProcessEvent();
+        friend RC_UE_API void UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo&);
+        friend RC_UE_API void UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo&);
+        friend RC_UE_API void HookProcessEvent();
         friend struct FWeakObjectPtr;
         friend class AActor;
         friend class UAssetRegistry;

@@ -10,11 +10,11 @@ namespace RC::Unreal
 {
     struct FName;
 
-    extern FName GWorldName;
-    extern FName GLevelName;
-    extern FName GPackageName;
-    extern FName GPropertyName;
-    extern FName GFunctionName;
+    RC_UE_API extern FName GWorldName;
+    RC_UE_API extern FName GLevelName;
+    RC_UE_API extern FName GPackageName;
+    RC_UE_API extern FName GPropertyName;
+    RC_UE_API extern FName GFunctionName;
 
     enum class InternalType
     {
@@ -28,20 +28,6 @@ namespace RC::Unreal
         constexpr static int32_t FFieldClassOffset = 0x8;
 
     public:
-        // Stores function pointers to all 'to_string' functions for UObject and FProperty.
-        // The key is UClass* (or FFieldClass* in 4.25+)
-        using ObjectToStringDecl = std::function<void(void*, std::wstring&)>;
-        static std::unordered_map<void*, ObjectToStringDecl> m_object_to_string_functions;
-
-        using ObjectToStringComplexDeclCallable = const std::function<void(void*)>&;
-        using ObjectToStringComplexDecl = std::function<void(void*, std::wstring&, ObjectToStringComplexDeclCallable)>;
-        static std::unordered_map<void*, ObjectToStringComplexDecl> m_object_to_string_complex_functions;
-
-    public:
-        // Property Names
-
-
-    public:
         auto static get_world_name() -> FName;
         auto static get_level_name() -> FName;
 
@@ -53,26 +39,6 @@ namespace RC::Unreal
         // DO NOT RUN IN 4.25+!
         auto static is_property(class UObject* object) -> bool;
         auto static is_property(class FField* object) -> bool;
-
-        auto static to_string_exists(void* uclass) -> bool
-        {
-            return m_object_to_string_functions.contains(uclass);
-        }
-
-        auto static to_string_complex_exists(void* uclass) -> bool
-        {
-            return m_object_to_string_complex_functions.contains(uclass);
-        }
-
-        auto static get_to_string(void* uclass)
-        {
-            return m_object_to_string_functions[uclass];
-        }
-
-        auto static get_to_string_complex(void* uclass)
-        {
-            return m_object_to_string_complex_functions[uclass];
-        }
     };
 }
 

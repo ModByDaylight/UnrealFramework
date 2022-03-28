@@ -64,6 +64,15 @@ namespace RC::Unreal
         return A == B;
     }
 
+    bool FString::operator==(const FString& Other) const
+    {
+        File::StringType A{};
+        File::StringType B{};
+        if (Data.GetDataPtr()) { A = Data.GetDataPtr(); }
+        if (Other.Data.GetDataPtr()) { B = Other.Data.GetDataPtr(); }
+        return A == B;
+    }
+
     auto FString::GetCharArray() const -> const wchar_t*
     {
         return Data.Num() ? Data.GetDataPtr() : STR("");

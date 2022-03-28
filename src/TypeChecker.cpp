@@ -44,8 +44,6 @@
 
 namespace RC::Unreal
 {
-    std::unordered_map<void*, TypeChecker::ObjectToStringDecl> TypeChecker::m_object_to_string_functions{};
-    std::unordered_map<void*, TypeChecker::ObjectToStringComplexDecl> TypeChecker::m_object_to_string_complex_functions{};
     FName GWorldName{};
     FName GLevelName{};
     FName GPackageName{};
@@ -360,12 +358,6 @@ namespace RC::Unreal
         else
         {
             // 4.24 and earlier, just use StaticFindObject to find all of the property type pointers
-
-            struct ToStringFuncs
-            {
-                ObjectToStringDecl normal;
-                ObjectToStringComplexDecl complex;
-            };
 
             auto add_property = []<typename PropertyType>(const wchar_t* full_property_name, const wchar_t* name, /*ToStringFuncs to_string_funcs,*/ [[maybe_unused]]PropertyType property_type_object) {
                 UObject* property = UObjectGlobals::StaticFindObject(nullptr, nullptr, full_property_name);

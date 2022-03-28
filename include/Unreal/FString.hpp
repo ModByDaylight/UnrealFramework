@@ -11,15 +11,15 @@ namespace RC::Unreal
     namespace UnrealInitializer
     {
         struct CacheInfo;
-        auto CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
-        auto LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
+        RC_UE_API auto CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
+        RC_UE_API auto LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
     }
 
     class RC_UE_API FString
     {
     protected:
-        friend auto UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
-        friend auto UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
+        friend RC_UE_API auto UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
+        friend RC_UE_API auto UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
 
     protected:
         TArray<TCHAR> Data{nullptr, 0, 0};
@@ -30,6 +30,7 @@ namespace RC::Unreal
         explicit FString(const TCHAR* Str);
 
         bool operator==(FString& Other);
+        bool operator==(const FString& Other) const;
 
         [[nodiscard]] auto GetCharArray() const -> const wchar_t*;
         auto SetCharArray(TArray<TCHAR>& NewArray) -> void;

@@ -40,8 +40,8 @@ namespace RC::Unreal
 
     private:
         friend Signatures::ScanResult Signatures::ScnForGUObjectArrayImpl(const UnrealInitializer::Config&);
-        friend void UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo&);
-        friend void UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo&);
+        friend RC_UE_API void UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo&);
+        friend RC_UE_API void UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo&);
 
     public:
         static FMalloc** UnrealStaticGMalloc;

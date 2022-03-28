@@ -17,7 +17,7 @@ namespace RC::Unreal
     class FField;
     class FProperty;
     class FFieldVariant;
-    class FFieldClassVariant;
+    class RC_UE_API FFieldClassVariant;
     class FFieldClass;
 
     template<typename SupposedFField>

@@ -39,7 +39,7 @@ namespace RC::Unreal
 #endif
     {
     private:
-        friend auto UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
+        friend RC_UE_API auto UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
 
         uint32_t ComparisonIndex{};
 #ifdef WITH_CASE_PRESERVING_NAME

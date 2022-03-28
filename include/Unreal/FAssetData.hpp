@@ -73,7 +73,7 @@ namespace RC::Unreal
 
     // Abstracted FAssetData
     // Used to ensure that it works before and after the 4.27 changes
-    struct FAssetData
+    struct RC_UE_API FAssetData
     {
         // TODO: In 4.26+, AssetData is located in 'CoreUObject', in <4.26, AssetData is located in 'AssetRegistry'
         //       Do we need to solve this ? And if so, how ?

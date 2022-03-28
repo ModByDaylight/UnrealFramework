@@ -9,7 +9,7 @@ namespace RC::Unreal
     class FNumericProperty;
     class UEnum;
 
-    class FEnumProperty : public FProperty
+    class RC_UE_API FEnumProperty : public FProperty
     {
         DECLARE_FIELD_CLASS(FEnumProperty);
         DECLARE_VIRTUAL_TYPE(FEnumProperty);

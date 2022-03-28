@@ -95,4 +95,18 @@ namespace RC::Unreal
         ProcessEvent(Function, &Params);
         return Params.ReturnValue;
     }
+
+    FTransform AActor::GetTransform()
+    {
+        UFunction* Function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, STR("/Script/Engine.Actor:GetTransform"));
+
+        struct GetTransform_Params
+        {
+            FTransform ReturnValue; // 0x0
+        };
+        GetTransform_Params Params{};
+
+        ProcessEvent(Function, &Params);
+        return Params.ReturnValue;
+    }
 }

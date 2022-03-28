@@ -19,6 +19,7 @@ namespace RC::Unreal
         auto K2_TeleportTo(FVector DestLocation, FRotator DestRotation) -> bool;
         auto K2_GetActorLocation() -> FVector;
         auto GetActorForwardVector() -> FVector;
+        FTransform GetTransform();
         // UFunction interfaces -> END
     };
 }

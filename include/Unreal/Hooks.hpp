@@ -5,11 +5,14 @@
 #include <unordered_map>
 #include <memory>
 
-#include <polyhook2/Detour/x64Detour.hpp>
-
 #include <Unreal/Common.hpp>
 #include <Unreal/UFunctionStructs.hpp>
 #include <Unreal/FFrame.hpp>
+
+namespace PLH
+{
+    class x64Detour;
+}
 
 namespace RC::LuaMadeSimple
 {

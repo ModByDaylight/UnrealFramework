@@ -1,3 +1,4 @@
+#include <polyhook2/Detour/x64Detour.hpp>
 #include <Unreal/Hooks.hpp>
 #include <DynamicOutput/DynamicOutput.hpp>
 #include <Unreal/UnrealInitializer.hpp>

@@ -1,3 +1,5 @@
+#include <thread>
+
 #include <DynamicOutput/DynamicOutput.hpp>
 
 #include <Unreal/UAssetRegistry.hpp>

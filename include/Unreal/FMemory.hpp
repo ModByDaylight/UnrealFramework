@@ -22,17 +22,17 @@ namespace RC::Unreal
     {
         struct Config;
         struct CacheInfo;
-        auto CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
-        auto LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
+        RC_UE_API auto CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
+        RC_UE_API auto LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
     }
 
     namespace Signatures
     {
         struct ScanResult;
-        auto ScnForGUObjectArrayImpl(const UnrealInitializer::Config&) -> ScanResult;
+        RC_UE_API auto ScnForGUObjectArrayImpl(const UnrealInitializer::Config&) -> ScanResult;
     }
 
-    class FMalloc
+    class RC_UE_API FMalloc
     {
     public:
 #include <VTableOffsets_FMalloc.hpp>
@@ -66,7 +66,7 @@ namespace RC::Unreal
         const TCHAR* GetDescriptiveName();
     };
 
-    extern FMalloc* GMalloc;
+    RC_UE_API extern FMalloc* GMalloc;
 
     class RC_UE_API FMemory
     {

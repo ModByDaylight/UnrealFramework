@@ -22,7 +22,7 @@ namespace RC
 
 namespace RC::Unreal::UnrealInitializer
 {
-    struct RC_UE_API ScanOverrides
+    struct ScanOverrides
     {
         std::function<void(std::vector<SignatureContainer>&, Signatures::ScanResult&)> guobjectarray;
         std::function<void(std::vector<SignatureContainer>&, Signatures::ScanResult&)> static_find_object;
@@ -36,7 +36,7 @@ namespace RC::Unreal::UnrealInitializer
 
     // Struct to be passed to the 'initialize' function
     // Should always have valid default values
-    struct RC_UE_API Config
+    struct Config
     {
     public:
         uint32_t NumScanThreads{8};
@@ -56,17 +56,17 @@ namespace RC::Unreal::UnrealInitializer
         bool bInvalidateCacheIfSelfChanged{true};
     };
 
-    struct RC_UE_API CacheInfo
+    struct CacheInfo
     {
         File::Handle GameExeFile;
         bool bShouldUseCache;
         bool bShouldSerializeCache;
     };
 
-    struct RC_UE_API StaticStorage
+    struct StaticStorage
     {
         static std::filesystem::path GameExe;
-        static bool bIsInitialized;
+        RC_UE_API static bool bIsInitialized;
     };
 
     auto RC_UE_API SetupUnrealModules() -> void;

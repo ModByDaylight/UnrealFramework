@@ -192,6 +192,7 @@ namespace RC::Unreal
         for (const auto& callback : Hook::StaticStorage::ProcessConsoleExecCallbacks)
         {
             return_value = callback(Context, Cmd, Ar, Executor);
+            if (return_value) { break; }
         }
 
         return return_value;

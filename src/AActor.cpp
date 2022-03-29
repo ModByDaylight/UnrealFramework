@@ -2,6 +2,7 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/UObjectArray.hpp>
 #include <Unreal/UFunction.hpp>
+#include <Unreal/World.hpp>
 
 namespace RC::Unreal
 {
@@ -28,7 +29,7 @@ namespace RC::Unreal
         return nullptr;
     }
 
-    auto AActor::GetWorld() -> UObject*
+    auto AActor::GetWorld() -> UWorld*
     {
         UObject* Outer = GetOuter();
         if (!Outer) { return nullptr; }
@@ -39,7 +40,7 @@ namespace RC::Unreal
             {
                 if (Outer->GetClass()->GetFName() == TypeChecker::get_world_name())
                 {
-                    return Outer;
+                    return static_cast<UWorld*>(Outer);
                 }
 
                 Outer = Outer->GetOuter();

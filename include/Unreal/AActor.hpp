@@ -13,7 +13,7 @@ namespace RC::Unreal
 
     public:
         auto GetLevel() -> UObject*;
-        auto GetWorld() -> UObject*;
+        auto GetWorld() -> UWorld*;
 
     public:
         // UFunction interfaces -> START

@@ -40,7 +40,7 @@ namespace RC::Unreal
         return Params.ReturnValue;
     }
 
-    AActor* UGameplayStatics::FinishSpawningActor(class AActor* Actor, const FTransform& SpawnTransform)
+    AActor* UGameplayStatics::FinishSpawningActor(AActor* Actor, const FTransform& SpawnTransform)
     {
         if (!VerifySelf()) { return nullptr; }
         if (!StaticFunctions::FinishSpawningActor.IsValid()) { return nullptr; }

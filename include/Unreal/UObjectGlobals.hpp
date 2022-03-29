@@ -192,6 +192,16 @@ namespace RC::Unreal::UObjectGlobals
         return StaticConstructObject<ObjectType*>(Params);
     }
 
+    // UE compatible overload for 'FindObject'.
+    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass);
+    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass);
+
+    template<typename UObjectDerivative>
+    UObjectDerivative* FindObject(UObject* Outer, const TCHAR* Name, bool ExactClass = false)
+    {
+        return FindObject(UObjectDerivative::StaticClass(), Outer, Name, ExactClass);
+    }
+
     // Custom Helpers -> START
     // Find the first instance of a class
     // Does not find ClassDefaultObjects (CDO) or non-instances of classes

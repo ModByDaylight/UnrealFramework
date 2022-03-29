@@ -1,6 +1,8 @@
 #include <Unreal/UObjectGlobals.hpp>
 #include <Unreal/UObject.hpp>
+#include <Unreal/UPackage.hpp>
 #include <Unreal/UClass.hpp>
+#include <Unreal/PackageName.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
 
@@ -47,6 +49,87 @@ namespace RC::Unreal::UObjectGlobals
     auto static IsValidObjectForFindXOf(UObject* object) -> bool
     {
         return !object->HasAnyFlags(static_cast<EObjectFlags>(RF_ClassDefaultObject | RF_ArchetypeObject)) && !object->IsA<UClass>();
+    }
+
+    UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass)
+    {
+        return FindObject(Class, InOuter, InName.data(), bExactClass);
+    }
+
+    UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass)
+    {
+        auto GetPackageNameFromLongName = [](const File::StringType& LongName) -> File::StringType
+        {
+            auto DelimiterOffset = LongName.find(STR("."));
+            if (DelimiterOffset == LongName.npos)
+            {
+                throw std::runtime_error{"GetPackageNameFromLongName: Name wasn't long."};
+            }
+            return LongName.substr(0, DelimiterOffset);
+        };
+
+        UObject* FoundObject{nullptr};
+        const bool bAnyPackage = InOuter == ANY_PACKAGE;
+        UObject* ObjectPackage = bAnyPackage ? nullptr : InOuter;
+        const bool bIsLongName = !FPackageName::IsShortPackageName(InName);
+        const bool bIsLongName2 = FPackageName::IsValidLongPackageName(InName);
+        FName ShortName = bIsLongName ? NAME_None : FName(InName, FNAME_Add);
+        FName PackageName = bIsLongName ? FName(GetPackageNameFromLongName(InName), FNAME_Add) : NAME_None;
+
+        UObjectGlobals::ForEachUObject([&](UObject* Object, [[maybe_unused]]int32_t ChunkIndex, [[maybe_unused]]int32_t ObjectIndex) {
+            if (!Object || Object->IsUnreachable()) { return LoopAction::Continue; }
+
+            bool bExactMatch = Class == Object->GetClass();
+            if (bExactClass && !bExactMatch) { return LoopAction::Continue; }
+            if (!bExactClass && !Object->IsA(Class)) { return LoopAction::Continue; }
+
+            bool bIsInOuter{};
+            if (!bAnyPackage && !ObjectPackage)
+            {
+                if (Object->GetOutermost()->GetFName() == PackageName)
+                {
+                    bIsInOuter = true;
+                }
+            }
+            else if (!bAnyPackage)
+            {
+                UObject* Outer = Object->GetOuter();
+                do
+                {
+                    if (Outer == ObjectPackage)
+                    {
+                        bIsInOuter = true;
+                        break;
+                    }
+                    Outer = Outer->GetOuter();
+                } while (Outer);
+            }
+
+            if (!bAnyPackage && !bIsInOuter) { return LoopAction::Continue; }
+
+            if (bIsLongName)
+            {
+                auto FullName = Object->GetFullName();
+                auto ClassLessFullName = FullName.substr(FullName.find(STR(" ")) + 1);
+                if (InName == ClassLessFullName)
+                {
+                    FoundObject = Object;
+                    return LoopAction::Break;
+                }
+            }
+            else if (ObjectPackage || bAnyPackage)
+            {
+                if (ShortName.Equals(Object->GetFName()))
+                {
+                    FoundObject = Object;
+                    return LoopAction::Break;
+                }
+            }
+
+            return LoopAction::Continue;
+        });
+
+        return FoundObject;
     }
 
     auto FindFirstOf(FName ClassName) -> UObject*

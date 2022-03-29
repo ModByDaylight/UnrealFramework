@@ -18,6 +18,7 @@
 #include <Unreal/UGameViewportClient.hpp>
 #include <Unreal/UPackage.hpp>
 #include <Unreal/CanvasPanel.hpp>
+#include <Unreal/World.hpp>
 #include <Unreal/Property/FNumericProperty.hpp>
 #include <Unreal/Property/NumericPropertyTypes.hpp>
 #include <Unreal/Property/FObjectProperty.hpp>
@@ -77,6 +78,7 @@ namespace RC::Unreal
         UObject::StaticClassStorage = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Object");
         UStruct::StaticClassStorage = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Struct");
         AActor::StaticClassStorage = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/Engine.Actor");
+        UWorld::StaticClassStorage = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/Engine.World");
 
         UClass* enum_ptr = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Enum");
         UEnum::StaticClassStorage = enum_ptr;

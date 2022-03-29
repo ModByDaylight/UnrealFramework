@@ -2,7 +2,8 @@
 #define RC_UNREAL_AACTOR_HPP
 
 #include <Unreal/UObject.hpp>
-#include <Unreal/UnrealCoreStructs.hpp>
+#include <Unreal/Transform.hpp>
+#include <Unreal/Rotator.hpp>
 
 namespace RC::Unreal
 {

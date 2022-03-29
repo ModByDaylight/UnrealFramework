@@ -2,7 +2,7 @@
 #define RC_UNREAL_GAMEPLAY_STATICS_HPP
 
 #include <Unreal/UObject.hpp>
-#include <Unreal/UnrealCoreStructs.hpp>
+#include <Unreal/Transform.hpp>
 #include <Unreal/ReflectedFunction.hpp>
 
 namespace RC::Unreal

@@ -138,38 +138,6 @@ struct RC_UE_API FVector
     inline FVector(float x, float y, float z) : X(x), Y(y), Z(z) {}
 };
 
-struct RC_UE_API FRotator
-{
-    float Pitch;
-    float Yaw;
-    float Roll;
-
-    inline FRotator() : Pitch(0.0f), Yaw(0.0f), Roll(0.0f) {}
-    inline FRotator(float pitch, float yaw, float roll) : Pitch(pitch), Yaw(yaw), Roll(roll) {}
-};
-
-struct RC_UE_API FQuat
-{
-    float X;
-    float Y;
-    float Z;
-    float W;
-
-    inline FQuat() : X(0.0f), Y(0.0f), Z(0.0f), W(0.0f) {}
-    inline FQuat(float X, float Y, float Z, float W) : X(X), Y(Y), Z(Z), W(W) {}
-};
-
-// TODO: Investigate FTransform and FVector in UE5.
-struct alignas(16) RC_UE_API FTransform
-{
-    FQuat Rotation;
-    FVector Translation;
-    FVector Scale3D;
-
-    inline FTransform() : Rotation(), Translation(), Scale3D() {}
-    inline FTransform(FQuat Rotation, FVector Translation, FVector Scale3D) : Rotation(Rotation), Translation(Translation), Scale3D(Scale3D) {}
-};
-
 NS_RC_UE_END;
 
 #endif //RC_UNREAL_UNREALCORESTRUCTS_H

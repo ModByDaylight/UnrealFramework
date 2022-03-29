@@ -86,7 +86,7 @@ namespace RC::Unreal
 
 namespace RC::Unreal::UObjectGlobals
 {
-    static inline void* ANY_PACKAGE{reinterpret_cast<void*>(-1)};
+    static inline UPackage* ANY_PACKAGE{reinterpret_cast<UPackage*>(-1)};
 
     // Internal game functions
     struct GlobalState

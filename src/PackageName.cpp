@@ -10,6 +10,18 @@ namespace RC::Unreal
         const int32 MinPackageNameLength = 4;
     }
 
+    bool FPackageName::IsShortPackageName(FStringView PossiblyLongName)
+    {
+        for (TCHAR Char : PossiblyLongName)
+        {
+            if (Char == '/')
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     bool FPackageName::IsValidLongPackageName(FStringView InLongPackageName, bool bIncludeReadOnlyRoots /*= false*/, EErrorCode* OutReason /*= nullptr */)
     {
         (void)bIncludeReadOnlyRoots;

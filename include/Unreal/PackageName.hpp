@@ -24,6 +24,8 @@ namespace RC::Unreal
         };
 
     public:
+        static bool IsShortPackageName(FStringView PossiblyLongName);
+
         static bool IsValidLongPackageName(FStringView InLongPackageName, bool bIncludeReadOnlyRoots = false, EErrorCode* OutReason = nullptr);
         static bool IsValidLongPackageName(FStringView InLongPackageName, bool bIncludeReadOnlyRoots, class FText* OutReason );
 

@@ -30,6 +30,11 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<UStruct*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_SuperStruct));
     }
 
+    auto UStruct::GetSuperStruct() const -> const UStruct*
+    {
+        return Helper::Casting::offset_deref<UStruct*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_SuperStruct));
+    }
+
     auto UStruct::GetPropertiesSize() -> int32_t
     {
         return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_PropertiesSize));
@@ -40,9 +45,9 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_MinAlignment));
     }
 
-    auto UStruct::IsChildOf(UStruct* Struct) -> bool
+    auto UStruct::IsChildOf(UStruct* Struct) const -> bool
     {
-        UStruct* CurrentStruct = this;
+        auto* CurrentStruct = this;
         do {
             if (CurrentStruct == Struct)
             {

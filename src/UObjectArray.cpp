@@ -3,7 +3,7 @@
 
 namespace RC::Unreal
 {
-    auto FUObjectItem::IsUnreachable() -> bool
+    auto FUObjectItem::IsUnreachable() const -> bool
     {
         return Container::UnrealVC->FUObjectItem_is_object_unreachable(this);
     }
@@ -28,7 +28,7 @@ namespace RC::Unreal
         Container::UnrealVC->FUObjectItem_set_object_gc_keep(this, Base::SetOrUnsetFlag::Unset);
     }
 
-    auto FUObjectItem::GetUObject() -> UObject*
+    auto FUObjectItem::GetUObject() const -> UObject*
     {
         return static_cast<UObject*>(Container::UnrealVC->FUObjectItem_get_uobject(this));
     }

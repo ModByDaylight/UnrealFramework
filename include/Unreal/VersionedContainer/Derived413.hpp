@@ -51,10 +51,10 @@ namespace RC::Unreal
         };
 
         // Abstraction Layer -> START
-        auto FUObjectItem_is_object_unreachable(void* p_this) const -> bool override
+        auto FUObjectItem_is_object_unreachable(const void* p_this) const -> bool override
         {
             if (!p_this) { return true; }
-            FUObjectItem* p_typed_this = static_cast<FUObjectItem*>(p_this);
+            auto* p_typed_this = static_cast<const FUObjectItem*>(p_this);
 
             if (!p_typed_this->object) { return true; }
 
@@ -100,9 +100,9 @@ namespace RC::Unreal
             return p_typed_this->serial_number;
         }
 
-        auto FUObjectItem_get_uobject(void* object_item_param) -> void* override
+        auto FUObjectItem_get_uobject(const void* object_item_param) -> void* override
         {
-            FUObjectItem* object_item = static_cast<FUObjectItem*>(object_item_param);
+            auto* object_item = static_cast<const FUObjectItem*>(object_item_param);
 
             if (object_item)
             {

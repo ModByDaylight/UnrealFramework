@@ -53,13 +53,13 @@ namespace RC::Unreal
         using FUObjectItem = void;
         using UObject = void;
         enum class SetOrUnsetFlag { Set, Unset };
-        virtual auto FUObjectItem_is_object_unreachable(FUObjectItem* p_this) const -> bool = 0;
+        virtual auto FUObjectItem_is_object_unreachable(const FUObjectItem* p_this) const -> bool = 0;
         virtual auto FUObjectItem_set_object_root_set(FUObjectItem* p_this, SetOrUnsetFlag) -> void = 0;
         virtual auto FUObjectItem_set_object_gc_keep(FUObjectItem* p_this, SetOrUnsetFlag) -> void = 0;
         virtual auto FUObjectItem_is_valid(FUObjectItem* p_this, bool b_even_if_pending_kill) -> bool = 0;
         virtual auto FUObjectItem_get_serial_number(int32_t index) -> int32_t = 0;
         virtual auto FUObjectItem_get_serial_number(FUObjectItem* p_this) -> int32_t = 0;
-        virtual auto FUObjectItem_get_uobject(void* p_this) -> UObject* = 0;
+        virtual auto FUObjectItem_get_uobject(const void* p_this) -> UObject* = 0;
         virtual bool FUObjectItem_HasAnyFlags(void* p_this, EInternalObjectFlags InFlags) = 0;
         // FUObjectItem -> END
 

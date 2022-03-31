@@ -22,12 +22,12 @@ namespace RC::Unreal
 
     struct RC_UE_API FUObjectItem
     {
-        auto IsUnreachable() -> bool;
+        auto IsUnreachable() const -> bool;
         auto SetRootSet() -> void;
         auto UnsetRootSet() -> void;
         auto SetGCKeep() -> void;
         auto UnsetGCKeep() -> void;
-        auto GetUObject() -> class UObject*;
+        auto GetUObject() const -> class UObject*;
     };
 
     class RC_UE_API UObjectArray

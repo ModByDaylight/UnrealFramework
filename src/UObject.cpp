@@ -27,6 +27,41 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObjectBase, DeferredRegister, void, PARAMS(const UClass*, const File::CharType*, const File::CharType*), ARGS(UClassStaticClass, PackageName, Name))
     }
 
+    auto UObjectBase::GetObjectItem() const -> const FUObjectItem*
+    {
+        return static_cast<const FUObjectItem*>(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()));
+    }
+
+    auto UObjectBase::GetObjectItem() -> FUObjectItem*
+    {
+        return static_cast<FUObjectItem*>(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()));
+    }
+
+    auto UObjectBase::GetInternalIndex() const -> uint32_t
+    {
+        return Container::UnrealObjectVC->UObject_get_internal_index(this);
+    }
+
+    auto UObjectBase::GetClass() const -> UClass*
+    {
+        return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_ClassPrivate));
+    }
+
+    auto UObjectBase::GetOuter() -> UObject*
+    {
+        return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_OuterPrivate));
+    }
+
+    auto UObjectBase::GetFName() -> FName
+    {
+        return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_NamePrivate));
+    }
+
+    auto UObjectBase::IsA(UClass* Class) const -> bool
+    {
+        return GetClass()->IsChildOf(Class);
+    }
+
     auto UObjectBaseUtility::CanBeClusterRoot() const -> bool
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, CanBeClusterRoot, bool)
@@ -47,34 +82,9 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObjectBaseUtility, OnClusterMarkedAsPendingKill, void)
     }
 
-    auto UObject::GetClass() const -> UClass*
-    {
-        return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_ClassPrivate));
-    }
-
-    auto UObject::GetOuter() -> UObject*
-    {
-        return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_OuterPrivate));
-    }
-
-    auto UObject::GetFName() -> FName
-    {
-        return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_NamePrivate));
-    }
-
     auto UObject::SetFlagsTo(EObjectFlags NewFlags) -> void
     {
         Container::UnrealObjectVC->UObject_set_flags_to(this, NewFlags);
-    }
-
-    auto UObject::GetInternalIndex() -> uint32_t
-    {
-        return Container::UnrealObjectVC->UObject_get_internal_index(this);
-    }
-
-    auto UObject::GetObjectItem() -> FUObjectItem*
-    {
-        return static_cast<FUObjectItem*>(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()));
     }
 
     FString UObject::GetDetailedInfoInternal() const
@@ -463,10 +473,6 @@ namespace RC::Unreal
             CurrentOuter = CurrentOuter->GetOuter();
         }
         return nullptr;
-    }
-
-    auto UObject::IsA(UClass* Class) -> bool {
-        return GetClass()->IsChildOf(Class);
     }
 
     auto UObject::GetPathName(UObject* StopOuter) -> std::wstring

@@ -44,6 +44,7 @@ namespace RC::Unreal
          * UObject itself, since it does not have a superclass
          */
         auto GetSuperStruct() -> UStruct*;
+        auto GetSuperStruct() const -> const UStruct*;
 
         /**
          * Returns the total size of this object's properties
@@ -60,10 +61,10 @@ namespace RC::Unreal
         /**
          * Checks if this struct is a child of the provided one
          */
-        auto IsChildOf(UStruct* Struct) -> bool;
+        auto IsChildOf(UStruct* Struct) const -> bool;
 
         template<UObjectDerivative UObjectDerivedType>
-        auto IsChildOf() -> bool
+        auto IsChildOf() const -> bool
         {
             return IsChildOf(UObjectDerivedType::StaticClass());
         }

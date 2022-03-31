@@ -43,6 +43,10 @@ namespace RC::Unreal
 
     class RC_UE_API UObjectBase
     {
+    private:
+        friend class FUObjectCreateListener;
+        friend class FUObjectDeleteListener;
+
     public:
 #include <VTableOffsets_UObjectBase.hpp>
 
@@ -50,6 +54,42 @@ namespace RC::Unreal
         // Wrappers for virtual engine functions
         auto RegisterDependencies() -> void;
         auto DeferredRegister(class UClass* UClassStaticClass, const File::CharType* PackageName, const File::CharType* Name) -> void;
+
+    public:
+        auto GetObjectItem() const -> const struct FUObjectItem*;
+        auto GetObjectItem() -> struct FUObjectItem*;
+        auto GetInternalIndex() const -> uint32_t;
+
+        /**
+         * Returns the Class of the object
+         */
+        auto GetClass() const -> UClass*;
+
+        /**
+         * Returns the object acting as the outer of this object
+         * Every object must have a valid outer, with the exclusion of UPackage objects
+         */
+        auto GetOuter() -> UObject*;
+
+        /**
+         * Returns name of the object as the instance of FName
+         * Names of the objects are unique inside their relevant outers
+         */
+        auto GetFName() -> FName;
+
+        /**
+         * Checks whenever this object is an instance of the specified class
+         */
+        auto IsA(UClass* Class) const -> bool;
+
+        /**
+         * Templated version of the IsA(UClass*) function
+         */
+        template<UObjectDerivative T>
+        inline auto IsA() const -> bool
+        {
+            return IsA(T::StaticClass());
+        }
     };
 
     class RC_UE_API UObjectBaseUtility : public UObjectBase
@@ -65,7 +105,7 @@ namespace RC::Unreal
         auto OnClusterMarkedAsPendingKill() -> void;
     };
 
-    class RC_UE_API UObject
+    class RC_UE_API UObject : public UObjectBaseUtility
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UObject, CoreUObject);
 
@@ -83,9 +123,6 @@ namespace RC::Unreal
         friend struct FWeakObjectPtr;
         friend class AActor;
         friend class UAssetRegistry;
-
-        auto GetInternalIndex() -> uint32_t;
-        auto GetObjectItem() -> struct FUObjectItem*;
 
     public:
 #include <VTableOffsets_UObject.hpp>
@@ -166,23 +203,6 @@ namespace RC::Unreal
 
     public:
         /**
-         * Returns the Class of the object
-         */
-        auto GetClass() const -> UClass*;
-
-        /**
-         * Returns the object acting as the outer of this object
-         * Every object must have a valid outer, with the exclusion of UPackage objects
-         */
-        auto GetOuter() -> UObject*;
-
-        /**
-         * Returns name of the object as the instance of FName
-         * Names of the objects are unique inside their relevant outers
-         */
-        auto GetFName() -> FName;
-
-        /**
          * Updates the flags currently set on the object to the provided ones
          * This function overwrites the flags completely, use set_flags or clear_flags to
          * add or remove flags instead
@@ -196,11 +216,6 @@ namespace RC::Unreal
         {
             return GetFName().ToString();
         }
-
-        /**
-         * Checks whenever this object is an instance of the specified class
-         */
-        auto IsA(UClass* Class) -> bool;
 
         /**
          * Adds new flags to the object
@@ -253,15 +268,6 @@ namespace RC::Unreal
         void ClearRootSet()
         {
             Container::UnrealVC->FUObjectItem_set_object_root_set(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()), Base::SetOrUnsetFlag::Unset);
-        }
-
-        /**
-         * Templated version of the IsA(UClass*) function
-         */
-        template<UObjectDerivative T>
-        inline auto IsA() -> bool
-        {
-            return IsA(T::StaticClass());
         }
 
         /**

@@ -76,6 +76,8 @@ namespace RC::Unreal
         virtual auto UObjectArray_get_uobject_from_index(int32_t index) -> UObject* = 0;
         virtual auto UObjectArray_get_max_elements() -> int32_t = 0;
         virtual auto UObjectArray_get_num_elements() -> int32_t = 0;
+        virtual void UObjectArray_AddUObjectCreateListener(FUObjectCreateListener* Listener) = 0;
+        virtual void UObjectArray_RemoveUObjectCreateListener(FUObjectCreateListener* Listener) = 0;
         virtual void UObjectArray_AddUObjectDeleteListener(FUObjectDeleteListener* Listener) = 0;
         virtual void UObjectArray_RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener) = 0;
         // GUObjectArray -> END
@@ -140,10 +142,10 @@ namespace RC::Unreal
         };
 
         // Abstraction Layer -> START
-        auto FUObjectItem_is_object_unreachable(void* p_this) const -> bool override
+        auto FUObjectItem_is_object_unreachable(const void* p_this) const -> bool override
         {
             if (!p_this) { return true; }
-            FUObjectItem* p_typed_this = static_cast<FUObjectItem*>(p_this);
+            auto* p_typed_this = static_cast<const FUObjectItem*>(p_this);
 
             if (!p_typed_this->object) { return true; }
 
@@ -189,9 +191,9 @@ namespace RC::Unreal
             return false;
         }
 
-        auto FUObjectItem_get_uobject(void* p_this) -> void* override
+        auto FUObjectItem_get_uobject(const void* p_this) -> void* override
         {
-            FUObjectItem* p_typed_this = static_cast<FUObjectItem*>(p_this);
+            auto* p_typed_this = static_cast<const FUObjectItem*>(p_this);
 
             if (p_typed_this)
             {
@@ -254,22 +256,8 @@ namespace RC::Unreal
             CRITICAL_SECTION ObjObjectsCritical;                    // 0x18
             // Padding in <4.27 because we don't support 'TLockFreePointerListUnordered'
             uint8 ObjAvailableList[0x88];                           // 0x58
-            TArray<void*> UObjectCreateListeners;                   // 0xE0
+            TArray<FUObjectCreateListener*> UObjectCreateListeners; // 0xE0
             TArray<FUObjectDeleteListener*> UObjectDeleteListeners; // 0xF8
-
-            void AddUObjectDeleteListener(FUObjectDeleteListener* Listener)
-            {
-                if (UObjectDeleteListeners.Contains(Listener))
-                {
-                    throw std::runtime_error{"Cannot add a listener because it already exists in TArray"};
-                }
-                UObjectDeleteListeners.Add(Listener);
-            }
-
-            void RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener)
-            {
-                UObjectDeleteListeners.RemoveSingleSwap(Listener);
-            }
         };
 
         using GUObjectArray = FUObjectArray;
@@ -361,14 +349,32 @@ namespace RC::Unreal
             return m_guobjectarray_internal->obj_objects.num_elements;
         }
 
+        void UObjectArray_AddUObjectCreateListener(FUObjectCreateListener* Listener) override
+        {
+            if (m_guobjectarray_internal->UObjectCreateListeners.Contains(Listener))
+            {
+                throw std::runtime_error{"Cannot add a listener because it already exists in TArray"};
+            }
+            m_guobjectarray_internal->UObjectCreateListeners.Add(Listener);
+        }
+
+        void UObjectArray_RemoveUObjectCreateListener(FUObjectCreateListener* Listener) override
+        {
+            m_guobjectarray_internal->UObjectCreateListeners.RemoveSingleSwap(Listener);
+        }
+
         void UObjectArray_AddUObjectDeleteListener(FUObjectDeleteListener* Listener) override
         {
-            m_guobjectarray_internal->AddUObjectDeleteListener(Listener);
+            if (m_guobjectarray_internal->UObjectDeleteListeners.Contains(Listener))
+            {
+                throw std::runtime_error{"Cannot add a listener because it already exists in TArray"};
+            }
+            m_guobjectarray_internal->UObjectDeleteListeners.Add(Listener);
         }
 
         void UObjectArray_RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener) override
         {
-            m_guobjectarray_internal->RemoveUObjectDeleteListener(Listener);
+            m_guobjectarray_internal->UObjectDeleteListeners.RemoveSingleSwap(Listener);
         }
         // GUObjectArray -> END
     };

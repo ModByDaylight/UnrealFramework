@@ -43,6 +43,16 @@ namespace RC::Unreal
         return Container::UnrealVC->FUObjectItem_is_valid(ObjectItem, bEvenIfPendingKill);
     }
 
+    void UObjectArray::AddUObjectCreateListener(FUObjectCreateListener* Listener)
+    {
+        Container::UnrealVC->UObjectArray_AddUObjectCreateListener(Listener);
+    }
+
+    void UObjectArray::RemoveUObjectCreateListener(FUObjectCreateListener* Listener)
+    {
+        Container::UnrealVC->UObjectArray_RemoveUObjectCreateListener(Listener);
+    }
+
     void UObjectArray::AddUObjectDeleteListener(FUObjectDeleteListener* Listener)
     {
         Container::UnrealVC->UObjectArray_AddUObjectDeleteListener(Listener);

@@ -234,6 +234,8 @@ namespace RC::Unreal
             return m_guobjectarray_internal->obj_objects.num_elements;
         }
 
+        void UObjectArray_AddUObjectCreateListener(FUObjectCreateListener* Listener) override;
+        void UObjectArray_RemoveUObjectCreateListener(FUObjectCreateListener* Listener) override;
         void UObjectArray_AddUObjectDeleteListener(FUObjectDeleteListener* Listener) override;
         void UObjectArray_RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener) override;
         // GUObjectArray -> END

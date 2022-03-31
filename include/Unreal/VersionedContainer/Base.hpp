@@ -8,6 +8,8 @@
 #include <Unreal/Common.hpp>
 #include <Unreal/StaticOffsetFinder.hpp>
 #include <Unreal/NameTypes.hpp>
+#include <Unreal/TArray.hpp>
+#include <Unreal/UObjectArray.hpp>
 
 namespace RC::Unreal
 {
@@ -15,6 +17,9 @@ namespace RC::Unreal
     class FField;
     class FFieldClass;
     class FProperty;
+
+    // TODO: Move to 'MinimalWindowsApi.hpp'.
+    struct CRITICAL_SECTION { void* Opaque1[1]; long Opaque2[2]; void* Opaque3[3]; };
 
     struct RC_UE_API PropertyDataVC
     {
@@ -71,6 +76,8 @@ namespace RC::Unreal
         virtual auto UObjectArray_get_uobject_from_index(int32_t index) -> UObject* = 0;
         virtual auto UObjectArray_get_max_elements() -> int32_t = 0;
         virtual auto UObjectArray_get_num_elements() -> int32_t = 0;
+        virtual void UObjectArray_AddUObjectDeleteListener(FUObjectDeleteListener* Listener) = 0;
+        virtual void UObjectArray_RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener) = 0;
         // GUObjectArray -> END
 
         // FField -> START
@@ -86,7 +93,7 @@ namespace RC::Unreal
 
     class Default : public Base
     {
-    private:
+    protected:
         // FUObjectItem -> START
         using UObjectBase = Unreal::UObject;
 
@@ -205,6 +212,7 @@ namespace RC::Unreal
         // FUObjectItem -> END
 
         // GUObjectArray -> START
+    public:
         struct FChunkedFixedUObjectArray
         {
             enum
@@ -238,11 +246,30 @@ namespace RC::Unreal
         {
             using TUObjectArray = FChunkedFixedUObjectArray;
 
-            int32_t obj_first_gc_index;
-            int32_t obj_last_non_gc_index;
-            int32_t max_objects_not_considered_by_gc;
-            bool open_for_disregard_for_gc;
-            TUObjectArray obj_objects;
+            int32_t obj_first_gc_index;                             // 0x0
+            int32_t obj_last_non_gc_index;                          // 0x4
+            int32_t max_objects_not_considered_by_gc;               // 0x8
+            bool open_for_disregard_for_gc;                         // 0xC
+            TUObjectArray obj_objects;                              // 0x10
+            CRITICAL_SECTION ObjObjectsCritical;                    // 0x18
+            // Padding in <4.27 because we don't support 'TLockFreePointerListUnordered'
+            uint8 ObjAvailableList[0x88];                           // 0x58
+            TArray<void*> UObjectCreateListeners;                   // 0xE0
+            TArray<FUObjectDeleteListener*> UObjectDeleteListeners; // 0xF8
+
+            void AddUObjectDeleteListener(FUObjectDeleteListener* Listener)
+            {
+                if (UObjectDeleteListeners.Contains(Listener))
+                {
+                    throw std::runtime_error{"Cannot add a listener because it already exists in TArray"};
+                }
+                UObjectDeleteListeners.Add(Listener);
+            }
+
+            void RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener)
+            {
+                UObjectDeleteListeners.RemoveSingleSwap(Listener);
+            }
         };
 
         using GUObjectArray = FUObjectArray;
@@ -332,6 +359,16 @@ namespace RC::Unreal
         auto UObjectArray_get_num_elements() -> int32_t override
         {
             return m_guobjectarray_internal->obj_objects.num_elements;
+        }
+
+        void UObjectArray_AddUObjectDeleteListener(FUObjectDeleteListener* Listener) override
+        {
+            m_guobjectarray_internal->AddUObjectDeleteListener(Listener);
+        }
+
+        void UObjectArray_RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener) override
+        {
+            m_guobjectarray_internal->RemoveUObjectDeleteListener(Listener);
         }
         // GUObjectArray -> END
     };

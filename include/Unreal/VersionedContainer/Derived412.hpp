@@ -158,6 +158,11 @@ namespace RC::Unreal
             int32_t max_objects_not_considered_by_gc;
             bool open_for_disregard_for_gc;
             TUObjectArray obj_objects;
+            CRITICAL_SECTION ObjObjectsCritical;                    // 0x18
+            // Padding in <4.27 because we don't support 'TLockFreePointerListUnordered'
+            uint8 ObjAvailableList[0x88];                           // 0x58
+            TArray<void*> UObjectCreateListeners;                   // 0xE0
+            TArray<FUObjectDeleteListener*> UObjectDeleteListeners; // 0xF8
         };
 
         using GUObjectArray = FUObjectArray;
@@ -228,6 +233,9 @@ namespace RC::Unreal
         {
             return m_guobjectarray_internal->obj_objects.num_elements;
         }
+
+        void UObjectArray_AddUObjectDeleteListener(FUObjectDeleteListener* Listener) override;
+        void UObjectArray_RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener) override;
         // GUObjectArray -> END
 
     public:

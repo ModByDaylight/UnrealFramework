@@ -5,6 +5,7 @@
 #include <Unreal/VersionedContainer/Derived415.hpp>
 #include <Unreal/VersionedContainer/Derived422.hpp>
 #include <Unreal/VersionedContainer/Derived425.hpp>
+#include <Unreal/VersionedContainer/Derived427.hpp>
 #include <Unreal/VersionedContainer/UObject412.hpp>
 #include <Unreal/VersionedContainer/UObject415.hpp>
 #include <Unreal/VersionedContainer/UObject422.hpp>
@@ -130,13 +131,13 @@ namespace RC::Unreal
         }
         else if (Version::IsEqual(4, 27))
         {
-            UnrealVC = std::make_unique<Derived425>();
+            UnrealVC = std::make_unique<Derived427>();
             UnrealObjectVC = std::make_unique<UObject425>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual427>();
         }
         else if (Version::IsEqual(4, 5))
         {
-            UnrealVC = std::make_unique<Derived425>();
+            UnrealVC = std::make_unique<Derived427>();
             UnrealObjectVC = std::make_unique<UObject425>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual500>();
         }
@@ -144,6 +145,7 @@ namespace RC::Unreal
         {
             // If this code is ever reached then the version isn't explicitly supported
             // Using 4.25 as a long-shot, sometimes this will work but in the future it's likely that this will break
+            // Update: It will break in 4.27+ because GUObjectArray is different
             UnrealVC = std::make_unique<Derived425>();
             UnrealObjectVC = std::make_unique<UObject425>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual426>();

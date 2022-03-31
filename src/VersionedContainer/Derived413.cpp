@@ -29,4 +29,18 @@ namespace RC::Unreal
         FUObjectItem* TypedThis = static_cast<FUObjectItem*>(RawThis);
         return !!(TypedThis->flags & int32(InFlags));
     }
+
+    void Derived413::UObjectArray_AddUObjectDeleteListener(FUObjectDeleteListener* Listener)
+    {
+        if (m_guobjectarray_internal->UObjectDeleteListeners.Contains(Listener))
+        {
+            throw std::runtime_error{"Cannot add a listener because it already exists in TArray"};
+        }
+        m_guobjectarray_internal->UObjectDeleteListeners.Add(Listener);
+    }
+
+    void Derived413::UObjectArray_RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener)
+    {
+        m_guobjectarray_internal->UObjectDeleteListeners.RemoveSingleSwap(Listener);
+    }
 }

@@ -42,4 +42,14 @@ namespace RC::Unreal
     {
         return Container::UnrealVC->FUObjectItem_is_valid(ObjectItem, bEvenIfPendingKill);
     }
+
+    void UObjectArray::AddUObjectDeleteListener(FUObjectDeleteListener* Listener)
+    {
+        Container::UnrealVC->UObjectArray_AddUObjectDeleteListener(Listener);
+    }
+
+    void UObjectArray::RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener)
+    {
+        Container::UnrealVC->UObjectArray_RemoveUObjectDeleteListener(Listener);
+    }
 }

@@ -5,9 +5,21 @@
 // See Base.hpp / DerivedX.hpp files for implementations
 
 #include <Unreal/Common.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
 
 namespace RC::Unreal
 {
+    // This is implemented as a regular polymorphic object instead of using the vtable generator.
+    // That's because the struct is very small and so is the vtable, and it hasn't changed from 4.12.
+    // It's just easier to not use the vtable generator for this.
+    class RC_UE_API FUObjectDeleteListener
+    {
+    public:
+        virtual ~FUObjectDeleteListener() = default;
+        virtual void NotifyUObjectDeleted(const class UObjectBase* Object, int32 Index) = 0;
+        virtual void OnUObjectArrayShutdown() = 0;
+    };
+
     struct RC_UE_API FUObjectItem
     {
         auto IsUnreachable() -> bool;
@@ -25,6 +37,8 @@ namespace RC::Unreal
 
     public:
         auto static IsValid(FUObjectItem* ObjectItem, bool bEvenIfPendingKill) -> bool;
+        static void AddUObjectDeleteListener(FUObjectDeleteListener* Listener);
+        static void RemoveUObjectDeleteListener(FUObjectDeleteListener* Listener);
     };
 }
 

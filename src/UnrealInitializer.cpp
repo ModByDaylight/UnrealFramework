@@ -15,6 +15,11 @@
 #include <Unreal/FString.hpp>
 #include <Unreal/FMemory.hpp>
 #include <Unreal/FAssetData.hpp>
+#include <Unreal/AActor.hpp>
+#include <Unreal/Searcher/Searcher.hpp>
+#include <Unreal/Searcher/ClassSearcher.hpp>
+#include <Unreal/Searcher/ActorClassSearcher.hpp>
+#include <Unreal/ClassListener.hpp>
 
 #define NOMINMAX
 #include <Windows.h>
@@ -304,6 +309,34 @@ namespace RC::Unreal::UnrealInitializer
                 throw std::runtime_error{"Tell a developer: FAssetData::StaticSize is too small to hold the entire struct"};
             }
         }
+
+        // Construct searchers
+        Searcher<DefaultSlowInstanceSearcher>::UnderlyingSearcher = std::make_unique<Searcher<DefaultSlowInstanceSearcher>>();
+        ClassSearcher<DefaultSlowClassSearcher>::UnderlyingSearcher = std::make_unique<ClassSearcher<DefaultSlowClassSearcher>>();
+        AllInstanceSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<Searcher<UClass>>());
+        AllClassSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<ClassSearcher<UClass>>());
+        AllClassSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ClassSearcher<AActor>>());
+
+        // Populate searcher pools
+        UObjectGlobals::ForEachUObject([](UObject* Object, ...) {
+            auto* ObjectItem = Object->GetObjectItem();
+
+            if (Object->IsA<UClass>())
+            {
+                Searcher<UClass>::Pool.emplace_back(ObjectItem);
+                ClassSearcher<UClass>::Pool.emplace_back(ObjectItem);
+
+                if (static_cast<UClass*>(Object)->IsChildOf<AActor>())
+                {
+                    ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
+                }
+            }
+
+            return LoopAction::Continue;
+        });
+
+        UObjectArray::AddUObjectCreateListener(&FClassCreateListener::ClassCreateListener);
+        UObjectArray::AddUObjectDeleteListener(&FClassDeleteListener::ClassDeleteListener);
     }
 
     auto Initialize(const Config& UnrealConfig) -> void

@@ -33,9 +33,30 @@ namespace RC::Unreal
     template <typename SizeType>
     SizeType DefaultCalculateSlackShrink(SizeType NumElements, SizeType NumAllocatedElements, SIZE_T BytesPerElement, bool bAllowQuantize, uint32 Alignment = DEFAULT_ALIGNMENT)
     {
-        // TODO: Implement, and do not use until implemented
-        static_assert(false, "DefaultCalculateSlackShrink is not implemented");
-        return 0;
+        SizeType Retval;
+
+        // If the container has too much slack, shrink it to exactly fit the number of elements.
+        const SizeType CurrentSlackElements = NumAllocatedElements - NumElements;
+        const SIZE_T CurrentSlackBytes = (NumAllocatedElements - NumElements) * BytesPerElement;
+        const bool bTooManySlackBytes = CurrentSlackBytes >= 16384;
+        const bool bTooManySlackElements = 3 * NumElements < 2 * NumAllocatedElements;
+        if ((bTooManySlackBytes || bTooManySlackElements) && (CurrentSlackElements > 64 || !NumElements)) //  hard coded 64 :-(
+        {
+            Retval = NumElements;
+            if (Retval > 0)
+            {
+                if (bAllowQuantize)
+                {
+                    Retval = (SizeType)(FMemory::QuantizeSize(Retval * BytesPerElement, Alignment) / BytesPerElement);
+                }
+            }
+        }
+        else
+        {
+            Retval = NumAllocatedElements;
+        }
+
+        return Retval;
     }
 
     template <typename SizeType>

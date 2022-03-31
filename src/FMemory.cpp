@@ -123,4 +123,19 @@ namespace RC::Unreal
 
         return GMalloc->Realloc(Original, Count, Alignment);
     }
+
+    void* FMemory::Memcpy(void* Dest, const void* Src, SIZE_T Count)
+    {
+        return std::memcpy(Dest, Src, Count);
+    }
+
+    SIZE_T FMemory::QuantizeSize(SIZE_T Count, uint32 Alignment)
+    {
+        if (!GMalloc || !FMalloc::bIsInitialized)
+        {
+            return Count;
+        }
+
+        return GMalloc->QuantizeSize(Count, Alignment);
+    }
 }

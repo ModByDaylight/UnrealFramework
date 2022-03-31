@@ -75,6 +75,8 @@ namespace RC::Unreal
         static void* Malloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
         static void* Realloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
         static void Free(void* Original);
+        static void* Memcpy(void* Dest, const void* Src, SIZE_T Count);
+        static SIZE_T QuantizeSize(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
 
         // TODO: Implement if we need them
         //void static memmove(void* dest, void* src, size_t size);

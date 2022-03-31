@@ -10,11 +10,13 @@
 #include <Helpers/Format.hpp>
 #include <Unreal/Common.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
+#include <Unreal/TypeTraits.hpp>
 #include <Unreal/ChooseClass.hpp>
 #include <Unreal/ContainersFwd.hpp>
 #include <Unreal/ContainerAllocationPolicies.hpp>
 #include <Unreal/FMemory.hpp>
-#include <Unreal/VersionedContainer/Base.hpp>
+#include <Unreal/MemoryOps.hpp>
+#include <Unreal/UnrealFlags.hpp>
 #include <Unreal/TypeChecker.hpp>
 
 namespace RC::Unreal
@@ -219,9 +221,123 @@ namespace RC::Unreal
             ArrayMax = AllocatorInstance.CalculateSlackGrow(ArrayNum, ArrayMax, GetElementSize());
             AllocatorInstance.ResizeAllocation(OldNum, ArrayMax, GetElementSize());
         }
+
+        void ResizeShrink()
+        {
+            const SizeType NewArrayMax = AllocatorInstance.CalculateSlackShrink(ArrayNum, ArrayMax, sizeof(ElementType));
+            if (NewArrayMax != ArrayMax)
+            {
+                ArrayMax = NewArrayMax;
+                AllocatorInstance.ResizeAllocation(ArrayNum, ArrayMax, sizeof(ElementType));
+            }
+        }
         // Memory related -> END
 
+        void CheckInvariants() const
+        {
+        }
+
+    private:
+        void RemoveAtSwapImpl(SizeType Index, SizeType Count = 1, bool bAllowShrinking = true)
+        {
+            if (Count)
+            {
+                CheckInvariants();
+
+                DestructItems(GetData() + Index, Count);
+
+                // Replace the elements in the hole created by the removal with elements from the end of the array, so the range of indices used by the array is contiguous.
+                const SizeType NumElementsInHole = Count;
+                const SizeType NumElementsAfterHole = ArrayNum - (Index + Count);
+                const SizeType NumElementsToMoveIntoHole = std::min(NumElementsInHole, NumElementsAfterHole);
+                if (NumElementsToMoveIntoHole)
+                {
+                    FMemory::Memcpy(
+                            (uint8*)AllocatorInstance.GetAllocation() + (Index) * sizeof(ElementType),
+                            (uint8*)AllocatorInstance.GetAllocation() + (ArrayNum - NumElementsToMoveIntoHole) * sizeof(ElementType),
+                            NumElementsToMoveIntoHole * sizeof(ElementType)
+                    );
+                }
+                ArrayNum -= Count;
+
+                if (bAllowShrinking)
+                {
+                    ResizeShrink();
+                }
+            }
+        }
+
     public:
+        SizeType Find(const ElementType& Item) const
+        {
+            const ElementType* RESTRICT Start = GetData();
+            for (const ElementType* RESTRICT Data = Start, * RESTRICT DataEnd = Data + ArrayNum; Data != DataEnd; ++Data)
+            {
+                if (*Data == Item)
+                {
+                    return static_cast<SizeType>(Data - Start);
+                }
+            }
+            return INDEX_NONE;
+        }
+
+        template<typename... ArgsType>
+        SizeType Emplace(ArgsType&&... Args)
+        {
+            const SizeType Index = AddUninitialized(1);
+            new (GetData() + Index) ElementType(std::forward<ArgsType>(Args)...);
+            return Index;
+        }
+
+        SizeType Add(const ElementType& Item)
+        {
+            return Emplace(Item);
+        }
+
+        template<typename ComparisonType>
+        bool Contains(const ComparisonType& Item) const
+        {
+            for (const ElementType* RESTRICT Data = GetData(), * RESTRICT DataEnd = Data + ArrayNum; Data != DataEnd; ++Data)
+            {
+                if (*Data == Item)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        template<typename CountType>
+        void RemoveAtSwap(SizeType Index, CountType Count, bool bAllowShrinking = true)
+        {
+            static_assert(!TAreTypesEqual<CountType, bool>::Value, "TArray::RemoveAtSwap: unexpected bool passed as the Count argument");
+            RemoveAtSwapImpl(Index, Count, bAllowShrinking);
+        }
+
+        SizeType RemoveSingleSwap(const ElementType& Item, bool bAllowShrinking = true)
+        {
+            SizeType Index = Find(Item);
+            if (Index == INDEX_NONE)
+            {
+                return 0;
+            }
+
+            RemoveAtSwap(Index, 1, bAllowShrinking);
+
+            // Removed one item
+            return 1;
+        }
+
+        ElementType* GetData()
+        {
+            return std::bit_cast<ElementType*>(AllocatorInstance.GetAllocation());
+        }
+
+        const ElementType* GetData() const
+        {
+            return std::bit_cast<const ElementType*>(AllocatorInstance.GetAllocation());
+        }
+
         auto GetDataPtr() const -> InElementType*
         {
             return std::bit_cast<InElementType*>(AllocatorInstance.GetAllocation());

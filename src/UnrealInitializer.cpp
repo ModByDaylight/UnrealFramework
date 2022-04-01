@@ -16,7 +16,7 @@
 #include <Unreal/FMemory.hpp>
 #include <Unreal/FAssetData.hpp>
 #include <Unreal/AActor.hpp>
-#include <Unreal/Searcher/Searcher.hpp>
+#include <Unreal/Searcher/ObjectSearcher.hpp>
 #include <Unreal/Searcher/ClassSearcher.hpp>
 #include <Unreal/Searcher/ActorClassSearcher.hpp>
 #include <Unreal/ClassListener.hpp>
@@ -311,10 +311,10 @@ namespace RC::Unreal::UnrealInitializer
         }
 
         // Construct searchers
-        Searcher<DefaultSlowInstanceSearcher>::UnderlyingSearcher = std::make_unique<Searcher<DefaultSlowInstanceSearcher>>();
+        ObjectSearcher<DefaultSlowInstanceSearcher>::UnderlyingSearcher = std::make_unique<ObjectSearcher<DefaultSlowInstanceSearcher>>();
         ClassSearcher<DefaultSlowClassSearcher>::UnderlyingSearcher = std::make_unique<ClassSearcher<DefaultSlowClassSearcher>>();
-        AllInstanceSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<Searcher<UClass>>());
-        AllInstanceSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<Searcher<AActor>>());
+        AllInstanceSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<ObjectSearcher<UClass>>());
+        AllInstanceSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ObjectSearcher<AActor>>());
         AllClassSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<ClassSearcher<UClass>>());
         AllClassSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ClassSearcher<AActor>>());
 
@@ -324,7 +324,7 @@ namespace RC::Unreal::UnrealInitializer
 
             if (Object->IsA<UClass>())
             {
-                Searcher<UClass>::Pool.emplace_back(ObjectItem);
+                ObjectSearcher<UClass>::Pool.emplace_back(ObjectItem);
                 ClassSearcher<UClass>::Pool.emplace_back(ObjectItem);
 
                 if (static_cast<UClass*>(Object)->IsChildOf<AActor>())
@@ -335,7 +335,7 @@ namespace RC::Unreal::UnrealInitializer
 
             if (Object->IsA<AActor>())
             {
-                Searcher<AActor>::Pool.emplace_back(ObjectItem);
+                ObjectSearcher<AActor>::Pool.emplace_back(ObjectItem);
             }
 
             return LoopAction::Continue;

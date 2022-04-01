@@ -18,7 +18,7 @@ namespace RC::Unreal
         static UClass* StaticClass() { return nullptr; }
     };
 
-    struct SearcherBase
+    struct ObjectSearcherBase
     {
         virtual size_t PoolSize() = 0;
         virtual bool IsFast() = 0;
@@ -32,13 +32,13 @@ namespace RC::Unreal
 
     // Slow generic searcher that iterates GUObjectArray
     template<typename T>
-    struct Searcher : SearcherBase
+    struct ObjectSearcher : ObjectSearcherBase
     {
     public:
         static inline std::vector<const FUObjectItem*> Pool{};
 
         // Pointer to the default generic slow searcher.
-        static inline std::unique_ptr<SearcherBase> UnderlyingSearcher;
+        static inline std::unique_ptr<ObjectSearcherBase> UnderlyingSearcher;
 
     public:
         static auto& Get()
@@ -82,14 +82,14 @@ namespace RC::Unreal
         }
     };
 
-    extern std::unordered_map<size_t, std::unique_ptr<SearcherBase>> AllInstanceSearchers;
+    extern std::unordered_map<size_t, std::unique_ptr<ObjectSearcherBase>> AllInstanceSearchers;
 
-    SearcherBase& FindSearcher(UClass* Class);
+    ObjectSearcherBase& FindObjectSearcher(UClass* Class);
 
     template<typename Class>
-    SearcherBase& FindSearcher()
+    ObjectSearcherBase& FindObjectSearcher()
     {
-        return FindSearcher(Class::StaticClass());
+        return FindObjectSearcher(Class::StaticClass());
     }
 }
 

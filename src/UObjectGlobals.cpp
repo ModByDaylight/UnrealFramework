@@ -6,7 +6,7 @@
 #include <Unreal/PackageName.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
-#include <Unreal/Searcher/Searcher.hpp>
+#include <Unreal/Searcher/ObjectSearcher.hpp>
 #include <Unreal/Searcher/ClassSearcher.hpp>
 #include <Unreal/Searcher/ActorClassSearcher.hpp>
 #include <DynamicOutput/DynamicOutput.hpp>
@@ -56,12 +56,12 @@ namespace RC::Unreal::UObjectGlobals
         return !object->HasAnyFlags(static_cast<EObjectFlags>(RF_ClassDefaultObject | RF_ArchetypeObject)) && !object->IsA<UClass>();
     }
 
-    UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass, SearcherBase* InSearcher)
+    UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass, ObjectSearcherBase* InSearcher)
     {
         return FindObject(Class, InOuter, InName.data(), bExactClass, InSearcher);
     }
 
-    UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass, SearcherBase* InSearcher)
+    UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass, ObjectSearcherBase* InSearcher)
     {
         auto GetPackageNameFromLongName = [](const File::StringType& LongName) -> File::StringType
         {
@@ -81,8 +81,8 @@ namespace RC::Unreal::UObjectGlobals
         FName ShortName = bIsLongName ? NAME_None : FName(InName, FNAME_Add);
         FName PackageName = bIsLongName ? FName(GetPackageNameFromLongName(InName), FNAME_Add) : NAME_None;
 
-        auto& Searcher = [&InSearcher, &Class]() -> SearcherBase& {
-            return InSearcher ? *InSearcher : FindSearcher(Class);
+        auto& Searcher = [&InSearcher, &Class]() -> ObjectSearcherBase& {
+            return InSearcher ? *InSearcher : FindObjectSearcher(Class);
         }();
 
         bool bQuickSearch = Searcher.IsFast();
@@ -143,12 +143,12 @@ namespace RC::Unreal::UObjectGlobals
         return FoundObject;
     }
 
-    UObject* FindObject(struct SearcherBase& Searcher, UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass)
+    UObject* FindObject(struct ObjectSearcherBase& Searcher, UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass)
     {
         return FindObject(Searcher, Class, InOuter, InName.data(), bExactClass);
     }
 
-    UObject* FindObject(struct SearcherBase& Searcher, UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass)
+    UObject* FindObject(struct ObjectSearcherBase& Searcher, UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass)
     {
         return FindObject(Class, InOuter, InName, bExactClass, &Searcher);
     }

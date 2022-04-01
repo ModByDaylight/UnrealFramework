@@ -1,7 +1,7 @@
 #include <Unreal/ClassListener.hpp>
 #include <Unreal/UObject.hpp>
 #include <Unreal/UClass.hpp>
-#include <Unreal/Searcher/Searcher.hpp>
+#include <Unreal/Searcher/ObjectSearcher.hpp>
 #include <Unreal/Searcher/ActorClassSearcher.hpp>
 
 namespace RC::Unreal
@@ -15,7 +15,7 @@ namespace RC::Unreal
 
         if (Object->IsA<UClass>())
         {
-            Searcher<UClass>::Pool.emplace_back(ObjectItem);
+            ObjectSearcher<UClass>::Pool.emplace_back(ObjectItem);
             ClassSearcher<UClass>::Pool.emplace_back(ObjectItem);
 
             if (static_cast<const UClass*>(Object)->IsChildOf<AActor>())
@@ -26,7 +26,7 @@ namespace RC::Unreal
 
         if (Object->IsA<AActor>())
         {
-            Searcher<AActor>::Pool.emplace_back(ObjectItem);
+            ObjectSearcher<AActor>::Pool.emplace_back(ObjectItem);
         }
     }
 
@@ -39,9 +39,9 @@ namespace RC::Unreal
     {
         auto* ObjectItem = Object->GetObjectItem();
 
-        Searcher<UClass>::Pool.erase(std::remove_if(Searcher<UClass>::Pool.begin(), Searcher<UClass>::Pool.end(), [&](const auto& Item) {
+        ObjectSearcher<UClass>::Pool.erase(std::remove_if(ObjectSearcher<UClass>::Pool.begin(), ObjectSearcher<UClass>::Pool.end(), [&](const auto& Item) {
             return Item == ObjectItem;
-        }), Searcher<UClass>::Pool.end());
+        }), ObjectSearcher<UClass>::Pool.end());
 
         ClassSearcher<UClass>::Pool.erase(std::remove_if(ClassSearcher<UClass>::Pool.begin(), ClassSearcher<UClass>::Pool.end(), [&](const auto& Item) {
             return Item == ObjectItem;
@@ -51,9 +51,9 @@ namespace RC::Unreal
             return Item == ObjectItem;
         }), ClassSearcher<AActor>::Pool.end());
 
-        Searcher<AActor>::Pool.erase(std::remove_if(Searcher<AActor>::Pool.begin(), Searcher<AActor>::Pool.end(), [&](const auto& Item) {
+        ObjectSearcher<AActor>::Pool.erase(std::remove_if(ObjectSearcher<AActor>::Pool.begin(), ObjectSearcher<AActor>::Pool.end(), [&](const auto& Item) {
             return Item == ObjectItem;
-        }), Searcher<AActor>::Pool.end());
+        }), ObjectSearcher<AActor>::Pool.end());
     }
 
     void FClassDeleteListener::OnUObjectArrayShutdown()

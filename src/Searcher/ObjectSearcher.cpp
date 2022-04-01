@@ -1,18 +1,18 @@
-#include <Unreal/Searcher/Searcher.hpp>
+#include <Unreal/Searcher/ObjectSearcher.hpp>
 #include <Unreal/AActor.hpp>
 #include <DynamicOutput/DynamicOutput.hpp>
 
 namespace RC::Unreal
 {
-    std::unordered_map<size_t, std::unique_ptr<SearcherBase>> AllInstanceSearchers;
+    std::unordered_map<size_t, std::unique_ptr<ObjectSearcherBase>> AllInstanceSearchers;
 
-    SearcherBase& FindSearcher(UClass* Class)
+    ObjectSearcherBase& FindObjectSearcher(UClass* Class)
     {
         // Attempt to find a fast searcher.
         // We use the default slow searcher if a fast searcher doesn't exist.
         if (!Class)
         {
-            return Searcher<DefaultSlowInstanceSearcher>::Get();
+            return ObjectSearcher<DefaultSlowInstanceSearcher>::Get();
         }
         else if (auto It = AllInstanceSearchers.find(Class->HashObject()); It != AllInstanceSearchers.end())
         {
@@ -20,7 +20,7 @@ namespace RC::Unreal
         }
         else
         {
-            return Searcher<DefaultSlowInstanceSearcher>::Get();
+            return ObjectSearcher<DefaultSlowInstanceSearcher>::Get();
         }
     }
 

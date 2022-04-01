@@ -69,13 +69,13 @@ namespace RC::Unreal
          * Returns the object acting as the outer of this object
          * Every object must have a valid outer, with the exclusion of UPackage objects
          */
-        auto GetOuter() -> UObject*;
+        auto GetOuter() const -> UObject*;
 
         /**
          * Returns name of the object as the instance of FName
          * Names of the objects are unique inside their relevant outers
          */
-        auto GetFName() -> FName;
+        auto GetFName() const -> FName;
 
         /**
          * Checks whenever this object is an instance of the specified class
@@ -212,7 +212,7 @@ namespace RC::Unreal
         /**
          * Returns the name of this object, as string
          */
-        inline auto GetName() -> std::wstring
+        inline auto GetName() const -> std::wstring
         {
             return GetFName().ToString();
         }
@@ -295,14 +295,14 @@ namespace RC::Unreal
          * Returns the full path to the object in form of Package.Outer:ObjectName
          * Safe to call on the NULL objects and will return None in that case
          */
-        auto GetPathName(UObject* StopOuter = nullptr) -> std::wstring;
+        auto GetPathName(UObject* StopOuter = nullptr) const -> std::wstring;
 
         /**
          * Returns the full name of the object in form Class Package.Outer:ObjectName
          */
-        auto GetFullName(UObject* StopOuter = nullptr) -> std::wstring;
+        auto GetFullName(UObject* StopOuter = nullptr) const -> std::wstring;
 
-        auto GetPathName(UObject* StopOuter, std::wstring& ResultString) -> void;
+        auto GetPathName(UObject* StopOuter, std::wstring& ResultString) const -> void;
 
         size_t HashObject();
 

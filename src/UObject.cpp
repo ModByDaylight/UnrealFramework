@@ -47,12 +47,12 @@ namespace RC::Unreal
         return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_ClassPrivate));
     }
 
-    auto UObjectBase::GetOuter() -> UObject*
+    auto UObjectBase::GetOuter() const -> UObject*
     {
         return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_OuterPrivate));
     }
 
-    auto UObjectBase::GetFName() -> FName
+    auto UObjectBase::GetFName() const -> FName
     {
         return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_NamePrivate));
     }
@@ -475,14 +475,14 @@ namespace RC::Unreal
         return nullptr;
     }
 
-    auto UObject::GetPathName(UObject* StopOuter) -> std::wstring
+    auto UObject::GetPathName(UObject* StopOuter) const -> std::wstring
     {
         std::wstring ResultName;
         GetPathName(StopOuter, ResultName);
         return ResultName;
     }
 
-    auto UObject::GetPathName(UObject* StopOuter, std::wstring& ResultString) -> void
+    auto UObject::GetPathName(UObject* StopOuter, std::wstring& ResultString) const -> void
     {
         if(this != StopOuter && this != nullptr)
         {
@@ -520,7 +520,7 @@ namespace RC::Unreal
         return reinterpret_cast<size_t>(this);
     }
 
-    auto UObject::GetFullName(UObject* StopOuter) -> std::wstring
+    auto UObject::GetFullName(UObject* StopOuter) const -> std::wstring
     {
         if (this == nullptr)
         {

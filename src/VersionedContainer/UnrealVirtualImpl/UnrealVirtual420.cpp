@@ -18,6 +18,7 @@ namespace RC::Unreal
 #include <FunctionBodies/4_20_VTableOffsets_UScriptStruct__ICppStructOps_FunctionBody.cpp>
 #include <FunctionBodies/4_20_VTableOffsets_FOutputDevice_FunctionBody.cpp>
 #include <FunctionBodies/4_20_VTableOffsets_FMalloc_FunctionBody.cpp>
+#include <FunctionBodies/4_20_VTableOffsets_UStruct_FunctionBody.cpp>
 #include <FunctionBodies/4_20_VTableOffsets_UField_FunctionBody.cpp>
 #include <FunctionBodies/4_20_VTableOffsets_FProperty_FunctionBody.cpp>
 #include <FunctionBodies/4_20_VTableOffsets_FNumericProperty_FunctionBody.cpp>

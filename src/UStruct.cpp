@@ -10,6 +10,93 @@ namespace RC::Unreal
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UStruct);
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
+    
+    Function<UStruct::LinkSignature> UStruct::LinkInternal;
+
+    UStruct* UStruct::GetInheritanceSuper() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UStruct, GetInheritanceSuper, UStruct*)
+    }
+
+    void UStruct::Link(FArchive& Ar, bool bRelinkExistingProperties)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, Link, void, PARAMS(bool), ARGS(bRelinkExistingProperties))
+    }
+
+    void UStruct::SerializeBin(FArchive& Ar, void* Data) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, SerializeBin, void, PARAMS(void*), ARGS(Data))
+
+    }
+
+    void UStruct::SerializeTaggedProperties(FArchive& Ar, uint8* Data, UStruct* DefaultsStruct, uint8* Defaults, const UObject* BreakRecursionIfFullyLoad) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct,
+                                         SerializeTaggedProperties,
+                                         void,
+                                         PARAMS(FArchive&, uint8*, UStruct*, uint8*, const UObject*),
+                                         ARGS(Ar, Data, DefaultsStruct, Defaults, BreakRecursionIfFullyLoad))
+    }
+
+    void UStruct::InitializeStruct(void* Dest, int32 ArrayDim) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, InitializeStruct, void, PARAMS(void*, int32), PARAMS(Dest, ArrayDim))
+    }
+
+    void UStruct::DestroyStruct(void* Dest, int32 ArrayDim) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, DestroyStruct, void, PARAMS(void*, int32), ARGS(Dest, ArrayDim))
+    }
+
+    FProperty* UStruct::CustomFindProperty(const FName InName) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, CustomFindProperty, FProperty*, PARAMS(const FName), ARGS(InName))
+    }
+
+    EExprToken UStruct::SerializeExpr(int32& iCode, FArchive& Ar)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, SerializeExpr, EExprToken, PARAMS(int32&, FArchive&), ARGS(iCode, Ar))
+    }
+
+    const TCHAR* UStruct::GetPrefixCPP() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UStruct, GetPrefixCPP, const TCHAR*)
+    }
+
+    void UStruct::SetSuperStruct(UStruct* NewSuperStruct)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, SetSuperStruct, void, PARAMS(UStruct*), ARGS(NewSuperStruct))
+    }
+
+    FString UStruct::PropertyNameToDisplayName(FName InName) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, PropertyNameToDisplayName, FString, PARAMS(FName), ARGS(InName))
+    }
+
+    FString UStruct::GetAuthoredNameForField(const UField* Field) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, GetAuthoredNameForField, FString, PARAMS(const UField*), ARGS(Field))
+    }
+
+    bool UStruct::IsStructTrashed() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UStruct, IsStructTrashed, bool)
+    }
+
+    FName UStruct::FindPropertyNameFromGuid(const FGuid& PropertyGuid) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, FindPropertyNameFromGuid, FName, PARAMS(const FGuid&), ARGS(PropertyGuid))
+    }
+
+    FGuid UStruct::FindPropertyGuidFromName(const FName InName) const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UStruct, FindPropertyGuidFromName, FGuid, PARAMS(const FName), ARGS(InName))
+    }
+
+    bool UStruct::ArePropertyGuidsAvailable() const
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UStruct, ArePropertyGuidsAvailable, bool)
+    }
 
     auto UStruct::GetChildren() -> UField*
     {

@@ -9,8 +9,10 @@
 
 #include <Unreal/StaticOffsetFinder.hpp>
 #include <Unreal/UObjectGlobals.hpp>
+#include <Unreal/UnrealCoreStructs.hpp>
 #include <Unreal/FField.hpp>
 #include <Unreal/UField.hpp>
+#include <Unreal/Script.hpp>
 
 namespace RC::Unreal
 {
@@ -20,7 +22,38 @@ namespace RC::Unreal
     {
         DECLARE_EXTERNAL_OBJECT_CLASS(UStruct, CoreUObject)
 
+    public:
+        using LinkSignature = void(UStruct* Context, FArchive& Ar, bool bRelinkExistingProperties);
+        static Function<LinkSignature> LinkInternal;
+
+    protected:
         friend class StaticOffsetFinder;
+
+    public:
+#include <VTableOffsets_UStruct.hpp>
+
+    public:
+        // Wrappers for virtual engine functions
+        UStruct* GetInheritanceSuper() const;
+        void Link(FArchive& Ar, bool bRelinkExistingProperties);
+        void SerializeBin(FArchive& Ar, void* Data) const;
+        struct FStructuredArchive { enum class FSlot {}; }; // Remove if/when we have a FStructuredArchive implementation, for now, probably a bad idea to call
+        //void SerializeBin(FStructuredArchive::FSlot Slot, void* Data) const;
+        void SerializeTaggedProperties(FArchive& Ar, uint8* Data, UStruct* DefaultsStruct, uint8* Defaults, const UObject* BreakRecursionIfFullyLoad = nullptr) const;
+        //void SerializeTaggedProperties(FStructuredArchive::FSlot Slot, uint8* Data, UStruct* DefaultsStruct, uint8* Defaults, const UObject* BreakRecursionIfFullyLoad = nullptr) const;
+        void InitializeStruct(void* Dest, int32 ArrayDim = 1) const;
+        void DestroyStruct(void* Dest, int32 ArrayDim = 1) const;
+        FProperty* CustomFindProperty(const FName InName) const;
+        EExprToken SerializeExpr(int32& iCode, FArchive& Ar);
+        const TCHAR* GetPrefixCPP() const;
+        void SetSuperStruct(UStruct* NewSuperStruct);
+        FString PropertyNameToDisplayName(FName InName) const;
+        FString GetAuthoredNameForField(const UField* Field) const;
+        //FString GetAuthoredNameForField(const FField* Field) const;
+        bool IsStructTrashed() const;
+        FName FindPropertyNameFromGuid(const FGuid& PropertyGuid) const;
+        FGuid FindPropertyGuidFromName(const FName InName) const;
+        bool ArePropertyGuidsAvailable() const;
 
     protected:
         /**

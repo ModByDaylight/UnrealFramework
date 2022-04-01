@@ -315,8 +315,8 @@ namespace RC::Unreal::UnrealInitializer
         ClassSearcher<DefaultSlowClassSearcher>::UnderlyingSearcher = std::make_unique<ClassSearcher<DefaultSlowClassSearcher>>();
         AllInstanceSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<ObjectSearcher<UClass>>());
         AllInstanceSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ObjectSearcher<AActor>>());
-        AllClassSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<ClassSearcher<UClass>>());
-        AllClassSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ClassSearcher<AActor>>());
+        // TODO: Uncomment when we're able to maintain this particular pool.
+        //AllClassSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ClassSearcher<AActor>>());
 
         // Populate searcher pools
         UObjectGlobals::ForEachUObject([](UObject* Object, ...) {
@@ -324,13 +324,14 @@ namespace RC::Unreal::UnrealInitializer
 
             if (Object->IsA<UClass>())
             {
+                ClassSearcher<DefaultSlowClassSearcher>::Pool.emplace_back(ObjectItem);
                 ObjectSearcher<UClass>::Pool.emplace_back(ObjectItem);
-                ClassSearcher<UClass>::Pool.emplace_back(ObjectItem);
 
-                if (static_cast<UClass*>(Object)->IsChildOf<AActor>())
-                {
-                    ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
-                }
+                // TODO: Uncomment when we're able to maintain this particular pool.
+                //if (static_cast<UClass*>(Object)->IsChildOf<AActor>())
+                //{
+                //    ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
+                //}
             }
 
             if (Object->IsA<AActor>())

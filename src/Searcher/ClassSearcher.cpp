@@ -30,8 +30,9 @@ namespace RC::Unreal
         for (const auto& Item : Pool)
         {
             if (!Item || Item->IsUnreachable()) { continue; }
-            if (Class && (!Item->GetUObject()->IsA<UClass>() || !static_cast<UClass*>(Item->GetUObject())->IsChildOf(Class))) { continue; }
-            if (Predicate(static_cast<UClass*>(Item->GetUObject())) == LoopAction::Break) { break; }
+            auto* AsClass = static_cast<UClass*>(Item->GetUObject());
+            if (Class && !AsClass->IsChildOf(Class)) { continue; }
+            if (Predicate(AsClass) == LoopAction::Break) { break; }
         }
     }
 }

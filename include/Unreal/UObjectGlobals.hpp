@@ -15,6 +15,7 @@
 namespace RC::Unreal
 {
     class UObject;
+    struct SearcherBase;
 
     /** Concept describing the type of the pointer pointing to the UObject-derived object */
     template<typename SupposedUObject>
@@ -193,8 +194,13 @@ namespace RC::Unreal::UObjectGlobals
     }
 
     // UE compatible overload for 'FindObject'.
-    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass);
-    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass);
+    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass = false, SearcherBase* = nullptr);
+    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass = false, SearcherBase* = nullptr);
+
+    // Convenience overload for the UE compatible 'FindObject' overload.
+    // It exists so that you don't have to specify all the optional params in order to specify a searcher.
+    RC_UE_API UObject* FindObject(SearcherBase&, UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass = false);
+    RC_UE_API UObject* FindObject(SearcherBase&, UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass = false);
 
     template<typename UObjectDerivative>
     UObjectDerivative* FindObject(UObject* Outer, const TCHAR* Name, bool ExactClass = false)

@@ -314,6 +314,7 @@ namespace RC::Unreal::UnrealInitializer
         Searcher<DefaultSlowInstanceSearcher>::UnderlyingSearcher = std::make_unique<Searcher<DefaultSlowInstanceSearcher>>();
         ClassSearcher<DefaultSlowClassSearcher>::UnderlyingSearcher = std::make_unique<ClassSearcher<DefaultSlowClassSearcher>>();
         AllInstanceSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<Searcher<UClass>>());
+        AllInstanceSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<Searcher<AActor>>());
         AllClassSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<ClassSearcher<UClass>>());
         AllClassSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ClassSearcher<AActor>>());
 
@@ -330,6 +331,11 @@ namespace RC::Unreal::UnrealInitializer
                 {
                     ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
                 }
+            }
+
+            if (Object->IsA<AActor>())
+            {
+                Searcher<AActor>::Pool.emplace_back(ObjectItem);
             }
 
             return LoopAction::Continue;

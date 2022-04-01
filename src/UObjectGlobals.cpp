@@ -1,10 +1,15 @@
 #include <Unreal/UObjectGlobals.hpp>
 #include <Unreal/UObject.hpp>
+#include <Unreal/AActor.hpp>
 #include <Unreal/UPackage.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/PackageName.hpp>
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/VersionedContainer/Container.hpp>
+#include <Unreal/Searcher/Searcher.hpp>
+#include <Unreal/Searcher/ClassSearcher.hpp>
+#include <Unreal/Searcher/ActorClassSearcher.hpp>
+#include <DynamicOutput/DynamicOutput.hpp>
 
 namespace RC::Unreal::UObjectGlobals
 {
@@ -51,12 +56,12 @@ namespace RC::Unreal::UObjectGlobals
         return !object->HasAnyFlags(static_cast<EObjectFlags>(RF_ClassDefaultObject | RF_ArchetypeObject)) && !object->IsA<UClass>();
     }
 
-    UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass)
+    UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass, SearcherBase* InSearcher)
     {
-        return FindObject(Class, InOuter, InName.data(), bExactClass);
+        return FindObject(Class, InOuter, InName.data(), bExactClass, InSearcher);
     }
 
-    UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass)
+    UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass, SearcherBase* InSearcher)
     {
         auto GetPackageNameFromLongName = [](const File::StringType& LongName) -> File::StringType
         {
@@ -76,12 +81,18 @@ namespace RC::Unreal::UObjectGlobals
         FName ShortName = bIsLongName ? NAME_None : FName(InName, FNAME_Add);
         FName PackageName = bIsLongName ? FName(GetPackageNameFromLongName(InName), FNAME_Add) : NAME_None;
 
-        UObjectGlobals::ForEachUObject([&](UObject* Object, [[maybe_unused]]int32_t ChunkIndex, [[maybe_unused]]int32_t ObjectIndex) {
-            if (!Object || Object->IsUnreachable()) { return LoopAction::Continue; }
+        auto& Searcher = [&InSearcher, &Class]() -> SearcherBase& {
+            return InSearcher ? *InSearcher : FindSearcher(Class);
+        }();
 
-            bool bExactMatch = Class == Object->GetClass();
-            if (bExactClass && !bExactMatch) { return LoopAction::Continue; }
-            if (!bExactClass && !Object->IsA(Class)) { return LoopAction::Continue; }
+        bool bQuickSearch = Searcher.IsFast();
+
+        Searcher.ForEach(bQuickSearch ? nullptr : Class, [&](UObject* Object) {
+            if (bExactClass && Class != Object->GetClass()) { return LoopAction::Continue; }
+
+            // If this is a quick search, then the object is guaranteed to be of the specified class.
+            // Otherwise, we're searching the entirety of GUObjectArray, and we need to check that the class matches.
+            if (Class && !bQuickSearch && !Object->IsA(Class)) { return LoopAction::Continue; }
 
             bool bIsInOuter{};
             if (!bAnyPackage && !ObjectPackage)
@@ -130,6 +141,16 @@ namespace RC::Unreal::UObjectGlobals
         });
 
         return FoundObject;
+    }
+
+    UObject* FindObject(struct SearcherBase& Searcher, UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass)
+    {
+        return FindObject(Searcher, Class, InOuter, InName.data(), bExactClass);
+    }
+
+    UObject* FindObject(struct SearcherBase& Searcher, UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass)
+    {
+        return FindObject(Class, InOuter, InName, bExactClass, &Searcher);
     }
 
     auto FindFirstOf(FName ClassName) -> UObject*

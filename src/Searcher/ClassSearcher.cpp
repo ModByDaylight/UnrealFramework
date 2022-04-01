@@ -11,7 +11,11 @@ namespace RC::Unreal
     {
         // Attempt to find a fast searcher.
         // We use the default slow searcher if a fast searcher doesn't exist.
-        if (auto It = AllClassSearchers.find(Class->HashObject()); It != AllClassSearchers.end())
+        if (!Class)
+        {
+            return ClassSearcher<DefaultSlowClassSearcher>::Get();
+        }
+        else if (auto It = AllClassSearchers.find(Class->HashObject()); It != AllClassSearchers.end())
         {
             return *It->second.get();
         }

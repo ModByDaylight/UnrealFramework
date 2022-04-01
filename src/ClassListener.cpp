@@ -23,6 +23,11 @@ namespace RC::Unreal
                 ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
             }
         }
+
+        if (Object->IsA<AActor>())
+        {
+            Searcher<AActor>::Pool.emplace_back(ObjectItem);
+        }
     }
 
     void FClassCreateListener::OnUObjectArrayShutdown()
@@ -45,6 +50,10 @@ namespace RC::Unreal
         ClassSearcher<AActor>::Pool.erase(std::remove_if(ClassSearcher<AActor>::Pool.begin(), ClassSearcher<AActor>::Pool.end(), [&](const auto& Item) {
             return Item == ObjectItem;
         }), ClassSearcher<AActor>::Pool.end());
+
+        Searcher<AActor>::Pool.erase(std::remove_if(Searcher<AActor>::Pool.begin(), Searcher<AActor>::Pool.end(), [&](const auto& Item) {
+            return Item == ObjectItem;
+        }), Searcher<AActor>::Pool.end());
     }
 
     void FClassDeleteListener::OnUObjectArrayShutdown()

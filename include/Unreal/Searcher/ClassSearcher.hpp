@@ -21,6 +21,7 @@ namespace RC::Unreal
     {
         virtual size_t PoolSize() = 0;
         virtual void ForEach(const ClassSearcherForEachPredicate& Predicate) = 0;
+        // I don't like the existence of this overload and would like to figure out a way to not need it.
         virtual void ForEach(UClass* Class, const ClassSearcherForEachPredicate& Predicate) = 0;
     };
 

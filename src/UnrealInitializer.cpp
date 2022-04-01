@@ -300,6 +300,15 @@ namespace RC::Unreal::UnrealInitializer
             Output::send(STR("Post-initialization: GMalloc: {} -> {}\n"), (void*)FMalloc::UnrealStaticGMalloc, (void*)GMalloc);
         }
 
+        if (!GMalloc || !FMalloc::UnrealStaticGMalloc)
+        {
+            throw std::runtime_error{"UnrealInitializer::PostInitialize: GMalloc or FMalloc::UnrealStaticGMalloc is uninitialized."};
+        }
+        else
+        {
+            FMalloc::bIsInitialized = true;
+        }
+
         // FAssetData was not reflected before 4.17
         // We'll need to manually add FAssetData for every engine version eventually
         if (Version::IsAtLeast(4, 17))
@@ -315,8 +324,7 @@ namespace RC::Unreal::UnrealInitializer
         ClassSearcher<DefaultSlowClassSearcher>::UnderlyingSearcher = std::make_unique<ClassSearcher<DefaultSlowClassSearcher>>();
         AllInstanceSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<ObjectSearcher<UClass>>());
         AllInstanceSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ObjectSearcher<AActor>>());
-        // TODO: Uncomment when we're able to maintain this particular pool.
-        //AllClassSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ClassSearcher<AActor>>());
+        AllClassSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ClassSearcher<AActor>>());
 
         // Populate searcher pools
         UObjectGlobals::ForEachUObject([](UObject* Object, ...) {
@@ -327,11 +335,10 @@ namespace RC::Unreal::UnrealInitializer
                 ClassSearcher<DefaultSlowClassSearcher>::Pool.emplace_back(ObjectItem);
                 ObjectSearcher<UClass>::Pool.emplace_back(ObjectItem);
 
-                // TODO: Uncomment when we're able to maintain this particular pool.
-                //if (static_cast<UClass*>(Object)->IsChildOf<AActor>())
-                //{
-                //    ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
-                //}
+                if (static_cast<UClass*>(Object)->IsChildOf<AActor>())
+                {
+                    ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
+                }
             }
 
             if (Object->IsA<AActor>())
@@ -344,6 +351,8 @@ namespace RC::Unreal::UnrealInitializer
 
         UObjectArray::AddUObjectCreateListener(&FClassCreateListener::ClassCreateListener);
         UObjectArray::AddUObjectDeleteListener(&FClassDeleteListener::ClassDeleteListener);
+
+        StaticStorage::bIsInitialized = true;
     }
 
     auto Initialize(const Config& UnrealConfig) -> void
@@ -511,10 +520,18 @@ namespace RC::Unreal::UnrealInitializer
             throw std::runtime_error{"Post-initialization: Was unable to find 'CoreUObject.Default__Object' to use to retrieve the address of ProcessEvent"};
         }
 
+        auto* Struct = UObjectGlobals::StaticFindObject(nullptr, nullptr, STR("/Script/CoreUObject.Default__Struct"));
+        if (!Struct)
+        {
+            throw std::runtime_error{"Post-initialization: Was unable to find 'CoreUObject.Default__Struct' to use to retrieve the address of SetSuperStruct"};
+        }
+
         UObject::ProcessEventInternal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessEvent, Object));
         UObject::ProcessConsoleExecInternal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UObject, ProcessConsoleExec, Object));
+        UStruct::LinkInternal.assign_address(GET_ADDRESS_OF_UNREAL_VIRTUAL(UStruct, Link, Struct));
         HookProcessEvent();
         HookProcessConsoleExec();
+        HookUStructLink();
 
         TypeChecker::store_all_object_names();
 
@@ -532,9 +549,6 @@ namespace RC::Unreal::UnrealInitializer
 
         StaticOffsetFinder::find_offsets();
         StaticOffsetFinder::output_all_member_offsets();
-
-        FMalloc::bIsInitialized = true;
-        StaticStorage::bIsInitialized = true;
 
         PostInitialize();
     }

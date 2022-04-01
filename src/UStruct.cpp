@@ -10,7 +10,7 @@ namespace RC::Unreal
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UStruct);
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
-    
+
     Function<UStruct::LinkSignature> UStruct::LinkInternal;
 
     UStruct* UStruct::GetInheritanceSuper() const

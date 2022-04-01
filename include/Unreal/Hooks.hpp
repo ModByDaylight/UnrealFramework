@@ -49,9 +49,12 @@ namespace RC::Unreal
             static std::vector<RequiredObject> RequiredObjectsForInit;
             static int32_t NumRequiredObjectsConstructed;
             static bool bAllRequiredObjectsConstructed;
+
             static std::unique_ptr<::PLH::x64Detour> StaticConstructObjectDetour;
             static std::unique_ptr<::PLH::x64Detour> ProcessEventDetour;
             static std::unique_ptr<::PLH::x64Detour> ProcessConsoleExecDetour;
+            static std::unique_ptr<::PLH::x64Detour> UStructLinkDetour;
+
             static std::vector<StaticConstructObjectPreCallback> StaticConstructObjectPreCallbacks;
             static std::vector<StaticConstructObjectPostCallback> StaticConstructObjectPostCallbacks;
             static std::vector<ProcessEventCallback> ProcessEventPreCallbacks;
@@ -82,6 +85,7 @@ namespace RC::Unreal
     auto RC_UE_API HookStaticConstructObject() -> void;
     auto RC_UE_API HookProcessEvent() -> void;
     auto RC_UE_API HookProcessConsoleExec() -> void;
+    auto RC_UE_API HookUStructLink() -> void;
 
 
 }

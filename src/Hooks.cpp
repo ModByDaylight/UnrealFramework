@@ -8,6 +8,10 @@
 #include <Unreal/UClass.hpp>
 #include <Unreal/UAssetRegistry.hpp>
 #include <Unreal/UGameViewportClient.hpp>
+#include <Unreal/AActor.hpp>
+#include <Unreal/Searcher/ObjectSearcher.hpp>
+#include <Unreal/Searcher/ClassSearcher.hpp>
+#include <Unreal/Searcher/ActorClassSearcher.hpp>
 
 //#include <polyhook2/CapstoneDisassembler.hpp>
 #include <polyhook2/ZydisDisassembler.hpp>
@@ -20,6 +24,7 @@ namespace RC::Unreal
     std::unique_ptr<::PLH::x64Detour> Hook::StaticStorage::StaticConstructObjectDetour{};
     std::unique_ptr<::PLH::x64Detour> Hook::StaticStorage::ProcessEventDetour{};
     std::unique_ptr<::PLH::x64Detour> Hook::StaticStorage::ProcessConsoleExecDetour{};
+    std::unique_ptr<::PLH::x64Detour> Hook::StaticStorage::UStructLinkDetour{};
     std::vector<Hook::StaticConstructObjectPreCallback> Hook::StaticStorage::StaticConstructObjectPreCallbacks{};
     std::vector<Hook::StaticConstructObjectPostCallback> Hook::StaticStorage::StaticConstructObjectPostCallbacks{};
     std::vector<Hook::ProcessEventCallback> Hook::StaticStorage::ProcessEventPreCallbacks{};
@@ -29,6 +34,7 @@ namespace RC::Unreal
     uint64_t HookTrampolineProcessEvent = NULL;
     uint64_t HookTrampolineStaticConstructObject = NULL;
     uint64_t HookTrampolineProcessConsoleExec = NULL;
+    uint64_t HookTrampolineUStructLink = NULL;
 
     auto Hook::AddRequiredObject(const std::wstring& ObjectFullTypelessName) -> void
     {
@@ -107,12 +113,28 @@ namespace RC::Unreal
             }
         }
 
-        UObject* AlteredReturnValue{};
-        for (const auto& Callback : Hook::StaticStorage::StaticConstructObjectPostCallbacks)
+        if (UnrealInitializer::StaticStorage::bIsInitialized)
         {
-            AlteredReturnValue = Callback(Params, ConstructedObject);
+            // Populate the 'Actors' search pool.
+            // The others are populated in UStruct::Link.
+            if (!ConstructedObject->IsA<UStruct>())
+            {
+                if (ConstructedObject->IsA<AActor>())
+                {
+                    Output::send(STR("this: {}\n"), ConstructedObject->GetFullName());
+                    ObjectSearcher<AActor>::Pool.emplace_back(ConstructedObject->GetObjectItem());
+                }
+            }
+
+            UObject* AlteredReturnValue{};
+            for (const auto& Callback : Hook::StaticStorage::StaticConstructObjectPostCallbacks)
+            {
+                AlteredReturnValue = Callback(Params, ConstructedObject);
+            }
+            return AlteredReturnValue;
         }
-        return AlteredReturnValue;
+
+        return ConstructedObject;
     }
 
     auto HookedStaticConstructObjectDeprecated(StaticConstructObject_Internal_Params_Deprecated) -> UObject*
@@ -198,6 +220,23 @@ namespace RC::Unreal
         return return_value;
     }
 
+    void HookedUStructLink(UStruct* Context, FArchive& Ar, bool bRelinkExistingProperties)
+    {
+        PLH::FnCast(HookTrampolineUStructLink, UStruct::LinkInternal.get_function_pointer())(Context, Ar, bRelinkExistingProperties);
+
+        auto* ObjectItem = Context->GetObjectItem();
+        if (Context->IsA<UClass>())
+        {
+            ClassSearcher<DefaultSlowClassSearcher>::Pool.emplace_back(ObjectItem);
+            ObjectSearcher<UClass>::Pool.emplace_back(ObjectItem);
+
+            if (static_cast<const UClass*>(Context)->IsChildOf<AActor>())
+            {
+                ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
+            }
+        }
+    }
+
     auto HookStaticConstructObject() -> void
     {
         PLH::ZydisDisassembler Dis(PLH::Mode::x64);
@@ -244,5 +283,17 @@ namespace RC::Unreal
                 Dis);
 
         Hook::StaticStorage::ProcessConsoleExecDetour->hook();
+    }
+
+    auto RC_UE_API HookUStructLink() -> void
+    {
+        PLH::ZydisDisassembler Dis(PLH::Mode::x64);
+        Hook::StaticStorage::UStructLinkDetour = std::make_unique<PLH::x64Detour>(
+                static_cast<char*>(UStruct::LinkInternal.get_function_address()),
+                std::bit_cast<char*>(&HookedUStructLink),
+                &HookTrampolineUStructLink,
+                Dis);
+
+        Hook::StaticStorage::UStructLinkDetour->hook();
     }
 }

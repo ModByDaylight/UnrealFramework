@@ -15,7 +15,7 @@
 namespace RC::Unreal
 {
     class UObject;
-    struct ObjectSearcherBase;
+    struct ObjectSearcher;
 
     /** Concept describing the type of the pointer pointing to the UObject-derived object */
     template<typename SupposedUObject>
@@ -24,6 +24,10 @@ namespace RC::Unreal
     /** Concept describing the type derived from the UObject */
     template<typename SupposedUObject>
     concept UObjectDerivative = std::is_convertible_v<SupposedUObject, UObject>;
+
+    /** Concept describing the type derived from the UClass */
+    template<typename SupposedUClass>
+    concept UClassDerivative = std::is_convertible_v<SupposedUClass, class UClass>;
 
     /** Casts the object to the provided type if possible, returns nullptr otherwise */
     template<UObjectDerivative CastResultType>
@@ -194,13 +198,13 @@ namespace RC::Unreal::UObjectGlobals
     }
 
     // UE compatible overload for 'FindObject'.
-    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass = false, ObjectSearcherBase* = nullptr);
-    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass = false, ObjectSearcherBase* = nullptr);
+    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass = false, ObjectSearcher* = nullptr);
+    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass = false, ObjectSearcher* = nullptr);
 
     // Convenience overload for the UE compatible 'FindObject' overload.
     // It exists so that you don't have to specify all the optional params in order to specify a searcher.
-    RC_UE_API UObject* FindObject(ObjectSearcherBase&, UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass = false);
-    RC_UE_API UObject* FindObject(ObjectSearcherBase&, UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass = false);
+    RC_UE_API UObject* FindObject(ObjectSearcher&, UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass = false);
+    RC_UE_API UObject* FindObject(ObjectSearcher&, UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass = false);
 
     template<typename UObjectDerivative>
     UObjectDerivative* FindObject(UObject* Outer, const TCHAR* Name, bool ExactClass = false)

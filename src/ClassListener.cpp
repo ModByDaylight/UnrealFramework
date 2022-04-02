@@ -2,7 +2,6 @@
 #include <Unreal/UObject.hpp>
 #include <Unreal/UClass.hpp>
 #include <Unreal/Searcher/ObjectSearcher.hpp>
-#include <Unreal/Searcher/ActorClassSearcher.hpp>
 
 namespace RC::Unreal
 {
@@ -22,22 +21,20 @@ namespace RC::Unreal
     {
         auto* ObjectItem = Object->GetObjectItem();
 
-        ClassSearcher<DefaultSlowClassSearcher>::Pool.erase(std::remove_if(ClassSearcher<DefaultSlowClassSearcher>::Pool.begin(), ClassSearcher<DefaultSlowClassSearcher>::Pool.end(), [&](const auto& Item) {
+        // All classes.
+        ObjectSearcherPool<UClass, AnySuperStruct>::Pool.erase(std::remove_if(ObjectSearcherPool<UClass, AnySuperStruct>::Pool.begin(), ObjectSearcherPool<UClass, AnySuperStruct>::Pool.end(), [&](const auto& Item) {
             return Item == ObjectItem;
-        }), ClassSearcher<DefaultSlowClassSearcher>::Pool.end());
+        }), ObjectSearcherPool<UClass, AnySuperStruct>::Pool.end());
 
-        ObjectSearcher<UClass>::Pool.erase(std::remove_if(ObjectSearcher<UClass>::Pool.begin(), ObjectSearcher<UClass>::Pool.end(), [&](const auto& Item) {
+        // All actor classes.
+        ObjectSearcherPool<UClass, AActor>::Pool.erase(std::remove_if(ObjectSearcherPool<UClass, AActor>::Pool.begin(), ObjectSearcherPool<UClass, AActor>::Pool.end(), [&](const auto& Item) {
             return Item == ObjectItem;
-        }), ObjectSearcher<UClass>::Pool.end());
+        }), ObjectSearcherPool<UClass, AActor>::Pool.end());
 
-        // TODO: Uncomment when we're able to maintain this particular pool.
-        ClassSearcher<AActor>::Pool.erase(std::remove_if(ClassSearcher<AActor>::Pool.begin(), ClassSearcher<AActor>::Pool.end(), [&](const auto& Item) {
+        // All actor instances.
+        ObjectSearcherPool<AActor, AnySuperStruct>::Pool.erase(std::remove_if(ObjectSearcherPool<AActor, AnySuperStruct>::Pool.begin(), ObjectSearcherPool<AActor, AnySuperStruct>::Pool.end(), [&](const auto& Item) {
             return Item == ObjectItem;
-        }), ClassSearcher<AActor>::Pool.end());
-
-        ObjectSearcher<AActor>::Pool.erase(std::remove_if(ObjectSearcher<AActor>::Pool.begin(), ObjectSearcher<AActor>::Pool.end(), [&](const auto& Item) {
-            return Item == ObjectItem;
-        }), ObjectSearcher<AActor>::Pool.end());
+        }), ObjectSearcherPool<AActor, AnySuperStruct>::Pool.end());
     }
 
     void FClassDeleteListener::OnUObjectArrayShutdown()

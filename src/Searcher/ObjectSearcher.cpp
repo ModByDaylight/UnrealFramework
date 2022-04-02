@@ -1,46 +1,63 @@
 #include <Unreal/Searcher/ObjectSearcher.hpp>
-#include <Unreal/AActor.hpp>
-#include <DynamicOutput/DynamicOutput.hpp>
+#include <Unreal/UClass.hpp>
+#include <Unreal/UObjectArray.hpp>
 
 namespace RC::Unreal
 {
-    std::unordered_map<size_t, std::unique_ptr<ObjectSearcherBase>> AllInstanceSearchers;
+    std::unordered_map<size_t, std::unique_ptr<ObjectSearcherPoolBase>> AllSearcherPools;
 
-    ObjectSearcherBase& FindObjectSearcher(UClass* Class)
+    size_t HashSearcherKey(UClass* Class, UStruct* SuperStruct)
     {
-        // Attempt to find a fast searcher.
-        // We use the default slow searcher if a fast searcher doesn't exist.
-        if (!Class)
+        auto HashClass = std::hash<size_t>()(Class ? Class->HashObject() : 0);
+        auto HashSuperStruct = std::hash<size_t>()(SuperStruct ? SuperStruct->HashObject() : 0);
+        return HashClass ^ (HashSuperStruct << 1);
+    }
+
+    ObjectSearcher FindObjectSearcher(UClass* Class, UStruct* SuperStruct)
+    {
+        if (auto It = AllSearcherPools.find(HashSearcherKey(Class, SuperStruct)); It != AllSearcherPools.end())
         {
-            return ObjectSearcher<DefaultSlowInstanceSearcher>::Get();
-        }
-        else if (auto It = AllInstanceSearchers.find(Class->HashObject()); It != AllInstanceSearchers.end())
-        {
-            return *It->second.get();
+            return ObjectSearcher{Class, SuperStruct, It->second.get(), &ObjectSearcherFastInternal};
         }
         else
         {
-            return ObjectSearcher<DefaultSlowInstanceSearcher>::Get();
+            return ObjectSearcher{Class, SuperStruct, nullptr, &ObjectSearcherSlowInternal};
         }
     }
 
-    void ObjectSearcherSlow(UClass* Class, ObjectSearcherForEachPredicate Predicate)
+    static LoopAction InternalPredicate(UObject* Object, UClass* Class, UStruct* SuperStruct, const ObjectSearcherForEachPredicate& Predicate)
     {
-        UObjectGlobals::ForEachUObject([&](UObject* Object, [[maybe_unused]]int32_t ChunkIndex, [[maybe_unused]]int32_t ObjectIndex) {
-            if (!Object || Object->IsUnreachable()) { return LoopAction::Continue; }
-            // We need to narrow by class here because we're searching GUObjectArray which contains every single object in the game.
-            if (Class && !Object->IsA(Class)) { return LoopAction::Continue; }
-            return Predicate(Object);
-        });
-    }
-
-    void ObjectSearcherFast(const ObjectSearcherForEachPredicate& Predicate, std::vector<const FUObjectItem*>& Pool)
-    {
-        for (const auto& Item : Pool)
+        if (Class && !Object->IsA(Class)) { return LoopAction::Continue; }
+        if (SuperStruct)
         {
-            if (!Item || Item->IsUnreachable()) { continue; }
-            // We don't need to narrow by class here because the pool only contains objects of the right class..
-            if (Predicate(Item->GetUObject()) == LoopAction::Break) { break; }
+            if (Object->IsA<UClass>())
+            {
+                if (!static_cast<UClass*>(Object)->IsChildOf(SuperStruct)) { return LoopAction::Continue; }
+            }
+            else
+            {
+                if (!Object->GetClass()->IsChildOf(SuperStruct)) { return LoopAction::Continue; }
+            }
         }
+        return Predicate(Object);
+    }
+
+    void ObjectSearcherFastInternal(UClass* Class, UStruct* SuperStruct, const ObjectSearcherForEachPredicate& Predicate, std::vector<const FUObjectItem*>* Pool)
+    {
+        for (const auto& Item : *Pool)
+        {
+            if (!Item || !Item->GetUObject() || Item->IsUnreachable()) { continue; }
+            if (InternalPredicate(Item->GetUObject(), Class, SuperStruct, Predicate) == LoopAction::Break) { break; }
+        }
+    }
+
+    void ObjectSearcherSlowInternal(UClass* Class, UStruct* SuperStruct, const ObjectSearcherForEachPredicate& Predicate, std::vector<const FUObjectItem*>* Pool)
+    {
+        (void)Pool;
+
+        UObjectGlobals::ForEachUObject([&](UObject* Object, ...) {
+            if (!Object || Object->IsUnreachable()) { return LoopAction::Continue; }
+            return InternalPredicate(Object, Class, SuperStruct, Predicate);
+        });
     }
 }

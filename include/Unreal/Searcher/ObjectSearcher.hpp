@@ -1,96 +1,90 @@
-#ifndef RC_UNREAL_SEARCHER_HPP
-#define RC_UNREAL_SEARCHER_HPP
+#ifndef RC_UNREAL_CLASS_SEARCHER_HPP
+#define RC_UNREAL_CLASS_SEARCHER_HPP
 
 #include <functional>
+#include <memory>
+#include <vector>
 
-#include <Unreal/UObjectArray.hpp>
-#include <Unreal/UClass.hpp>
-#include <DynamicOutput/DynamicOutput.hpp>
+//#include <Unreal/UClass.hpp>
+#include <Constructs/Loop.hpp>
 
 namespace RC::Unreal
 {
-    using ObjectSearcherForEachPredicate = std::function<LoopAction(UObject*)>;
-    void ObjectSearcherSlow(UClass* Class, ObjectSearcherForEachPredicate Predicate);
-    void ObjectSearcherFast(const ObjectSearcherForEachPredicate& Predicate, std::vector<const FUObjectItem*>& Pool);
+    struct FUObjectItem;
+    class UObject;
+    class UStruct;
+    class UClass;
 
-    struct DefaultSlowInstanceSearcher : public UClass
+    using ObjectSearcherForEachPredicate = std::function<LoopAction(UObject*)>;
+    using ObjectSearcherInternalSignature = void(*)(UClass* Class, UStruct* SuperStruct, const ObjectSearcherForEachPredicate& Predicate, std::vector<const FUObjectItem*>*);
+    void ObjectSearcherFastInternal(UClass* Class, UStruct* SuperStruct, const ObjectSearcherForEachPredicate& Predicate, std::vector<const FUObjectItem*>* Pool);
+    void ObjectSearcherSlowInternal(UClass* Class, UStruct* SuperStruct, const ObjectSearcherForEachPredicate& Predicate, std::vector<const FUObjectItem*>* Pool);
+
+    struct EmptyStaticClass
     {
         static UClass* StaticClass() { return nullptr; }
     };
 
-    struct ObjectSearcherBase
+    using AnyClass = EmptyStaticClass;
+    using AnySuperStruct = EmptyStaticClass;
+
+    struct ObjectSearcherPoolBase
     {
-        virtual size_t PoolSize() = 0;
-        virtual bool IsFast() = 0;
-
-        // Using 'T::StaticClass' to narrow.
-        virtual void ForEach(const ObjectSearcherForEachPredicate& Predicate) = 0;
-
-        // Using 'Class' parameter to narrow.
-        virtual void ForEach(UClass* Class, const ObjectSearcherForEachPredicate& Predicate) = 0;
+    public:
+        virtual std::vector<const FUObjectItem*>* GetPool() = 0;
     };
 
-    // Slow generic searcher that iterates GUObjectArray
-    template<typename T>
-    struct ObjectSearcher : ObjectSearcherBase
+    template<typename ClassType, typename SuperStructType>
+    struct ObjectSearcherPool : ObjectSearcherPoolBase
     {
     public:
         static inline std::vector<const FUObjectItem*> Pool{};
 
         // Pointer to the default generic slow searcher.
-        static inline std::unique_ptr<ObjectSearcherBase> UnderlyingSearcher;
+        static inline std::unique_ptr<ObjectSearcherPoolBase> UnderlyingSearcher;
 
     public:
-        static auto& Get()
-        {
-            return *UnderlyingSearcher.get();
-        }
+        std::vector<const FUObjectItem*>* GetPool() override { return &Pool; }
+    };
 
-        size_t PoolSize() override { return Pool.size(); };
-        bool IsFast() { return !Pool.empty(); };
+    struct ObjectSearcher
+    {
+    protected:
+        UClass* Class{};
+        UStruct* SuperStruct{};
+        ObjectSearcherPoolBase* PoolPtr;
+        ObjectSearcherInternalSignature InternalSearcher;
 
-        void ForEach(const ObjectSearcherForEachPredicate& Predicate) override
-        {
-            // If we don't have a pool, then we have to do a full GUObjectArray search.
-            // Otherwise, we can do a smaller search just through the pool.
-            if (Pool.empty())
-            {
-                // If T == DefaultSlowSearcher, StaticClass() will return nullptr.
-                // We will then search every object, not limited by class.
-                ObjectSearcherSlow(T::StaticClass(), Predicate);
-            }
-            else
-            {
-                // A pool is already narrowed by class, so we don't need to supply a class here.
-                ObjectSearcherFast(Predicate, Pool);
-            }
-        }
+    public:
+        ObjectSearcher(UClass* C, UStruct* S, ObjectSearcherPoolBase* P, ObjectSearcherInternalSignature IS) : Class(C), SuperStruct(S), PoolPtr(P), InternalSearcher(IS) {}
 
-        void ForEach(UClass* Class, const ObjectSearcherForEachPredicate& Predicate) override
+    public:
+        size_t PoolSize() { return PoolPtr && PoolPtr->GetPool() ? PoolPtr->GetPool()->size() : 0; };
+        bool IsFast() { return PoolPtr && PoolPtr->GetPool(); }
+
+        void ForEach(const ObjectSearcherForEachPredicate& Predicate)
         {
-            // If we don't have a pool, then we have to do a full GUObjectArray search.
-            // Otherwise, we can do a smaller search just through the pool.
-            if (Pool.empty())
-            {
-                ObjectSearcherSlow(Class, Predicate);
-            }
-            else
-            {
-                // We're using the pool, but this overload requires that we still pass the class to the underlying searcher.
-                ObjectSearcherFast(Predicate, Pool);
-            }
+            InternalSearcher(Class, SuperStruct, Predicate, PoolPtr ? PoolPtr->GetPool() : nullptr);
         }
     };
 
-    extern std::unordered_map<size_t, std::unique_ptr<ObjectSearcherBase>> AllInstanceSearchers;
+    size_t HashSearcherKey(UClass* Class, UStruct* SuperStruct);
 
-    ObjectSearcherBase& FindObjectSearcher(UClass* Class);
-
-    template<typename Class>
-    ObjectSearcherBase& FindObjectSearcher()
+    template<typename ClassType, typename SuperStructType>
+    size_t HashSearcherKey()
     {
-        return FindObjectSearcher(Class::StaticClass());
+        return HashSearcherKey(ClassType::StaticClass(), SuperStructType::StaticClass());
+    }
+
+    extern std::unordered_map<size_t, std::unique_ptr<ObjectSearcherPoolBase>> AllSearcherPools;
+
+    ObjectSearcher FindObjectSearcher(UClass* Class, UStruct* SuperStruct);
+
+    template<typename ClassType, typename SuperStructType = AnySuperStruct>
+    ObjectSearcher FindObjectSearcher()
+    {
+        return FindObjectSearcher(ClassType::StaticClass(), SuperStructType::StaticClass());
     }
 }
 
-#endif // RC_UNREAL_SEARCHER_HPP
+#endif //RC_UNREAL_CLASS_SEARCHER_HPP

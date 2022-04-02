@@ -12,13 +12,12 @@
 #include <Unreal/Signatures.hpp>
 #include <Unreal/Hooks.hpp>
 #include <Unreal/UObject.hpp>
+#include <Unreal/UClass.hpp>
 #include <Unreal/FString.hpp>
 #include <Unreal/FMemory.hpp>
 #include <Unreal/FAssetData.hpp>
 #include <Unreal/AActor.hpp>
 #include <Unreal/Searcher/ObjectSearcher.hpp>
-#include <Unreal/Searcher/ClassSearcher.hpp>
-#include <Unreal/Searcher/ActorClassSearcher.hpp>
 #include <Unreal/ClassListener.hpp>
 
 #define NOMINMAX
@@ -319,12 +318,10 @@ namespace RC::Unreal::UnrealInitializer
             }
         }
 
-        // Construct searchers
-        ObjectSearcher<DefaultSlowInstanceSearcher>::UnderlyingSearcher = std::make_unique<ObjectSearcher<DefaultSlowInstanceSearcher>>();
-        ClassSearcher<DefaultSlowClassSearcher>::UnderlyingSearcher = std::make_unique<ClassSearcher<DefaultSlowClassSearcher>>();
-        AllInstanceSearchers.emplace(UClass::StaticClass()->HashObject(), std::make_unique<ObjectSearcher<UClass>>());
-        AllInstanceSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ObjectSearcher<AActor>>());
-        AllClassSearchers.emplace(AActor::StaticClass()->HashObject(), std::make_unique<ClassSearcher<AActor>>());
+        // Construct searcher pools
+        AllSearcherPools.emplace(HashSearcherKey<UClass, AnySuperStruct>(), std::make_unique<ObjectSearcherPool<UClass, AnySuperStruct>>());
+        AllSearcherPools.emplace(HashSearcherKey<UClass, AActor>(), std::make_unique<ObjectSearcherPool<UClass, AActor>>());
+        AllSearcherPools.emplace(HashSearcherKey<AActor, AnySuperStruct>(), std::make_unique<ObjectSearcherPool<AActor, AnySuperStruct>>());
 
         // Populate searcher pools
         UObjectGlobals::ForEachUObject([](UObject* Object, ...) {
@@ -332,18 +329,17 @@ namespace RC::Unreal::UnrealInitializer
 
             if (Object->IsA<UClass>())
             {
-                ClassSearcher<DefaultSlowClassSearcher>::Pool.emplace_back(ObjectItem);
-                ObjectSearcher<UClass>::Pool.emplace_back(ObjectItem);
+                ObjectSearcherPool<UClass, AnySuperStruct>::Pool.emplace_back(ObjectItem);
 
                 if (static_cast<UClass*>(Object)->IsChildOf<AActor>())
                 {
-                    ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
+                    ObjectSearcherPool<UClass, AActor>::Pool.emplace_back(ObjectItem);
                 }
             }
 
             if (Object->IsA<AActor>())
             {
-                ObjectSearcher<AActor>::Pool.emplace_back(ObjectItem);
+                ObjectSearcherPool<AActor, AnySuperStruct>::Pool.emplace_back(ObjectItem);
             }
 
             return LoopAction::Continue;

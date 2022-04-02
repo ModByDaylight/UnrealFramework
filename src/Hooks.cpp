@@ -10,8 +10,6 @@
 #include <Unreal/UGameViewportClient.hpp>
 #include <Unreal/AActor.hpp>
 #include <Unreal/Searcher/ObjectSearcher.hpp>
-#include <Unreal/Searcher/ClassSearcher.hpp>
-#include <Unreal/Searcher/ActorClassSearcher.hpp>
 
 //#include <polyhook2/CapstoneDisassembler.hpp>
 #include <polyhook2/ZydisDisassembler.hpp>
@@ -121,8 +119,7 @@ namespace RC::Unreal
             {
                 if (ConstructedObject->IsA<AActor>())
                 {
-                    Output::send(STR("this: {}\n"), ConstructedObject->GetFullName());
-                    ObjectSearcher<AActor>::Pool.emplace_back(ConstructedObject->GetObjectItem());
+                    ObjectSearcherPool<AActor, AnySuperStruct>::Pool.emplace_back(ConstructedObject->GetObjectItem());
                 }
             }
 
@@ -224,15 +221,16 @@ namespace RC::Unreal
     {
         PLH::FnCast(HookTrampolineUStructLink, UStruct::LinkInternal.get_function_pointer())(Context, Ar, bRelinkExistingProperties);
 
+        if (!UnrealInitializer::StaticStorage::bIsInitialized) { return; }
+
         auto* ObjectItem = Context->GetObjectItem();
         if (Context->IsA<UClass>())
         {
-            ClassSearcher<DefaultSlowClassSearcher>::Pool.emplace_back(ObjectItem);
-            ObjectSearcher<UClass>::Pool.emplace_back(ObjectItem);
+            ObjectSearcherPool<UClass, AnySuperStruct>::Pool.emplace_back(ObjectItem);
 
             if (static_cast<const UClass*>(Context)->IsChildOf<AActor>())
             {
-                ClassSearcher<AActor>::Pool.emplace_back(ObjectItem);
+                ObjectSearcherPool<UClass, AActor>::Pool.emplace_back(ObjectItem);
             }
         }
     }

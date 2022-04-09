@@ -29,12 +29,12 @@ namespace RC::Unreal::UnrealInitializer
     std::filesystem::path StaticStorage::GameExe;
     bool StaticStorage::bIsInitialized{false};
 
-    auto SetupUnrealModules() -> void
+    RC_UE_API auto SetupUnrealModules() -> void
     {
         // Setup all modules for the aob scanner
         MODULEINFO ModuleInfo;
         K32GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &ModuleInfo, sizeof(MODULEINFO));
-        SigScannerStaticData::m_modules_info[ScanTarget::MainExe] = ModuleInfo;
+        SigScannerStaticData::m_modules_info[ScanTarget::MainExe] = SignatureScanModuleInfo{(uint8_t*) ModuleInfo.lpBaseOfDll, ModuleInfo.SizeOfImage};
 
         HMODULE Modules[1024];
         DWORD BytesRequired;
@@ -48,7 +48,7 @@ namespace RC::Unreal::UnrealInitializer
         // This is because most UE4 games only have the MainExe module
         for (size_t i = 0; i < static_cast<size_t>(ScanTarget::Max); ++i)
         {
-            SigScannerStaticData::m_modules_info.array[i] = ModuleInfo;
+            SigScannerStaticData::m_modules_info[(ScanTarget) i] = SignatureScanModuleInfo{(uint8_t*) ModuleInfo.lpBaseOfDll, ModuleInfo.SizeOfImage};
         }
 
         // Check for modules and save the module info if they exist
@@ -74,13 +74,15 @@ namespace RC::Unreal::UnrealInitializer
                 {
                     if (!SigScannerStaticData::m_is_modular) { SigScannerStaticData::m_is_modular = true; }
 
-                    K32GetModuleInformation(GetCurrentProcess(), Modules[i], &SigScannerStaticData::m_modules_info[static_cast<ScanTarget>(i2)], sizeof(MODULEINFO));
+                    MODULEINFO RawModuleInfo;
+                    K32GetModuleInformation(GetCurrentProcess(), Modules[i], &RawModuleInfo, sizeof(MODULEINFO));
+                    SigScannerStaticData::m_modules_info[(ScanTarget) i2] = SignatureScanModuleInfo{(uint8_t*) RawModuleInfo.lpBaseOfDll, RawModuleInfo.SizeOfImage};
                 }
             }
         }
     }
 
-    auto VerifyModuleCache(const Config& UnrealConfig) -> CacheInfo
+    RC_UE_API auto VerifyModuleCache(const Config& UnrealConfig) -> CacheInfo
     {
         if (!UnrealConfig.bEnableCache) { return {.GameExeFile = {}, .bShouldUseCache = false, .bShouldSerializeCache = false}; }
 
@@ -189,11 +191,11 @@ namespace RC::Unreal::UnrealInitializer
         return {GameExeFile, bUseCache, bShouldSerializeCache};
     }
 
-    auto CreateCache(CacheInfo& CacheInfo) -> void
+    RC_UE_API auto CreateCache(CacheInfo& CacheInfo) -> void
     {
         auto GetModuleOffset = [&](ScanTarget Target, void* Address) -> unsigned long {
-            MODULEINFO Module = SigScannerStaticData::m_modules_info[Target];
-            return Helper::Integer::to<unsigned long>(reinterpret_cast<uintptr_t>(Address) - reinterpret_cast<uintptr_t>(Module.lpBaseOfDll));
+            SignatureScanModuleInfo Module = SigScannerStaticData::m_modules_info[Target];
+            return Helper::Integer::to<unsigned long>(reinterpret_cast<uintptr_t>(Address) - reinterpret_cast<uintptr_t>(Module.StartAddress));
         };
 
         auto Serialize = [&](ScanTarget Target, void* Address) -> void {
@@ -232,8 +234,8 @@ namespace RC::Unreal::UnrealInitializer
     auto LoadCache(CacheInfo& CacheInfo) -> void
     {
         auto ModuleOffsetToAddress = [](ScanTarget Target, unsigned long ModuleOffset) -> void* {
-            MODULEINFO module = SigScannerStaticData::m_modules_info[Target];
-            return static_cast<void*>(static_cast<unsigned char*>(module.lpBaseOfDll) + ModuleOffset);
+            SignatureScanModuleInfo module = SigScannerStaticData::m_modules_info[Target];
+            return static_cast<void*>(static_cast<unsigned char*>(module.StartAddress) + ModuleOffset);
         };
 
         auto Deserialize = [&]() -> void* {
@@ -286,7 +288,7 @@ namespace RC::Unreal::UnrealInitializer
         Output::send(STR("Deserialized GMalloc address: {}\n"), static_cast<void*>(GMalloc));
     }
 
-    auto InitializeVersionedContainer() -> void
+    RC_UE_API auto InitializeVersionedContainer() -> void
     {
         Container::SetDerivedBaseObjects();
     }
@@ -351,7 +353,7 @@ namespace RC::Unreal::UnrealInitializer
         StaticStorage::bIsInitialized = true;
     }
 
-    auto Initialize(const Config& UnrealConfig) -> void
+    RC_UE_API auto Initialize(const Config& UnrealConfig) -> void
     {
         // Setup scanner
         SinglePassScanner::m_num_threads = UnrealConfig.NumScanThreads;

@@ -31,7 +31,7 @@ namespace RC::Unreal
         }
 
         const File::CharType* Branch = Helper::Casting::ptr_cast_deref<const File::CharType*>(Address, 0x10);
-        void* BranchTest = Helper::Casting::ptr_cast_deref_safe<void*>(Branch, 0x0, GetCurrentProcess());
+        void* BranchTest = Helper::Casting::ptr_cast_deref_safe<void*>(Branch, 0x0);
         if (!BranchTest)
         {
             return {VersionStatus::FAILURE, std::format(STR("Could not determine Unreal Engine version: 'Branch' member variable FString data was nullptr"))};

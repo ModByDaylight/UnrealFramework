@@ -1,0 +1,4 @@
+[submodule "PolyHook_2_0"]
+	path = dependencies/stevemk14ebr/PolyHook_2_0
+	url = https://gitlab.com/__RC/polyhook_2_0
+	branch = master

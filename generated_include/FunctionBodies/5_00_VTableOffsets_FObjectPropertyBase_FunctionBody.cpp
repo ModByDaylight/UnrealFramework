@@ -1,24 +1,40 @@
-FObjectPropertyBase::VTableOffsets::Serialize = 0x0;
-FObjectPropertyBase::VTableOffsets::AddReferencedObjects = 0x0;
-FObjectPropertyBase::VTableOffsets::Identical = 0x0;
-FObjectPropertyBase::VTableOffsets::CheckValidObject = 0x150;
-FObjectPropertyBase::VTableOffsets::BeginDestroy = 0x0;
-FObjectPropertyBase::VTableOffsets::PostDuplicate = 0x0;
-FObjectPropertyBase::VTableOffsets::ExportTextItem = 0x0;
-FObjectPropertyBase::VTableOffsets::SupportsNetSharedSerialization = 0x0;
-FObjectPropertyBase::VTableOffsets::NetSerializeItem = 0x0;
-FObjectPropertyBase::VTableOffsets::ImportText_Internal = 0x0;
-FObjectPropertyBase::VTableOffsets::GetID = 0x0;
-FObjectPropertyBase::VTableOffsets::InstanceSubobjects = 0x0;
-FObjectPropertyBase::VTableOffsets::SameType = 0x0;
-FObjectPropertyBase::VTableOffsets::SetObjectPropertyValue = 0x148;
-FObjectPropertyBase::VTableOffsets::CopySingleValueToScriptVM = 0x0;
-FObjectPropertyBase::VTableOffsets::CopyCompleteValueToScriptVM = 0x0;
-FObjectPropertyBase::VTableOffsets::CopySingleValueFromScriptVM = 0x0;
-FObjectPropertyBase::VTableOffsets::CopyCompleteValueFromScriptVM = 0x0;
-FObjectPropertyBase::VTableOffsets::GetCPPTypeCustom = 0x130;
-FObjectPropertyBase::VTableOffsets::LoadObjectPropertyValue = 0x138;
-FObjectPropertyBase::VTableOffsets::GetObjectPropertyValue = 0x140;
-FObjectPropertyBase::VTableOffsets::AllowCrossLevel = 0x158;
-FObjectPropertyBase::VTableOffsets::FObjectPropertyBase_Destructor = 0x0;
-FObjectPropertyBase::VTableOffsets::__vecDelDtor = 0x0;
+if (auto it = FObjectPropertyBase::VTableLayoutMap.find(STR("__vecDelDtor")); it == FObjectPropertyBase::VTableLayoutMap.end())
+{
+    FObjectPropertyBase::VTableLayoutMap.emplace(STR("__vecDelDtor"), 0x0);
+}
+
+if (auto it = FObjectPropertyBase::VTableLayoutMap.find(STR("GetCPPTypeCustom")); it == FObjectPropertyBase::VTableLayoutMap.end())
+{
+    FObjectPropertyBase::VTableLayoutMap.emplace(STR("GetCPPTypeCustom"), 0x130);
+}
+
+if (auto it = FObjectPropertyBase::VTableLayoutMap.find(STR("LoadObjectPropertyValue")); it == FObjectPropertyBase::VTableLayoutMap.end())
+{
+    FObjectPropertyBase::VTableLayoutMap.emplace(STR("LoadObjectPropertyValue"), 0x138);
+}
+
+if (auto it = FObjectPropertyBase::VTableLayoutMap.find(STR("GetObjectPropertyValue")); it == FObjectPropertyBase::VTableLayoutMap.end())
+{
+    FObjectPropertyBase::VTableLayoutMap.emplace(STR("GetObjectPropertyValue"), 0x140);
+}
+
+if (auto it = FObjectPropertyBase::VTableLayoutMap.find(STR("SetObjectPropertyValue")); it == FObjectPropertyBase::VTableLayoutMap.end())
+{
+    FObjectPropertyBase::VTableLayoutMap.emplace(STR("SetObjectPropertyValue"), 0x148);
+}
+
+if (auto it = FObjectPropertyBase::VTableLayoutMap.find(STR("CheckValidObject")); it == FObjectPropertyBase::VTableLayoutMap.end())
+{
+    FObjectPropertyBase::VTableLayoutMap.emplace(STR("CheckValidObject"), 0x150);
+}
+
+if (auto it = FObjectPropertyBase::VTableLayoutMap.find(STR("AllowCrossLevel")); it == FObjectPropertyBase::VTableLayoutMap.end())
+{
+    FObjectPropertyBase::VTableLayoutMap.emplace(STR("AllowCrossLevel"), 0x158);
+}
+
+if (auto it = FObjectPropertyBase::VTableLayoutMap.find(STR("AllowObjectTypeReinterpretationTo")); it == FObjectPropertyBase::VTableLayoutMap.end())
+{
+    FObjectPropertyBase::VTableLayoutMap.emplace(STR("AllowObjectTypeReinterpretationTo"), 0x160);
+}
+

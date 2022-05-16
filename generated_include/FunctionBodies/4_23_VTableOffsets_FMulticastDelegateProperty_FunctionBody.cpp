@@ -1,19 +1,35 @@
-FMulticastDelegateProperty::VTableOffsets::GetCPPTypeForwardDeclaration = 0x0;
-FMulticastDelegateProperty::VTableOffsets::AddDelegate = 0x348;
-FMulticastDelegateProperty::VTableOffsets::Serialize = 0x0;
-FMulticastDelegateProperty::VTableOffsets::ContainsWeakObjectReference = 0x0;
-FMulticastDelegateProperty::VTableOffsets::Identical = 0x0;
-FMulticastDelegateProperty::VTableOffsets::GetCPPType = 0x0;
-FMulticastDelegateProperty::VTableOffsets::GetMulticastDelegate = 0x338;
-FMulticastDelegateProperty::VTableOffsets::BeginDestroy = 0x0;
-FMulticastDelegateProperty::VTableOffsets::ExportTextItem = 0x0;
-FMulticastDelegateProperty::VTableOffsets::NetSerializeItem = 0x0;
-FMulticastDelegateProperty::VTableOffsets::InstanceSubobjects = 0x0;
-FMulticastDelegateProperty::VTableOffsets::SameType = 0x0;
-FMulticastDelegateProperty::VTableOffsets::ConvertFromType = 0x0;
-FMulticastDelegateProperty::VTableOffsets::SetMulticastDelegate = 0x340;
-FMulticastDelegateProperty::VTableOffsets::RemoveDelegate = 0x350;
-FMulticastDelegateProperty::VTableOffsets::ClearDelegate = 0x358;
-FMulticastDelegateProperty::VTableOffsets::GetInvocationList = 0x360;
-FMulticastDelegateProperty::VTableOffsets::UMulticastDelegateProperty_Destructor = 0x0;
-FMulticastDelegateProperty::VTableOffsets::__vecDelDtor = 0x0;
+if (auto it = FMulticastDelegateProperty::VTableLayoutMap.find(STR("__vecDelDtor")); it == FMulticastDelegateProperty::VTableLayoutMap.end())
+{
+    FMulticastDelegateProperty::VTableLayoutMap.emplace(STR("__vecDelDtor"), 0x0);
+}
+
+if (auto it = FMulticastDelegateProperty::VTableLayoutMap.find(STR("GetMulticastDelegate")); it == FMulticastDelegateProperty::VTableLayoutMap.end())
+{
+    FMulticastDelegateProperty::VTableLayoutMap.emplace(STR("GetMulticastDelegate"), 0x338);
+}
+
+if (auto it = FMulticastDelegateProperty::VTableLayoutMap.find(STR("SetMulticastDelegate")); it == FMulticastDelegateProperty::VTableLayoutMap.end())
+{
+    FMulticastDelegateProperty::VTableLayoutMap.emplace(STR("SetMulticastDelegate"), 0x340);
+}
+
+if (auto it = FMulticastDelegateProperty::VTableLayoutMap.find(STR("AddDelegate")); it == FMulticastDelegateProperty::VTableLayoutMap.end())
+{
+    FMulticastDelegateProperty::VTableLayoutMap.emplace(STR("AddDelegate"), 0x348);
+}
+
+if (auto it = FMulticastDelegateProperty::VTableLayoutMap.find(STR("RemoveDelegate")); it == FMulticastDelegateProperty::VTableLayoutMap.end())
+{
+    FMulticastDelegateProperty::VTableLayoutMap.emplace(STR("RemoveDelegate"), 0x350);
+}
+
+if (auto it = FMulticastDelegateProperty::VTableLayoutMap.find(STR("ClearDelegate")); it == FMulticastDelegateProperty::VTableLayoutMap.end())
+{
+    FMulticastDelegateProperty::VTableLayoutMap.emplace(STR("ClearDelegate"), 0x358);
+}
+
+if (auto it = FMulticastDelegateProperty::VTableLayoutMap.find(STR("GetInvocationList")); it == FMulticastDelegateProperty::VTableLayoutMap.end())
+{
+    FMulticastDelegateProperty::VTableLayoutMap.emplace(STR("GetInvocationList"), 0x360);
+}
+

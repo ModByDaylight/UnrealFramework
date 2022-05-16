@@ -1,20 +1,90 @@
-FMalloc::VTableOffsets::DumpAllocatorStats = 0x78;
-FMalloc::VTableOffsets::Malloc = 0x10;
-FMalloc::VTableOffsets::TryMalloc = 0x18;
-FMalloc::VTableOffsets::FMalloc_Destructor = 0x0;
-FMalloc::VTableOffsets::Trim = 0x48;
-FMalloc::VTableOffsets::ValidateHeap = 0x88;
-FMalloc::VTableOffsets::Realloc = 0x20;
-FMalloc::VTableOffsets::TryRealloc = 0x28;
-FMalloc::VTableOffsets::QuantizeSize = 0x38;
-FMalloc::VTableOffsets::Free = 0x30;
-FMalloc::VTableOffsets::GetAllocationSize = 0x40;
-FMalloc::VTableOffsets::SetupTLSCachesOnCurrentThread = 0x50;
-FMalloc::VTableOffsets::ClearAndDisableTLSCachesOnCurrentThread = 0x58;
-FMalloc::VTableOffsets::InitializeStatsMetadata = 0x60;
-FMalloc::VTableOffsets::Exec = 0x0;
-FMalloc::VTableOffsets::UpdateStats = 0x68;
-FMalloc::VTableOffsets::GetAllocatorStats = 0x70;
-FMalloc::VTableOffsets::IsInternallyThreadSafe = 0x80;
-FMalloc::VTableOffsets::GetDescriptiveName = 0x90;
-FMalloc::VTableOffsets::__vecDelDtor = 0x0;
+if (auto it = FMalloc::VTableLayoutMap.find(STR("__vecDelDtor")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("__vecDelDtor"), 0x0);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("Malloc")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("Malloc"), 0x10);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("TryMalloc")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("TryMalloc"), 0x18);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("Realloc")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("Realloc"), 0x20);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("TryRealloc")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("TryRealloc"), 0x28);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("Free")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("Free"), 0x30);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("QuantizeSize")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("QuantizeSize"), 0x38);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("GetAllocationSize")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("GetAllocationSize"), 0x40);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("Trim")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("Trim"), 0x48);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("SetupTLSCachesOnCurrentThread")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("SetupTLSCachesOnCurrentThread"), 0x50);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("ClearAndDisableTLSCachesOnCurrentThread")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("ClearAndDisableTLSCachesOnCurrentThread"), 0x58);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("InitializeStatsMetadata")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("InitializeStatsMetadata"), 0x60);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("UpdateStats")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("UpdateStats"), 0x68);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("GetAllocatorStats")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("GetAllocatorStats"), 0x70);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("DumpAllocatorStats")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("DumpAllocatorStats"), 0x78);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("IsInternallyThreadSafe")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("IsInternallyThreadSafe"), 0x80);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("ValidateHeap")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("ValidateHeap"), 0x88);
+}
+
+if (auto it = FMalloc::VTableLayoutMap.find(STR("GetDescriptiveName")); it == FMalloc::VTableLayoutMap.end())
+{
+    FMalloc::VTableLayoutMap.emplace(STR("GetDescriptiveName"), 0x90);
+}
+

@@ -48,7 +48,7 @@ namespace RC::Unreal
         uint32_t Number{};
 
     public:
-        static Function<void(FName*, class FStringOut&)> ToStringInternal;
+        static Function<void(const FName*, class FString&)> ToStringInternal;
         static Function<FName(const wchar_t*, EFindName)> ConstructorInternal;
 
     private:
@@ -82,7 +82,7 @@ namespace RC::Unreal
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        explicit constexpr FName(int64_t IndexAndNumber)
+        explicit FName(int64_t IndexAndNumber)
         {
             // Split the 64-bit integer into two 32-bit integers
             Number = (IndexAndNumber & 0xFFFFFFFF00000000LL) >> 32;
@@ -95,7 +95,7 @@ namespace RC::Unreal
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        explicit constexpr FName(uint32_t IndexParam, uint32_t NumberParam)
+        constexpr FName(uint32_t IndexParam, uint32_t NumberParam)
         {
             ComparisonIndex = IndexParam;
 #ifdef WITH_CASE_PRESERVING_NAME
@@ -108,7 +108,7 @@ namespace RC::Unreal
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        explicit FName(uint32_t IndexParam, uint32_t DisplayIndexParam, uint32_t NumberParam)
+        FName(uint32_t IndexParam, uint32_t DisplayIndexParam, uint32_t NumberParam)
         {
             ComparisonIndex = IndexParam;
             DisplayIndex = DisplayIndexParam;
@@ -119,17 +119,17 @@ namespace RC::Unreal
         // Lookup & create from an existing FName
         // Not safe to pass to Unreal Engine internals
         // Safe to use for return values from Unreal Engine internals
-        explicit FName(const wchar_t* StrName, EFindName FindType = FNAME_Find, void* FunctionAddressOverride = nullptr)
+        FName(const wchar_t* StrName, EFindName FindType = FNAME_Add, void* FunctionAddressOverride = nullptr)
         {
             construct_with_string(StrName, FindType, FunctionAddressOverride);
         }
 
-        explicit FName(std::wstring_view str_name, EFindName FindType = FNAME_Find, void* FunctionAddressOverride = nullptr)
+        FName(std::wstring_view str_name, EFindName FindType = FNAME_Add, void* FunctionAddressOverride = nullptr)
         {
             construct_with_string(str_name.data(), FindType, FunctionAddressOverride);
         }
 
-        explicit FName(std::wstring_view Name, uint32 InNumber, EFindName FindType = FNAME_Find, void* FunctionAddressOverride = nullptr)
+        FName(std::wstring_view Name, uint32 InNumber, EFindName FindType = FNAME_Add, void* FunctionAddressOverride = nullptr)
         {
             construct_with_string(Name.data(), InNumber, FindType, FunctionAddressOverride);
         }
@@ -163,6 +163,7 @@ namespace RC::Unreal
         }
 
         auto ToString() -> std::wstring;
+        auto ToString() const -> const std::wstring;
         uint32 GetPlainNameString(TCHAR(&OutName)[NAME_SIZE]);
 
         [[nodiscard]] auto GetComparisonIndex() const -> uint32_t { return ComparisonIndex; }

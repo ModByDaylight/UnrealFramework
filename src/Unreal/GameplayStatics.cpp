@@ -16,7 +16,6 @@ namespace RC::Unreal
                 return false;
             }
         }
-
         return true;
     }
 
@@ -32,10 +31,12 @@ namespace RC::Unreal
         BeginDeferredActorSpawnFromClass_Params Params{
                 .WorldContextObject = WorldContextObject,
                 .ActorClass = ActorClass,
-                .SpawnTransform = SpawnTransform,
+                .SpawnTransform = {},
                 .CollisionHandlingOverride = CollisionHandlingOverride,
                 .Owner = Owner,
         };
+        Params.SpawnTransform = SpawnTransform;
+
         StaticFunctions::BeginDeferredActorSpawnFromClass(Params);
         return Params.ReturnValue;
     }

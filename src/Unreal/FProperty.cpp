@@ -15,21 +15,9 @@ namespace RC::Unreal
     IMPLEMENT_VIRTUAL_FUNCTION(FProperty, CopyValuesFromScriptVMInternal);
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
+    std::unordered_map<std::wstring, uint32_t> FProperty::VTableLayoutMap;
 
-    auto FProperty::GetArrayDim() -> int32_t
-    {
-        return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::Property_PropertyFlags) - 8);
-    }
-
-    auto FProperty::GetElementSize() -> int32_t
-    {
-        return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::Property_PropertyFlags) - 4);
-    }
-
-    auto FProperty::GetPropertyFlags() -> EPropertyFlags
-    {
-        return Helper::Casting::offset_deref<EPropertyFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::Property_PropertyFlags));
-    }
+#include <MemberVariableLayout_SrcWrapper_FProperty.hpp>
 
     auto FProperty::GetOffset_ForInternal() -> int32_t
     {
@@ -43,7 +31,7 @@ namespace RC::Unreal
 
     auto FProperty::IsInContainer(UStruct* ContainerClass) -> bool
     {
-        return GetOffset_ForInternal() + GetSize() <= (ContainerClass ? ContainerClass->GetPropertiesSize() : INT32_MAX);
+        return GetOffset_Internal() + GetSize() <= (ContainerClass ? ContainerClass->GetPropertiesSize() : INT32_MAX);
     }
 
     auto FProperty::GetCPPMacroType(FString& ExtendedTypeText) const -> FString
@@ -301,7 +289,7 @@ namespace RC::Unreal
 
     auto FProperty::ContainsObjectReference(TArray<const FStructProperty*>& EncounteredStructProps, EPropertyObjectReferenceType InReferenceType) const -> bool
     {
-        if (Version::IsAtLeast(4, 26))
+        if constexpr(Version::IsAtLeast(4, 26))
         {
             // In 4.26, the second param was added
             // This branch uses the 4.26 function signature that includes this param
@@ -322,7 +310,7 @@ namespace RC::Unreal
 
     auto FProperty::ContainsObjectReference(TArray<const FStructProperty*>& EncounteredStructProps) const -> bool
     {
-        if (Version::IsAtLeast(4, 26))
+        if constexpr(Version::IsAtLeast(4, 26))
         {
             // In 4.26, the second param was added
             // This branch uses the 4.26 function signature that includes this param

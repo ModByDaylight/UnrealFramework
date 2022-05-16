@@ -7,11 +7,10 @@ namespace RC::Unreal
 {
     IMPLEMENT_FIELD_CLASS(FObjectPropertyBase);
     IMPLEMENT_FIELD_CLASS(FObjectProperty);
+    IMPLEMENT_FIELD_CLASS(FObjectPtrProperty);
+    std::unordered_map<std::wstring, uint32_t> FObjectPropertyBase::VTableLayoutMap;
 
-    auto FObjectPropertyBase::GetPropertyClass() -> UClass*
-    {
-        return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::ObjectProperty_PropertyClass));
-    }
+#include <MemberVariableLayout_SrcWrapper_FObjectPropertyBase.hpp>
 
     void FObjectPropertyBase::SetPropertyClass(UClass* NewPropertyClass)
     {

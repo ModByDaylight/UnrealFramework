@@ -4,6 +4,7 @@
 namespace RC::Unreal
 {
     IMPLEMENT_FIELD_CLASS(FClassProperty);
+    IMPLEMENT_FIELD_CLASS(FClassPtrProperty);
 
     UClass* FClassProperty::GetMetaClass()
     {

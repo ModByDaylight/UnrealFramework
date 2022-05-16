@@ -7,6 +7,12 @@
 
 namespace RC::Unreal
 {
+    /** Divides two integers and rounds up */
+    template <class T>
+    static FORCEINLINE T DivideAndRoundUp(T Dividend, T Divisor) {
+        return (Dividend + Divisor - 1) / Divisor;
+    }
+
     template<int IndexSize>
     class TSizedDefaultAllocator;
 
@@ -26,9 +32,6 @@ namespace RC::Unreal
     struct TBitsToSizeType<32> { using Type = int32; };
     template<>
     struct TBitsToSizeType<64> { using Type = int64; };
-
-    template<typename ReferencedType>
-    ReferencedType* IfAThenAElseB(ReferencedType* A,ReferencedType* B);
 
     template <typename SizeType>
     SizeType DefaultCalculateSlackShrink(SizeType NumElements, SizeType NumAllocatedElements, SIZE_T BytesPerElement, bool bAllowQuantize, uint32 Alignment = DEFAULT_ALIGNMENT)
@@ -207,6 +210,8 @@ namespace RC::Unreal
         };
     };
 
+    using FHeapAllocator = TSizedHeapAllocator<32>;
+
     template <uint32 NumInlineElements, typename SecondaryAllocator = FDefaultAllocator>
     class TInlineAllocator
     {
@@ -252,10 +257,10 @@ namespace RC::Unreal
             // FContainerAllocatorInterface
             FORCEINLINE ElementType* GetAllocation() const
             {
-                return IfAThenAElseB<ElementType>(SecondaryData.GetAllocation(),GetInlineElements());
+                return SecondaryData.GetAllocation() ? SecondaryData.GetAllocation() : GetInlineElements();
             }
 
-            void ResizeAllocation(SizeType PreviousNumElements, SizeType NumElements,SIZE_T NumBytesPerElement)
+            void ResizeAllocation(SizeType PreviousNumElements, SizeType NumElements, SIZE_T NumBytesPerElement)
             {
                 // Check if the new allocation will fit in the inline data area.
                 if(NumElements <= NumInlineElements)
@@ -328,10 +333,9 @@ namespace RC::Unreal
                 return NumInlineElements;
             }
 
+            ForElementType(const ForElementType& InOtherAllocator) = delete;
+            ForElementType& operator=(const ForElementType&) = delete;
         private:
-            ForElementType(const ForElementType&);
-            ForElementType& operator=(const ForElementType&);
-
             /** The data is stored in this array if less than NumInlineElements is needed. */
             TTypeCompatibleBytes<ElementType> InlineData[NumInlineElements];
 
@@ -343,31 +347,15 @@ namespace RC::Unreal
             {
                 return (ElementType*)InlineData;
             }
+
+            template <typename SourceElementType, typename SizeType>
+            FORCEINLINE void RelocateConstructItems(void* Dest, const SourceElementType* Source, SizeType Count) {
+                memmove(Dest, Source, sizeof(SourceElementType) * Count);
+            }
         };
 
         typedef void ForAnyElementType;
     };
-
-    // From: https://stackoverflow.com/a/22592618
-    template<class Allocator>
-    struct IsTInlineAllocatorHelper
-    {
-    private:
-#pragma warning(disable: 4068)
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "NotImplementedFunctions"
-        template <uint32 NumInlineElements, typename SecondaryAllocator = FDefaultAllocator>
-        static decltype(static_cast<const ::RC::Unreal::TInlineAllocator<NumInlineElements, SecondaryAllocator>&>(std::declval<Allocator>()), std::true_type{})
-        test(const ::RC::Unreal::TInlineAllocator<NumInlineElements, SecondaryAllocator>&);
-
-        static std::false_type test(...);
-#pragma clang diagnostic pop
-#pragma warning(default: 4068)
-    public:
-        static constexpr bool value = decltype(IsTInlineAllocatorHelper::test(std::declval<Allocator>()))::value;
-    };
-    template<class Allocator>
-    inline constexpr bool IsTInlineAllocator = IsTInlineAllocatorHelper<Allocator>::value;
 
     template<int IndexSize>
     class TSizedDefaultAllocator : public TSizedHeapAllocator<IndexSize>

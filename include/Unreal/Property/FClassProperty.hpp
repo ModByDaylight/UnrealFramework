@@ -16,6 +16,11 @@ namespace RC::Unreal
         UClass* GetMetaClass();
         void SetMetaClass(UClass* NewMetaClass);
     };
+
+    class RC_UE_API FClassPtrProperty : public FClassProperty
+    {
+        DECLARE_FIELD_CLASS(FClassPtrProperty)
+    };
 }
 
 

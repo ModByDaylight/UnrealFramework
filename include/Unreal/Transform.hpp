@@ -11,20 +11,14 @@ namespace RC::Unreal
     // TODO: Investigate FTransform and FVector in UE5.
     struct alignas(16) RC_UE_API FTransform
     {
-        FQuat Rotation;
-        alignas(16) FVector Translation;
-        alignas(16) FVector Scale3D;
+        FQuat Rotation{};
+        alignas(16) FVector Translation{};
+        alignas(16) FVector Scale3D{};
 
-        inline FTransform() : Rotation(0.0f, 0.0f, 0.0f, 0.0f), Translation(0.0f, 0.0f, 0.0f), Scale3D(0.0f, 1.0f, 1.0f) {}
-        inline FTransform(FQuat Rotation, FVector Translation, FVector Scale3D) : Rotation(Rotation), Translation(Translation), Scale3D(Scale3D) {}
+        FORCEINLINE FTransform() = default;
 
-        FTransform& operator=(const FTransform& Other)
-        {
-            this->Rotation = Other.Rotation;
-            this->Translation = Other.Translation;
-            this->Scale3D = Other.Scale3D;
-
-            return *this;
+        FORCEINLINE FTransform(FQuat InRotation, FVector InTranslation, FVector InScale3D) :
+            Rotation(InRotation), Translation(InTranslation), Scale3D(InScale3D) {
         }
     };
 }

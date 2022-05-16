@@ -2,9 +2,15 @@
 #include <Function/Function.hpp>
 #include <Unreal/VersionedContainer/UnrealVirtualImpl/UnrealVirtualBaseVC.hpp>
 #include <Unreal/UnrealVersion.hpp>
+#include <Helpers/Casting.hpp>
+#include <Unreal/NameTypes.hpp>
 
 namespace RC::Unreal
 {
+    std::unordered_map<std::wstring, uint32_t> FOutputDevice::VTableLayoutMap;
+
+#include <MemberVariableLayout_SrcWrapper_FOutputDevice.hpp>
+
     void FOutputDevice::Serialize(const TCHAR* V, ELogVerbosity::Type Verbosity, const FName& Category, const double Time)
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FOutputDevice,
@@ -41,7 +47,7 @@ namespace RC::Unreal
 
     bool FOutputDevice::CanBeUsedOnMultipleThreads() const
     {
-        if (Version::IsBelow(4, 21))
+        if constexpr(Version::IsBelow(4, 21))
         {
             throw std::runtime_error{"FOutputDevice::CanBeUsedOnMultipleThreads is only available in 4.21+"};
         }

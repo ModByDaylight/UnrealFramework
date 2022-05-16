@@ -22,7 +22,7 @@ namespace RC::Unreal
 
     auto UEnum::GetEnumFlags() -> EEnumFlags
     {
-        if (Version::IsBelow(4, 26))
+        if constexpr(Version::IsBelow(4, 26))
         {
             // EEnumFlags was added in 4.26
             // Let's assume the 'None' flag is valid for whatever code calls this function in <4.26

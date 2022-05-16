@@ -1,89 +1,74 @@
 #ifndef RC_UNREAL_FMEMORY_HPP
 #define RC_UNREAL_FMEMORY_HPP
 
-#include <Function/Function.hpp>
 #include <Unreal/Common.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
+#include <unordered_map>
 
-/*
- * How GMalloc gets created:
- * 1. UnrealMemory.cpp -> FMemory_GCreateMalloc_ThreadUnsafe()
- * 2.     It sets GMalloc to:
- * 3. WindowsPlatformMemory.cpp -> FWindowsPlatformMemory::BaseAllocator()
- * 4. It selects Binned2
- * 5. It uses 'new' to create an instance of 'FMallocBinned2' and returns it
- */
+#define IMPLEMENT_UNREAL_TYPE(TypeName) \
+    FORCEINLINE void* operator new(size_t Size) { return FMemory::Malloc(Size); } \
+    FORCEINLINE void operator delete(void* Ptr) { if (Ptr) FMemory::Free(Ptr); }  \
+    FORCEINLINE void* operator new[](size_t Size) { return FMemory::Malloc(Size); } \
+    FORCEINLINE void operator delete[](void* Ptr) { if (Ptr) FMemory::Free(Ptr); } \
+    FORCEINLINE void* operator new(size_t Size, void* Ptr) { return Ptr; }
 
-namespace RC::Unreal
-{
-    struct FGenericMemoryStats;
+NS_RC_UE_START
 
-    namespace UnrealInitializer
-    {
-        struct Config;
-        struct CacheInfo;
-        RC_UE_API auto CreateCache(UnrealInitializer::CacheInfo& Target) -> void;
-        RC_UE_API auto LoadCache(UnrealInitializer::CacheInfo& Target) -> void;
-    }
+enum {
+    // Default allocator alignment. If the default is specified, the allocator applies to engine rules.
+    // Blocks >= 16 bytes will be 16-byte-aligned, Blocks < 16 will be 8-byte aligned. If the allocator does
+    // not support allocation alignment, the alignment will be ignored.
+    DEFAULT_ALIGNMENT = 0,
 
-    namespace Signatures
-    {
-        struct ScanResult;
-        RC_UE_API auto ScnForGUObjectArrayImpl(const UnrealInitializer::Config&) -> ScanResult;
-    }
+    // Minimum allocator alignment
+    MIN_ALIGNMENT = 8,
+};
 
-    class RC_UE_API FMalloc
-    {
-    public:
-#include <VTableOffsets_FMalloc.hpp>
-        static bool bIsInitialized;
+struct FGenericMemoryStats;
 
-    private:
-        friend Signatures::ScanResult Signatures::ScnForGUObjectArrayImpl(const UnrealInitializer::Config&);
-        friend RC_UE_API void UnrealInitializer::CreateCache(UnrealInitializer::CacheInfo&);
-        friend RC_UE_API void UnrealInitializer::LoadCache(UnrealInitializer::CacheInfo&);
+class RC_UE_API FMalloc {
+public:
+    static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
+public:
+    void* Malloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+    void* TryMalloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+    void* Realloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+    void* TryRealloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+    void Free(void* Original);
+    SIZE_T QuantizeSize(SIZE_T Count, uint32 Alignment);
+    bool GetAllocationSize(void* Original, SIZE_T& SizeOut);
+    void Trim(bool bTrimThreadCaches);
+    void SetupTLSCachesOnCurrentThread();
+    void ClearAndDisableTLSCachesOnCurrentThread();
+    void InitializeStatsMetadata();
+    void UpdateStats();
+    void GetAllocatorStats(FGenericMemoryStats& out_Stats);
+    void DumpAllocatorStats(class FOutputDevice& Ar);
+    bool IsInternallyThreadSafe() const;
+    bool ValidateHeap();
+    const TCHAR* GetDescriptiveName();
+};
 
-    public:
-        static FMalloc** UnrealStaticGMalloc;
+RC_UE_API extern FMalloc** GMallocStorage;
+RC_UE_API extern FMalloc* GMalloc;
 
-    public:
-        void* Malloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
-        void* TryMalloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
-        void* Realloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
-        void* TryRealloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
-        void Free(void* Original);
-        SIZE_T QuantizeSize(SIZE_T Count, uint32 Alignment);
-        bool GetAllocationSize(void* Original, SIZE_T& SizeOut);
-        void Trim(bool bTrimThreadCaches);
-        void SetupTLSCachesOnCurrentThread();
-        void ClearAndDisableTLSCachesOnCurrentThread();
-        void InitializeStatsMetadata();
-        void UpdateStats();
-        void GetAllocatorStats(FGenericMemoryStats& out_Stats);
-        void DumpAllocatorStats(class FOutputDevice& Ar);
-        bool IsInternallyThreadSafe() const;
-        bool ValidateHeap();
-        const TCHAR* GetDescriptiveName();
-    };
+class RC_UE_API FMemory {
+public:
+    static void* Memzero(void* Dest, SIZE_T Count);
 
-    RC_UE_API extern FMalloc* GMalloc;
+    static void* Malloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
 
-    class RC_UE_API FMemory
-    {
-    public:
-        static void* Memzero(void* Dest, SIZE_T Count);
-        static void* Malloc(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
-        static void* Realloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
-        static void Free(void* Original);
-        static void* Memcpy(void* Dest, const void* Src, SIZE_T Count);
-        static SIZE_T QuantizeSize(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+    static void* Realloc(void* Original, SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
 
-        // TODO: Implement if we need them
-        //void static memmove(void* dest, void* src, size_t size);
-        //void static memset(void* src, char value, size_t size);
-        //void static memcpy(void* dest, const void* src, size_t size);
-        //int static memcmp(const void* first, const void* second, size_t size);
-    };
-}
+    static void Free(void* Original);
+
+    static void* Memcpy(void* Dest, const void* Src, SIZE_T Count);
+
+    static void Memswap(void* Ptr1, void* Ptr2, SIZE_T Size);
+
+    static SIZE_T QuantizeSize(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);
+};
+
+NS_RC_UE_END
 
 #endif //RC_UNREAL_FMEMORY_HPP

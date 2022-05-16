@@ -38,8 +38,8 @@ namespace RC::Output
 
     public:
         auto has_optional_arg() const -> bool override;
-        auto receive(File::StringViewType fmt) const -> void override;
-        auto receive_with_optional_arg(File::StringViewType fmt, int32_t optional_arg = 0) const -> void override;
+        auto receive(std::wstring_view fmt) const -> void override;
+        auto receive_with_optional_arg(std::wstring_view fmt, int32_t optional_arg = 0) const -> void override;
     };
 }
 

@@ -9,10 +9,13 @@ namespace RC::Unreal
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UField);
 
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
+    std::unordered_map<std::wstring, uint32_t> UField::VTableLayoutMap;
+
+#include <MemberVariableLayout_SrcWrapper_UField.hpp>
 
     auto UField::GetNextField() -> UField*
     {
-        return Helper::Casting::offset_deref<UField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UField_Next));
+        return GetNext();
     }
 
     auto UField::AsFFieldUnsafe() -> FField*

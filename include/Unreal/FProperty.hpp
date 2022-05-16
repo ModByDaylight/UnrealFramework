@@ -24,32 +24,17 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FProperty);
 
     public:
-#include <VTableOffsets_FProperty.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
 
     public:
-        /**
-         * Returns the array dimensions of the property
-         * This is only relevant for statically sized array properties defined in C++
-         * for other properties and non-native properties that will always be 1
-         */
-        auto GetArrayDim() -> int32_t;
+#include <MemberVariableLayout_HeaderWrapper_FProperty.hpp>
 
-        /**
-         * Retrieves the size of the single array element of this property
-         * Equals to the property size for the properties that do not represent static arrays
-         */
-        auto GetElementSize() -> int32_t;
-
-        /**
-         * Retrieves the flags defined on this property objects
-         * Use methods below to test whenever the particular flags are set
-         */
-        auto GetPropertyFlags() -> EPropertyFlags;
-
+    public:
         /**
          * Retrieves the offset of this property inside of it's parent struct
          * That would mean the offset of the property inside of the UObject or UStruct
          */
+        [[deprecated("Use 'GetOffset_Internal' instead")]]
         auto GetOffset_ForInternal() -> int32_t;
 
         /**
@@ -84,13 +69,13 @@ namespace RC::Unreal
         template<typename T>
         auto ContainerPtrToValuePtr(void* Container, int32_t ArrayIndex = 0) -> T*
         {
-            return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(Container) + GetOffset_ForInternal() + GetElementSize() * ArrayIndex);
+            return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(Container) + GetOffset_Internal() + GetElementSize() * ArrayIndex);
         }
 
         template<typename T>
         auto ContainerPtrToValuePtr(const void* Container, int32_t ArrayIndex = 0) -> const T*
         {
-            return reinterpret_cast<const T*>(reinterpret_cast<uintptr_t>(Container) + GetOffset_ForInternal() + GetElementSize() * ArrayIndex);
+            return reinterpret_cast<const T*>(reinterpret_cast<uintptr_t>(Container) + GetOffset_Internal() + GetElementSize() * ArrayIndex);
         }
 
         auto GetCPPMacroType(FString& ExtendedTypeText) const -> FString;

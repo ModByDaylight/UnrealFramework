@@ -19,7 +19,7 @@ namespace RC::Unreal
             AssignFunction(UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, GetFullName()));
             if (!Function)
             {
-                Output::send(STR("Was unable to locate '{}'\n"), File::StringViewType{GetFullName()});
+                Output::send(STR("Was unable to locate '{}'\n"), std::wstring_view{GetFullName()});
                 return false;
             }
         }

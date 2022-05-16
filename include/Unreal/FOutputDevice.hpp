@@ -1,6 +1,8 @@
 #ifndef RC_UNREAL_FOUTPUTDEVICE_HPP
 #define RC_UNREAL_FOUTPUTDEVICE_HPP
 
+#include <unordered_map>
+
 #include <Unreal/Common.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
 #include <Unreal/LogVerbosity.hpp>
@@ -22,7 +24,10 @@ namespace RC::Unreal
         bool bAutoEmitLineTerminator;
 
     public:
-#include <VTableOffsets_FOutputDevice.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
+
+    public:
+#include <MemberVariableLayout_HeaderWrapper_FOutputDevice.hpp>
 
         // Wrappers for virtual engine functions
         // Missing the first overload because the generator doesn't support overloads

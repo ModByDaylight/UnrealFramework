@@ -27,6 +27,15 @@ namespace RC::Unreal
         auto SerialNumbersMatch(struct FUObjectItem*) const -> bool;
         auto Get() const -> class UObject*;
     };
+
+    template<class T=UObject, class TWeakObjectPtrBase=FWeakObjectPtr>
+    struct TWeakObjectPtr;
+
+    template<class T, class TWeakObjectPtrBase>
+    struct TWeakObjectPtr : private TWeakObjectPtrBase
+    {
+
+    };
 }
 
 

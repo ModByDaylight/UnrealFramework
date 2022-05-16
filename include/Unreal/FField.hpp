@@ -9,6 +9,7 @@
 #include <Unreal/UnrealVersion.hpp>
 #include <Unreal/TypeChecker.hpp>
 #include <Unreal/VirtualFunctionHelper.hpp>
+#include <Unreal/UObjectGlobals.hpp>
 
 namespace RC::Unreal
 {
@@ -40,7 +41,10 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE_BASE(FField, Internal::FFieldTypeAccessor);
 
     public:
-#include <VTableOffsets_FField.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
+
+    public:
+#include <MemberVariableLayout_HeaderWrapper_FField.hpp>
 
     public:
         /**
@@ -64,8 +68,8 @@ namespace RC::Unreal
             return GetFName().ToString();
         }
 
-        File::StringType GetFullName();
-        File::StringType GetPathName(UObject* StopOuter = nullptr);
+        std::wstring GetFullName();
+        std::wstring GetPathName(UObject* StopOuter = nullptr);
 
         /**
          * Checks whenever this property is of the class specified by the argument
@@ -242,7 +246,7 @@ namespace RC::Unreal
         union FFieldClassObjectUnion
         {
             FFieldClass* Field;
-            UClass* Object;
+            const UClass* Object;
         } Container;
         bool IsObject;
     public:
@@ -257,6 +261,7 @@ namespace RC::Unreal
          * @param Object a valid UClass object
          */
         FFieldClassVariant(UClass* Object);
+        FFieldClassVariant(const UClass* Object);
 
         /**
          * Constructs an invalid instance of the FFieldClassVariant representing a nullptr
@@ -307,7 +312,7 @@ namespace RC::Unreal
         auto IsFieldClass() const -> bool;
 
         auto ToFieldClass() const -> FFieldClass*;
-        auto ToUClass() const -> UClass*;
+        auto ToUClass() const -> const UClass*;
     };
 
     /**

@@ -4,21 +4,33 @@
 #include <string>
 
 #include <Unreal/Common.hpp>
+#include <Unreal/PrimitiveTypes.hpp>
 
 namespace RC::Unreal
 {
     class FString;
 
-    struct RC_UE_API TTextData
+    // Real type: TSharedPtr<FString, ESPMode::ThreadSafe>
+    using FTextDisplayStringPtr = FString*;
+
+    struct RC_UE_API FTextKey
     {
-        void* vtable{};
-        FString* Data{};
+    private:
+        const TCHAR* StrPtr;
+        uint32 StrHash;
+    };
+
+    struct RC_UE_API FTextId
+    {
+    private:
+        FTextKey Namespace;
+        FTextKey Key;
     };
 
     class RC_UE_API FText
     {
     public:
-        TTextData* Data{nullptr};
+        void* Data{nullptr};
 
     public:
         auto ToFString() -> FString*;

@@ -38,47 +38,6 @@ namespace RC::Unreal::Signatures
         uint8_t* FNameToStringAddress{};
         uint8_t FNameToStringNumMatches{};
 
-        if (config.ScanOverrides.version_finder)
-        {
-            config.ScanOverrides.version_finder(signature_containers_core, scan_result);
-        }
-        else
-        {
-            VersionStatus version_status{};
-            SignatureContainer unreal_version_finder{
-                    {
-                            {
-                                    // 4.x.x
-                                    "0 4/0 0/? ?/0 0/? ?/0 0/0 0/0 0/? ?/? ?/? ?/? ?/0 0/0 0/0 0/0 0/? ?/? ?/? ?/? ?/? ?/? ?/0 0/0 0/? ?/0 0/0 0/0 0/? ?/0 0/0 0/0 0/0 4/0 0/? ?/0 0/? ?/0 0/0 0/0 0",
-                            },
-                            {
-                                    // 5.x.x
-                                    "0 5/0 0/? ?/0 0/? ?/0 0/0 0/0 0/? ?/? ?/? ?/? ?/0 0/0 0/0 0/0 0/? ?/? ?/? ?/? ?/? ?/? ?/0 0/0 0/? ?/0 0/0 0/0 0/? ?/0 0/0 0/0 0/0 4/0 0/? ?/0 0/? ?/0 0/0 0/0 0",
-                            },
-                    },
-                    // On Match Found
-                    [&]([[maybe_unused]]SignatureContainer& self) {
-                        version_status = Unreal::Version::Initialize(self.get_match_address());
-
-                        if (version_status.Status == VersionStatus::SUCCESS)
-                        {
-                            scan_result.SuccessMessage.emplace_back(std::format(STR("Engine Version: {}.{} <- Built-in\n"), Version::Major, Version::Minor));
-                        }
-
-                        return version_status.Status == VersionStatus::SUCCESS;
-                    },
-                    // On Scan Completed
-                    [&]([[maybe_unused]]SignatureContainer& self) {
-                        if (version_status.Status != VersionStatus::SUCCESS)
-                        {
-                            // We're not including the error message from VersionStatus here because it's inaccurate
-                            scan_result.Errors.emplace_back("Was unable to find AOB for 'Unreal Engine Version'.\nYou need to override the engine version in 'UE4SS-settings.ini.");
-                        }
-                    }
-            };
-            signature_containers_core.emplace_back(unreal_version_finder);
-        }
-
         if (config.ScanOverrides.fname_to_string)
         {
             // If we have an override look in the 'Core' module because that's where FName::ToString is
@@ -161,6 +120,11 @@ namespace RC::Unreal::Signatures
                             {
                                     // 4.16, 4.19
                                     "E 8/? ?/? ?/? ?/? ?/0 F/B 6/8 F/? ?/0 1/0 0/0 0/4 8/8 9/8 7/? ?/0 1/0 0/0 0",
+                                    StaticConstructObjectSignatureType::GroupTwoIndirect,
+                            },
+                            {
+                                    // 5.00
+                                    "E8 ?? ?? ?? ?? 48 8B D8 48 39 75 30 74 15",
                                     StaticConstructObjectSignatureType::GroupTwoIndirect,
                             },
                     },
@@ -367,7 +331,7 @@ namespace RC::Unreal::Signatures
                     },
                     // On Match Found
                     [&](SignatureContainer& self) {
-                        scan_result.SuccessMessage.emplace_back(std::format(STR("FMemory::Free address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
+                        scan_result.SuccessMessage.emplace_back(std::format(STR("GMalloc address: {} <- Built-in\n"), static_cast<void*>(self.get_match_address())));
                         self.get_did_succeed() = true;
 
                         const auto signature_identifier = static_cast<const FMemoryFreeSignatureType>(self.get_signatures()[self.get_index_into_signatures()].custom_data);
@@ -384,8 +348,9 @@ namespace RC::Unreal::Signatures
                             constexpr uint8_t instr_size = 0x7;
                             uint8_t* next_instruction = mov_instruction + instr_size;
                             uint32_t* offset = std::bit_cast<uint32_t*>(mov_instruction + 0x3);
-                            FMalloc::UnrealStaticGMalloc = std::bit_cast<FMalloc**>(next_instruction + *offset);
-                            GMalloc = *FMalloc::UnrealStaticGMalloc;
+
+                            GMallocStorage = std::bit_cast<FMalloc**>(next_instruction + *offset);
+                            GMalloc = *GMallocStorage;
                         }
                         else
                         {
@@ -399,8 +364,9 @@ namespace RC::Unreal::Signatures
                             constexpr uint8_t instr_size = 0x7;
                             uint8_t* next_instruction = mov_instruction + instr_size;
                             uint32_t* offset = std::bit_cast<uint32_t*>(mov_instruction + 0x3);
-                            FMalloc::UnrealStaticGMalloc = std::bit_cast<FMalloc**>(next_instruction + *offset);
-                            GMalloc = *FMalloc::UnrealStaticGMalloc;
+
+                            GMallocStorage = std::bit_cast<FMalloc**>(next_instruction + *offset);
+                            GMalloc = *GMallocStorage;
                         }
 
                         return true;
@@ -409,7 +375,7 @@ namespace RC::Unreal::Signatures
                     [&](const SignatureContainer& self) {
                         if (!self.get_did_succeed())
                         {
-                            scan_result.Errors.emplace_back("Was unable to find AOB for 'FMemory::Free'\nYou can supply your own in 'UE4SS_Signatures/FMemory_Free.lua");
+                            scan_result.Errors.emplace_back("Was unable to find AOB for 'GMalloc'\nYou can supply your own in 'UE4SS_Signatures/GMalloc.lua");
                         }
                     }
             };
@@ -457,7 +423,7 @@ namespace RC::Unreal::Signatures
                     };
                 }
                 // Default AOBs that work for most games
-                else if (Version::IsAtMost(4, 12))
+                else if constexpr(Version::IsAtMost(4, 12))
                 {
                     return {
                             {
@@ -491,7 +457,7 @@ namespace RC::Unreal::Signatures
                             }
                     };
                 }
-                else if (Version::IsAtMost(4, 13))
+                else if constexpr(Version::IsAtMost(4, 13))
                 {
                     return {
                             {
@@ -522,7 +488,7 @@ namespace RC::Unreal::Signatures
                             }
                     };
                 }
-                else if (Version::IsAtMost(4, 19))
+                else if constexpr(Version::IsAtMost(4, 19))
                 {
                     return {
                             {
@@ -553,7 +519,7 @@ namespace RC::Unreal::Signatures
                             }
                     };
                 }
-                else if (Version::IsAtLeast(4, 20))
+                else if constexpr(Version::IsAtLeast(4, 20))
                 {
                     return {
                             {

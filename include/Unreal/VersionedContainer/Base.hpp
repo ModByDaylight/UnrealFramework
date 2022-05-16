@@ -21,6 +21,35 @@ namespace RC::Unreal
     // TODO: Move to 'MinimalWindowsApi.hpp'.
     struct CRITICAL_SECTION { void* Opaque1[1]; long Opaque2[2]; void* Opaque3[3]; };
 
+    struct LIST_ENTRY
+    {
+        void *Flink;
+        void *Blink;
+    };
+
+    struct CRITICAL_SECTION_DEBUG
+    {
+        unsigned short Type;
+        unsigned short CreatorBackTraceIndex;
+        void* CriticalSection;
+        LIST_ENTRY ProcessLocksList;
+        unsigned long EntryCount;
+        unsigned long ContentionCount;
+        unsigned long Flags;
+        unsigned short CreatorBackTraceIndexHigh;
+        unsigned short SpareWORD;
+    };
+
+    struct CRITICAL_SECTION_414_AND_BELOW
+    {
+        CRITICAL_SECTION_DEBUG* DebugInfo;
+        long LockCount;
+        long RecursionCount;
+        void* OwningThread;
+        void* LockSemaphore;
+        unsigned long long SpinCount;
+    };
+
     struct RC_UE_API PropertyDataVC
     {
         void* property_ptr{};
@@ -244,20 +273,24 @@ namespace RC::Unreal
             }
         };
 
+        // PLATFORM_CACHE_LINE_SIZE is 64 since 4.22.
+        static constexpr size_t PLATFORM_CACHE_LINE_SIZE = 64;
         struct FUObjectArray
         {
             using TUObjectArray = FChunkedFixedUObjectArray;
 
-            int32_t obj_first_gc_index;                             // 0x0
-            int32_t obj_last_non_gc_index;                          // 0x4
-            int32_t max_objects_not_considered_by_gc;               // 0x8
-            bool open_for_disregard_for_gc;                         // 0xC
-            TUObjectArray obj_objects;                              // 0x10
-            CRITICAL_SECTION ObjObjectsCritical;                    // 0x18
-            // Padding in <4.27 because we don't support 'TLockFreePointerListUnordered'
-            uint8 ObjAvailableList[0x88];                           // 0x58
-            TArray<FUObjectCreateListener*> UObjectCreateListeners; // 0xE0
-            TArray<FUObjectDeleteListener*> UObjectDeleteListeners; // 0xF8
+            int32_t obj_first_gc_index;                                                        // 0x0
+            int32_t obj_last_non_gc_index;                                                     // 0x4
+            int32_t max_objects_not_considered_by_gc;                                          // 0x8
+            bool open_for_disregard_for_gc;                                                    // 0xC
+            TUObjectArray obj_objects;                                                         // 0x10
+
+            CRITICAL_SECTION ObjObjectsCritical;                                               // 0x18
+            // Real type: TLockFreePointerListUnordered
+            // In >=4.17, this is a pointer surrounded by padding.
+            uint8 ObjAvailableList[PLATFORM_CACHE_LINE_SIZE + 0x8 + PLATFORM_CACHE_LINE_SIZE]; // 0x58
+            TArray<FUObjectCreateListener*> UObjectCreateListeners;                            // 0xE0
+            TArray<FUObjectDeleteListener*> UObjectDeleteListeners;                            // 0xF0
         };
 
         using GUObjectArray = FUObjectArray;

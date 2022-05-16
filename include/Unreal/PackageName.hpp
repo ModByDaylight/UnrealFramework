@@ -8,7 +8,7 @@ namespace RC::Unreal
     class FPackageName
     {
     private:
-        using FStringView = File::StringViewType;
+        using FStringView = std::wstring_view;
 
     public:
         enum class EErrorCode

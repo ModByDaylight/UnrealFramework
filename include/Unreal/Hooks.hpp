@@ -33,7 +33,7 @@ namespace RC::Unreal
             Post,
         };
 
-        using ProcessEventCallback = void (*)(UObject* Context, UFunction* Function, void* Parms);
+        using ProcessEventCallback = void(*)(UObject* Context, UFunction* Function, void* Parms);
         using StaticConstructObjectPreCallback = UObject* (*)(const FStaticConstructObjectParameters& Params);
         using StaticConstructObjectPostCallback = UObject* (*)(const FStaticConstructObjectParameters& Params, UObject* ConstructedObject);
         using ProcessConsoleExecCallback = bool (*)(UObject* Context, const TCHAR* Cmd, FOutputDevice& Ar, UObject* Executor);

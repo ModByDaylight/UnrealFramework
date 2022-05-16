@@ -12,10 +12,12 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FObjectPropertyBase);
 
     public:
-#include <VTableOffsets_FObjectPropertyBase.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
 
     public:
-        UClass* GetPropertyClass();
+#include <MemberVariableLayout_HeaderWrapper_FObjectPropertyBase.hpp>
+
+    public:
         void SetPropertyClass(UClass* NewPropertyClass);
 
         // Virtual Functions
@@ -37,6 +39,11 @@ namespace RC::Unreal
     {
         DECLARE_FIELD_CLASS(FObjectProperty);
         DECLARE_VIRTUAL_TYPE(FObjectProperty);
+    };
+
+    class RC_UE_API FObjectPtrProperty : public FObjectProperty
+    {
+        DECLARE_FIELD_CLASS(FObjectPtrProperty)
     };
 }
 

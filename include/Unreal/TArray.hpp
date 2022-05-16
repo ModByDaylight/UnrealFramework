@@ -4,8 +4,6 @@
 #include <functional>
 #include <stdexcept>
 #include <type_traits>
-#include <unordered_set>
-
 #include <Constructs/Loop.hpp>
 #include <Helpers/Format.hpp>
 #include <Unreal/Common.hpp>
@@ -15,32 +13,15 @@
 #include <Unreal/ContainersFwd.hpp>
 #include <Unreal/ContainerAllocationPolicies.hpp>
 #include <Unreal/FMemory.hpp>
-#include <Unreal/MemoryOps.hpp>
 #include <Unreal/UnrealFlags.hpp>
 #include <Unreal/TypeChecker.hpp>
 
 namespace RC::Unreal
 {
-    class XStructData;
-
-    // Redo or remove this, need to think about it
-    template<typename ArrayInnerType>
-    constexpr bool ArraySizeIsImplicit = !(std::is_same_v<ArrayInnerType, struct FAssetData>);
-
-    auto RC_UE_API GetStructDataAt(void* data_param, size_t index) -> XStructData*;
-
-    /*
-     * Problems with TArray:
-     *
-     * The TArray destructor doesn't call element destructors.
-     *
-     * You can't create a new TArray in the games memory.
-     */
     template<typename InElementType, typename InAllocator>
     class TArray
     {
     public:
-        static constexpr InternalType internal_type = InternalType::Array;
         using SizeType = typename InAllocator::SizeType;
         using ElementType = InElementType;
         using Allocator = InAllocator;
@@ -50,403 +31,466 @@ namespace RC::Unreal
                 typename Allocator::template ForElementType<ElementType>,
                 typename Allocator::ForAnyElementType
         >::Result ElementAllocatorType;
-
     protected:
-        ElementAllocatorType AllocatorInstance{};
+        ElementAllocatorType AllocatorInstance;
         int32 ArrayNum{};
         int32 ArrayMax{};
-
     public:
-        // Custom constructor for when we already have a TArray in memory, and we'd just like to take it over
-        //TArray(ArrayInnerType* data_ptr, int32_t current_size, int32_t capacity) : data(data_ptr), ArrayNum(current_size),
-        //                                                                           ArrayMax(capacity) {}
-
-        TArray([[maybe_unused]]InElementType* data_ptr, int32_t current_size, int32_t capacity) : ArrayNum(current_size), ArrayMax(capacity)
-        {
-            // This is currently used in FString to allow construction of strings
-            AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(data_ptr);
+        /**
+         * Default TArray constructor. Will not add any elements or allocate any
+         * memory until the first element is added
+         */
+        inline TArray(): ArrayNum(0), ArrayMax(AllocatorInstance.GetInitialCapacity()) {
         }
 
-        // Constructor for when we want to allocate a new TArray in the games memory
-        // The TArray itself is on the stack (or local heap) but the data pointer will be in the games own heap
-        TArray() = default;
-
-        // Problems with this copying:
-        // The underlying data might get deallocated from the original TArray going out of scope
-        // At that point, any access to the copied TArray is undefined
-        // For now, delete the copy constructor & copy assignment operator to disallow copying
-        TArray(const TArray& Other)
-        {
-            CopyFrom_Helper(Other);
+        /**
+         * Initializes TArray with the elements provided in the initializer list
+         * @param initializerList elements to add into the array
+         */
+        inline TArray(std::initializer_list<ElementType> initializerList) {
+            CopyFrom_Helper(initializerList.begin(), initializerList.size());
         }
 
-        TArray& operator=(const TArray& Other)
-        {
-            if (this != &Other)
-            {
-                CopyFrom_Helper(Other);
-            }
+        /**
+         * Copies the elements from the provided C array with the following size
+         * @param DataPtr pointer to the data to copy
+         * @param Size size of the array
+         */
+        TArray(ElementType* DataPtr, int32_t Size) {
+            CopyFrom_Helper(DataPtr, Size);
+        }
 
+        /**
+         * Copies from the data of the specified TArray with a different allocator
+         * @param Other the array to copy the data from
+         */
+        template<typename InOtherAllocator>
+        TArray(const TArray<ElementType, InOtherAllocator>& Other, SizeType ExtraSlack = 0) {
+            CopyFrom_Helper(Other.GetData(), Other.Num(), ExtraSlack);
+        }
+
+        /** Copies the data from the provided array with the same allocator */
+        TArray(const TArray& Other) {
+            CopyFrom_Helper(Other.GetData(), Other.Num());
+        }
+
+        /**
+         * Copies from the data of the specified TArray, potentially with a different allocator
+         * @param Other the array to copy the data from
+        */
+        template<typename InOtherAllocator>
+        TArray& operator=(const TArray<ElementType, InOtherAllocator>& Other) {
+            CopyFrom_Helper(Other.GetData(), Other.Num());
             return *this;
         }
 
-        TArray& operator=(TArray& Other)
-        {
-            if (this != &Other)
-            {
-                CopyFrom_Helper(Other);
+        /** Copies the data from the array with the same allocator */
+        TArray& operator=(const TArray& Other) {
+            if (this != &Other) {
+                CopyFrom_Helper(Other.GetData(), Other.Num());
             }
-
             return *this;
         }
 
-        ~TArray()
-        {
-            // TODO: Call destructors
-        }
-
-        // Memory related -> START
-    private:
-        SizeType GetElementSize()
-        {
-            if constexpr (std::is_same_v<ElementType, struct FAssetData>)
-            {
-                // Structs where the size is unknown to the compiler
-                // This happens when a struct has had layout changes and now has different sizes in different engine versions
-                return ElementType::StaticSize();
-            }
-            else
-            {
-                // Structs where the size is known to the compiler
-                return sizeof(ElementType);
+        /**
+         * Deallocates TArray and calls destructors on all of the elements inside
+         */
+        ~TArray() {
+            if (ArrayNum) {
+                DestructItems(GetData(), ArrayNum);
+                ArrayNum = 0;
             }
         }
-
-        SizeType GetElementSize() const
-        {
-            if constexpr (std::is_same_v<ElementType, struct FAssetData>)
-            {
-                // Structs where the size is unknown to the compiler
-                // This happens when a struct has had layout changes and now has different sizes in different engine versions
-                return ElementType::StaticSize();
-            }
-            else
-            {
-                // Structs where the size is known to the compiler
-                return sizeof(ElementType);
-            }
-        }
-
-        void CopyFrom_Helper(const TArray& Other)
-        {
-            if constexpr (IsTInlineAllocator<InAllocator>)
-            {
-                std::memcpy(&AllocatorInstance, &Other.AllocatorInstance, Other.AllocatorInstance.GetInitialCapacity() * GetElementSize());
-
-                if (auto AllocatedSize = Other.AllocatorInstance.GetAllocatedSize(Other.ArrayNum, Other.GetElementSize()); AllocatedSize > 0)
-                {
-                    AllocatorInstance.SecondaryData.Data = static_cast<FScriptContainerElement*>(FMemory::Malloc(Other.ArrayMax * GetElementSize()));
-                    std::memcpy(AllocatorInstance.SecondaryData.Data, Other.AllocatorInstance.SecondaryData.Data, AllocatedSize);
-                }
-                else
-                {
-                    AllocatorInstance.SecondaryData.Data = nullptr;
-                }
-
-                ArrayNum = Other.ArrayNum;
-                ArrayMax = Other.ArrayMax;
-            }
-            else
-            {
-                if (Other.AllocatorInstance.GetAllocation())
-                {
-                    AllocatorInstance.Data = static_cast<FScriptContainerElement*>(FMemory::Malloc(Other.ArrayMax * GetElementSize()));
-                    std::memcpy(AllocatorInstance.Data, Other.AllocatorInstance.Data, Other.ArrayNum * GetElementSize());
-                    ArrayNum = Other.ArrayNum;
-                    ArrayMax = Other.ArrayMax;
-                }
-                else
-                {
-                    AllocatorInstance.Data = nullptr;
-                    ArrayNum = 0;
-                    ArrayMax = 0;
-                }
-            }
-        }
-
     public:
-        void Reserve(SizeType Number)
-        {
-            if (Number <= 0) { throw std::runtime_error{"TArray::Reserve called with a Number <= 0"}; }
+        /**
+         * Empties the array by calling destructors on all of the elements and setting size to zero
+         * Array allocation will be resized in accordance to the slack you want to keep
+         * @param Slack slack to keep in the array
+         */
+        void Empty(SizeType Slack = 0) {
+            if (ArrayNum) {
+                DestructItems(GetData(), ArrayNum);
+                ArrayNum = 0;
+            }
+            ResizeTo(Slack);
+        }
 
-            if (Number > ArrayMax)
-            {
+        /**
+         * Reserves specified number of the elements into the array
+         * This will preallocate the memory to contain them, but will not add anything
+         * @param Number number of elements to reserve
+         */
+        void Reserve(SizeType Number) {
+            if (Number <= 0) {
+                throw std::runtime_error{"TArray::Reserve called with a Number <= 0"};
+            }
+            if (Number > ArrayMax) {
                 ResizeTo(Number);
             }
         }
 
-        void ResizeTo(SizeType NewMax)
-        {
-            if (NewMax)
-            {
-                NewMax = AllocatorInstance.CalculateSlackReserve(NewMax, GetElementSize());
-            }
-
-            if (NewMax != ArrayMax)
-            {
-                ArrayMax = NewMax;
-                AllocatorInstance.ResizeAllocation(ArrayNum, ArrayMax, GetElementSize());
-            }
-        }
-
-        SizeType AddUninitialized(SizeType Count = 1)
-        {
+        /**
+         * Adds specified number of elements into the Array, without
+         * calling their constructors or zeroing the memory
+         *
+         * @param Count amount of elements to add
+         * @return index to the first element added
+         */
+        SizeType AddUninitialized(SizeType Count = 1) {
             const SizeType OldNum = ArrayNum;
-            if ((ArrayNum += Count) > ArrayMax)
-            {
+            if ((ArrayNum += Count) > ArrayMax) {
                 ResizeGrow(OldNum);
             }
             return OldNum;
         }
 
-        SizeType AddZeroed(SizeType Count = 1)
-        {
-            const SizeType Index = AddUninitialized(Count);
-            FMemory::Memzero((uint8*)AllocatorInstance.GetAllocation() + Index*GetElementSize(), Count*GetElementSize());
+        /**
+         * Adds uninitialized element into the array and returns reference to it
+         * @return reference to the newly added element
+         */
+        ElementType& AddUnitialized_GetRef() {
+            SizeType Index = AddUninitialized();
+            return operator[](Index);
+        }
+
+        /**
+         * Adds specified number of elements into the array and zero initializes them
+         * This will not call element constructors
+         *
+         * @param Count amount of elements to add
+         * @return index of the first added element
+         */
+        SizeType AddZeroed(SizeType Count = 1) {
+            SizeType Index = AddUninitialized(Count);
+
+            ElementType* FirstElementPtr = At(Index);
+            FMemory::Memzero(FirstElementPtr, GetElementSize() * Count);
             return Index;
         }
 
-        void ResizeGrow(SizeType OldNum)
-        {
+        /**
+         * Adds zeroed element into the array and returns reference to it
+         * @return reference to the newly added element
+         */
+        ElementType& AddZeroed_GetRef() {
+            SizeType Index = AddZeroed();
+            return operator[](Index);
+        }
+
+        /**
+         * Adds specified number of default constructed elements into the array
+         * @param Count amount of elements to add
+         * @return index of the first element added
+         */
+        SizeType AddDefaulted(SizeType Count = 1) {
+            SizeType Index = AddUninitialized(Count);
+
+            ElementType* FirstElementPtr = At(Index);
+            ConstructItems(FirstElementPtr, Count);
+            return Index;
+        }
+
+        /**
+         * Adds default constructed element into the array and returns reference to it
+         * @return reference to the newly added element
+         */
+        ElementType& AddDefaulted_GetRef() {
+            SizeType Index = AddDefaulted();
+            return operator[](Index);
+        }
+
+        /**
+         * Recalculates the allocation size according to the number of elements in the array currently for growing
+         * @param OldNum old number of elements in the array
+         */
+        void ResizeGrow(SizeType OldNum) {
             ArrayMax = AllocatorInstance.CalculateSlackGrow(ArrayNum, ArrayMax, GetElementSize());
             AllocatorInstance.ResizeAllocation(OldNum, ArrayMax, GetElementSize());
         }
 
-        void ResizeShrink()
-        {
-            const SizeType NewArrayMax = AllocatorInstance.CalculateSlackShrink(ArrayNum, ArrayMax, sizeof(ElementType));
-            if (NewArrayMax != ArrayMax)
-            {
+        /**
+        * Recalculates the allocation size according to the number of elements in the array currently for shrinking
+        */
+        void ResizeShrink() {
+            SizeType NewArrayMax = AllocatorInstance.CalculateSlackShrink(ArrayNum, ArrayMax, GetElementSize());
+            if (NewArrayMax != ArrayMax) {
                 ArrayMax = NewArrayMax;
-                AllocatorInstance.ResizeAllocation(ArrayNum, ArrayMax, sizeof(ElementType));
-            }
-        }
-        // Memory related -> END
-
-        void CheckInvariants() const
-        {
-        }
-
-    private:
-        void RemoveAtSwapImpl(SizeType Index, SizeType Count = 1, bool bAllowShrinking = true)
-        {
-            if (Count)
-            {
-                CheckInvariants();
-
-                DestructItems(GetData() + Index, Count);
-
-                // Replace the elements in the hole created by the removal with elements from the end of the array, so the range of indices used by the array is contiguous.
-                const SizeType NumElementsInHole = Count;
-                const SizeType NumElementsAfterHole = ArrayNum - (Index + Count);
-                const SizeType NumElementsToMoveIntoHole = std::min(NumElementsInHole, NumElementsAfterHole);
-                if (NumElementsToMoveIntoHole)
-                {
-                    FMemory::Memcpy(
-                            (uint8*)AllocatorInstance.GetAllocation() + (Index) * sizeof(ElementType),
-                            (uint8*)AllocatorInstance.GetAllocation() + (ArrayNum - NumElementsToMoveIntoHole) * sizeof(ElementType),
-                            NumElementsToMoveIntoHole * sizeof(ElementType)
-                    );
-                }
-                ArrayNum -= Count;
-
-                if (bAllowShrinking)
-                {
-                    ResizeShrink();
-                }
+                AllocatorInstance.ResizeAllocation(ArrayNum, ArrayMax, GetElementSize());
             }
         }
 
-    public:
-        SizeType Find(const ElementType& Item) const
-        {
+        /**
+         * Equality operator.
+         * @param OtherArray array to compare
+         * @returns true if this array is the same as OtherArray, false otherwise
+         */
+        template<typename InOtherAllocator>
+        bool operator==(const TArray<ElementType, InOtherAllocator>& OtherArray) const {
+            SizeType Count = Num();
+            return Count == OtherArray.Num() && CompareItems(GetData(), OtherArray.GetData(), Count);
+        }
+
+        /**
+         * Attempts to find index of the provided element inside of the Array
+         * @param Item element to find
+         * @return index of the element, or INDEX_NONE if not found
+         */
+        SizeType Find(const ElementType& Item) const {
             const ElementType* RESTRICT Start = GetData();
-            for (const ElementType* RESTRICT Data = Start, * RESTRICT DataEnd = Data + ArrayNum; Data != DataEnd; ++Data)
-            {
-                if (*Data == Item)
-                {
-                    return static_cast<SizeType>(Data - Start);
+            for (const ElementType* RESTRICT Data = Start, *RESTRICT DataEnd = Data + ArrayNum; Data != DataEnd; Data++) {
+                if (*Data == Item) {
+                    return Data - Start;
                 }
             }
             return INDEX_NONE;
         }
 
+        /**
+         * Constructs the new element inside of the array
+         *
+         * @param Args arguments to pass to the element constructor
+         * @return index of the inserted element
+         */
         template<typename... ArgsType>
-        SizeType Emplace(ArgsType&&... Args)
-        {
+        SizeType Emplace(ArgsType&&... Args) {
             const SizeType Index = AddUninitialized(1);
-            new (GetData() + Index) ElementType(std::forward<ArgsType>(Args)...);
+            new (At(Index)) ElementType(std::forward<ArgsType>(Args)...);
             return Index;
         }
 
-        SizeType Add(const ElementType& Item)
-        {
-            return Emplace(Item);
+        /**
+         * Adds the copy of the item into the array
+         *
+         * @param Item item to add into the array
+         * @return index of the newly added item
+         */
+        SizeType Add(const ElementType& Item) {
+            const SizeType Index = AddUninitialized(1);
+            new (At(Index)) ElementType(Item);
+            return Index;
         }
 
-        template<typename ComparisonType>
-        bool Contains(const ComparisonType& Item) const
-        {
-            for (const ElementType* RESTRICT Data = GetData(), * RESTRICT DataEnd = Data + ArrayNum; Data != DataEnd; ++Data)
-            {
-                if (*Data == Item)
-                {
-                    return true;
-                }
-            }
-            return false;
+        /**
+         * Checks if the array contains an item equal to the provided one
+         * @param Item item to search for
+         * @return true if the array contains such an item, false otherwise
+         */
+        bool Contains(const ElementType& Item) const {
+            return Find(Item) != INDEX_NONE;
         }
 
         template<typename CountType>
-        void RemoveAtSwap(SizeType Index, CountType Count, bool bAllowShrinking = true)
-        {
+        void RemoveAtSwap(SizeType Index, CountType Count, bool bAllowShrinking = true) {
             static_assert(!TAreTypesEqual<CountType, bool>::Value, "TArray::RemoveAtSwap: unexpected bool passed as the Count argument");
             RemoveAtSwapImpl(Index, Count, bAllowShrinking);
         }
 
-        SizeType RemoveSingleSwap(const ElementType& Item, bool bAllowShrinking = true)
-        {
+        SizeType RemoveSingleSwap(const ElementType& Item, bool bAllowShrinking = true) {
             SizeType Index = Find(Item);
-            if (Index == INDEX_NONE)
-            {
+            if (Index == INDEX_NONE) {
                 return 0;
             }
-
             RemoveAtSwap(Index, 1, bAllowShrinking);
-
-            // Removed one item
             return 1;
         }
 
-        ElementType* GetData()
-        {
-            return std::bit_cast<ElementType*>(AllocatorInstance.GetAllocation());
+        ElementType* GetData() {
+            return (ElementType*) AllocatorInstance.GetAllocation();
         }
 
-        const ElementType* GetData() const
-        {
-            return std::bit_cast<const ElementType*>(AllocatorInstance.GetAllocation());
+        const ElementType* GetData() const {
+            return (const ElementType*) AllocatorInstance.GetAllocation();
         }
 
-        auto GetDataPtr() const -> InElementType*
-        {
-            return std::bit_cast<InElementType*>(AllocatorInstance.GetAllocation());
-        }
-
-        auto SetDataPtr(InElementType* new_data_ptr) -> void
-        {
-            if constexpr (IsTInlineAllocator<InAllocator>)
-            {
-                static_assert(false, "TArray::set_data_ptr cannot be used with TInlineAllocator");
-            }
-            else
-            {
-                AllocatorInstance.Data = std::bit_cast<FScriptContainerElement*>(new_data_ptr);
-            }
-        }
-
-        SizeType Num() const
-        {
+        /**
+         * Returns the number of elements inside of the array currently
+         * @return number of the elements
+         */
+        SizeType Num() const {
             return ArrayNum;
         }
 
-        auto SetNum(int32_t new_array_num) -> void
-        {
-            ArrayNum = new_array_num;
-        }
-
-        SizeType Max() const
-        {
+        /**
+         * Returns the maximum amount of elements that the current array allocation can hold
+         * @return maximum number of elements
+         */
+        SizeType Max() const {
             return ArrayMax;
         }
 
-        auto SetMax(int32_t new_array_max) -> void
-        {
-            ArrayMax = new_array_max;
+        /**
+         * Returns the pointer to the element at the specified index
+         * @param Index index of the element to retrieve, throws exception if out of bounds
+         * @return element at the index
+         */
+        ElementType* At(size_t Index) {
+            if (Index >= ArrayMax) {
+                throw std::runtime_error{fmt("[TArray::At] out of range (num elements: %d | requested elem: %d)", ArrayNum, Index)};
+            }
+            return &((ElementType*) AllocatorInstance.GetAllocation())[Index];
         }
 
-        // Temporary function
-        // Transfers ownership of another data ptr to this instance of TArray
-        // The 'other' TArray becomes zeroed
-        auto CopyFast(TArray<InElementType, Allocator>& other) -> void
-        {
-            if constexpr (IsTInlineAllocator<InAllocator>)
-            {
-                static_assert(false, "TArray::copy_fast cannot be used with TInlineAllocator");
+        /**
+         * Returns the pointer to the element at the specified index
+         * @param Index index of the element to retrieve, throws exception if out of bounds
+         * @return element at the index
+         */
+        const ElementType* At(size_t Index) const {
+            if (Index >= ArrayMax) {
+                throw std::runtime_error{fmt("[TArray::At] out of range (num elements: %d | requested elem: %d)", ArrayNum, Index)};
             }
-
-            AllocatorInstance.Data = other.AllocatorInstance.GetAllocation();
-            ArrayNum = other.ArrayNum;
-            ArrayMax = other.ArrayMax;
-
-            // Hack to prevent deallocation when 'other' goes out of scope
-            other.AllocatorInstance.Data = nullptr;
-            other.ArrayNum = 0;
-            other.ArrayMax = 0;
+            return &((const ElementType*) AllocatorInstance.GetAllocation())[Index];
         }
 
-        auto At(size_t Index) -> InElementType*
-        {
-            // Index is zero-based and the stored max is one-based
-            // Anything after ArrayMax is uninitialized, but it must succeed still so that operator[] can be used to initialize the element
-            if (Max() == 0 || Index > Max() - 1)
-            {
-                throw std::runtime_error{fmt("[TArray::at] out of range (num elements: %d | requested elem: %d)", (Num() - 1 < 0 ? 0 : Num() - 1), Index)};
-            }
+        /**
+         * Returns the mutable reference to the array element at the specified index
+         * @return array element at the index
+         */
+        ElementType& operator[](SizeType Index) {
+            return *At(Index);
+        }
 
-            // Need to know the type here so that we can calculate the location of each array element
-            // TODO: Come up with a better solution. TArray shouldn't need to know about StructProperty or XStructData.
-            // I've hardcoded the StructProperty implementation for now but at least it's constexpr.
-            if constexpr (std::is_same_v<InElementType, class XStructData>)
-            {
-                return GetStructDataAt(GetDataPtr(), Index);
-            }
-            else
-            {
-                return std::bit_cast<InElementType*>(&AllocatorInstance.GetAllocation()[Index * GetElementSize()]);
+        /**
+         * Returns the immutable reference to the array element at the specified index
+         * @return array element at index
+         */
+        const ElementType& operator[](SizeType Index) const {
+            return *At(Index);
+        }
+
+        void ForEach(const std::function<LoopAction(ElementType*, size_t)>& Callable) {
+            for (SizeType i = 0; i < Num(); i++) {
+                if (Callable(At(i), i) == LoopAction::Break) {
+                    break;
+                }
             }
         }
 
-        auto operator[](size_t Index) -> InElementType&
-        {
-            return *static_cast<InElementType*>(At(Index));
+        void ForEach(const std::function<LoopAction(ElementType*)>& Callable) {
+            for (SizeType i = 0; i < Num(); i++) {
+                if (Callable(At(i)) == LoopAction::Break) {
+                    break;
+                }
+            }
         }
 
+        void ForEach(const std::function<LoopAction(ElementType&)>& Callable) {
+            for (SizeType i = 0; i < Num(); i++) {
+                if (Callable(*At(i)) == LoopAction::Break) {
+                    break;
+                }
+            }
+        }
+
+        FORCEINLINE ElementType* begin() { return GetData(); }
+        FORCEINLINE const ElementType* begin() const { return GetData(); }
+        FORCEINLINE ElementType* end() { return GetData() + Num(); }
+        FORCEINLINE const ElementType* end() const { return GetData() + Num(); }
+        
+        /** Returns the size of a single array element */
+        FORCEINLINE static SIZE_T GetElementSize() {
+            return sizeof(ElementType);
+        }
     private:
-        template<typename Callable>
-        auto ForEachInternal(Callable callable) -> void
-        {
-            for (size_t i = 0; i < Num(); ++i)
-            {
-                if (callable(At(i), i) == LoopAction::Break) { break; }
+        void DestructItems(ElementType* Data, SizeType Count) {
+            if constexpr(!TIsTriviallyDestructible<ElementType>::Value) {
+                //Only need to call destructors on non-trivially-destructible elements
+                for (SizeType i = 0; i < Count; i++) {
+                    Data[i].~ElementType();
+                }
             }
         }
 
-    public:
-        using TArrayForEachCallableAllParamsImpl = const std::function<LoopAction(InElementType*, size_t)>&;
-        auto ForEach(TArrayForEachCallableAllParamsImpl Callable) -> void
-        {
-            ForEachInternal([&](auto Elem, auto Index) {
-                return Callable(Elem, Index);
-            });
+        void ConstructItems(ElementType* Data, SizeType Count) {
+            if constexpr(!TIsTriviallyConstructable<ElementType>::Value) {
+                //Only need to call default constructs on non-trivially-constructable elements
+                for (SizeType i = 0; i < Count; i++) {
+                    new(&Data[i]) ElementType();
+                }
+            } else {
+                //On trivially constructable types we can just zero their memory out
+                FMemory::Memzero(Data, GetElementSize() * Count);
+            }
         }
 
-        using TArrayForEachCallableParamElemOnlyImpl = const std::function<LoopAction(InElementType*)>&;
-        auto ForEach(TArrayForEachCallableParamElemOnlyImpl Callable) -> void
-        {
-            ForEachInternal([&](auto Elem, [[maybe_unused]]auto Index) {
-                return Callable(Elem);
-            });
+        void CopyItems(ElementType* Dest, const ElementType* Src, SizeType Count) {
+            if constexpr(!TIsTriviallyCopyable<ElementType>::Value) {
+                //If the elements are not trivially copyable, we need to manually call the copy constructors on them
+                for (SizeType i = 0; i < Count; i++) {
+                    new(&Dest[i]) ElementType(Src[i]);
+                }
+            } else {
+                //On trivially copyable elements we can go with a plain Memcpy
+                FMemory::Memcpy(Dest, Src, GetElementSize() * Count);
+            }
+        }
+
+        bool CompareItems(const ElementType* A, const ElementType* B, SizeType Count) {
+            if constexpr(!TIsBytewiseComparable<ElementType>::Value) {
+                //If the elements are not bytewise comparable, we need to manually compare them
+                for (SizeType i = 0; i < Count; i++) {
+                    if (A[i] != B[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                //Otherwise, we can compare the elements using fast Memcmp
+                return memcmp(A, B, GetElementSize() * Count);
+            }
+        }
+
+        void RemoveAtSwapImpl(SizeType Index, SizeType Count = 1, bool bAllowShrinking = true) {
+            if (Count) {
+                DestructItems(&GetData()[Index], Count);
+
+                // Replace the elements in the hole created by the removal with elements from the end of the array,
+                // so the range of indices used by the array is contiguous.
+                const SizeType NumElementsInHole = Count;
+                const SizeType NumElementsAfterHole = ArrayNum - (Index + Count);
+                const SizeType NumElementsToMoveIntoHole = std::min(NumElementsInHole, NumElementsAfterHole);
+
+                if (NumElementsToMoveIntoHole) {
+                    FMemory::Memcpy(&GetData()[Index],
+                                    &GetData()[ArrayNum - NumElementsToMoveIntoHole],
+                                    NumElementsToMoveIntoHole * GetElementSize());
+                }
+                ArrayNum -= Count;
+                if (bAllowShrinking) {
+                    ResizeShrink();
+                }
+            }
+        }
+
+        /**
+         * Resizes the allocation of the array to the provided size
+         * @param NewMax new maximum number of elements requested
+         */
+        void ResizeTo(SizeType NewMax) {
+            if (NewMax) {
+                NewMax = AllocatorInstance.CalculateSlackReserve(NewMax, GetElementSize());
+            }
+            if (NewMax != ArrayMax) {
+                ArrayMax = NewMax;
+                AllocatorInstance.ResizeAllocation(ArrayNum, ArrayMax, GetElementSize());
+            }
+        }
+
+        /**
+         * Copies elements from the provided array
+         * Will reserve enough space for the elements and then copy them
+         * using their copy constructs directly
+         */
+        void CopyFrom_Helper(const InElementType* Data, SizeType Count, SizeType ExtraSlack = 0) {
+            //Destruct other elements that we hold currently, but keep the slack
+            if(ArrayNum) {
+                DestructItems((ElementType*) AllocatorInstance.GetAllocation(), ArrayNum);
+                ArrayNum = 0;
+            }
+            //Copy the elements from the provided array
+            Reserve(Count + ExtraSlack);
+            CopyItems((ElementType*) AllocatorInstance.GetAllocation(), Data, Count);
+            ArrayNum = Count;
         }
     };
 }

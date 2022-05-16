@@ -25,7 +25,7 @@ namespace RC::Unreal::UObjectGlobals
         return Unreal::Version::IsAtMost(Major, Minor);
     }
 
-    auto StaticFindObjectImpl([[maybe_unused]]UClass* ObjectClass, [[maybe_unused]]UObject* InObjectPackage, const wchar_t* OrigInName, [[maybe_unused]]bool bExactClass) -> UObject*
+    auto StaticFindObject_InternalSlow([[maybe_unused]]UClass* ObjectClass, [[maybe_unused]]UObject* InObjectPackage, const wchar_t* OrigInName, [[maybe_unused]]bool bExactClass) -> UObject*
     {
         UObject* FoundObject{};
 
@@ -54,14 +54,19 @@ namespace RC::Unreal::UObjectGlobals
         return !object->HasAnyFlags(static_cast<EObjectFlags>(RF_ClassDefaultObject | RF_ArchetypeObject)) && !object->IsA<UClass>();
     }
 
-    UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass, ObjectSearcher* InSearcher)
+    UObject* FindObject(UClass* Class, UObject* InOuter, std::wstring_view InName, bool bExactClass, ObjectSearcher* InSearcher)
     {
         return FindObject(Class, InOuter, InName.data(), bExactClass, InSearcher);
     }
 
     UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass, ObjectSearcher* InSearcher)
     {
-        auto GetPackageNameFromLongName = [](const File::StringType& LongName) -> File::StringType
+        if (!InName)
+        {
+            throw std::runtime_error{"Call to FindObject with no InName is not allowed"};
+        }
+
+        auto GetPackageNameFromLongName = [](const std::wstring& LongName) -> std::wstring
         {
             auto DelimiterOffset = LongName.find(STR("."));
             if (DelimiterOffset == LongName.npos)
@@ -75,7 +80,6 @@ namespace RC::Unreal::UObjectGlobals
         const bool bAnyPackage = InOuter == ANY_PACKAGE;
         UObject* ObjectPackage = bAnyPackage ? nullptr : InOuter;
         const bool bIsLongName = !FPackageName::IsShortPackageName(InName);
-        const bool bIsLongName2 = FPackageName::IsValidLongPackageName(InName);
         FName ShortName = bIsLongName ? NAME_None : FName(InName, FNAME_Add);
         FName PackageName = bIsLongName ? FName(GetPackageNameFromLongName(InName), FNAME_Add) : NAME_None;
 
@@ -86,7 +90,7 @@ namespace RC::Unreal::UObjectGlobals
         bool bQuickSearch = Searcher.IsFast();
 
         Searcher.ForEach([&](UObject* Object) {
-            if (bExactClass && Class != Object->GetClass()) { return LoopAction::Continue; }
+            if (bExactClass && Class != Object->GetClassPrivate()) { return LoopAction::Continue; }
 
             // If this is a quick search, then the object is guaranteed to be of the specified class.
             // Otherwise, we're searching the entirety of GUObjectArray, and we need to check that the class matches.
@@ -95,14 +99,14 @@ namespace RC::Unreal::UObjectGlobals
             bool bIsInOuter{};
             if (!bAnyPackage && !ObjectPackage)
             {
-                if (Object->GetOutermost()->GetFName() == PackageName)
+                if (Object->GetOutermost()->GetNamePrivate() == PackageName)
                 {
                     bIsInOuter = true;
                 }
             }
             else if (!bAnyPackage)
             {
-                UObject* Outer = Object->GetOuter();
+                UObject* Outer = Object->GetOuterPrivate();
                 do
                 {
                     if (Outer == ObjectPackage)
@@ -110,7 +114,7 @@ namespace RC::Unreal::UObjectGlobals
                         bIsInOuter = true;
                         break;
                     }
-                    Outer = Outer->GetOuter();
+                    Outer = Outer->GetOuterPrivate();
                 } while (Outer);
             }
 
@@ -128,7 +132,7 @@ namespace RC::Unreal::UObjectGlobals
             }
             else if (ObjectPackage || bAnyPackage)
             {
-                if (ShortName.Equals(Object->GetFName()))
+                if (ShortName.Equals(Object->GetNamePrivate()))
                 {
                     FoundObject = Object;
                     return LoopAction::Break;
@@ -141,7 +145,7 @@ namespace RC::Unreal::UObjectGlobals
         return FoundObject;
     }
 
-    UObject* FindObject(struct ObjectSearcher& Searcher, UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass)
+    UObject* FindObject(struct ObjectSearcher& Searcher, UClass* Class, UObject* InOuter, std::wstring_view InName, bool bExactClass)
     {
         return FindObject(Searcher, Class, InOuter, InName.data(), bExactClass);
     }
@@ -156,9 +160,9 @@ namespace RC::Unreal::UObjectGlobals
         UObject* ObjectFound{nullptr};
 
         UObjectGlobals::ForEachUObject([&](UObject* Object, [[maybe_unused]]int32_t ChunkIndex, [[maybe_unused]]int32_t ObjectIndex) {
-            UClass* Class = Object->GetClass();
+            UClass* Class = Object->GetClassPrivate();
 
-            if (Class->GetFName().Equals(ClassName) && IsValidObjectForFindXOf(Object))
+            if (Class->GetNamePrivate().Equals(ClassName) && IsValidObjectForFindXOf(Object))
             {
                 ObjectFound = Object;
                 return LoopAction::Break;
@@ -168,7 +172,7 @@ namespace RC::Unreal::UObjectGlobals
             if (!IsValidObjectForFindXOf(Object)) { return LoopAction::Continue; }
 
             Class->ForEachSuperStruct([&](UStruct* super_struct) {
-                if (super_struct->GetFName().Equals(ClassName))
+                if (super_struct->GetNamePrivate().Equals(ClassName))
                 {
                     ObjectFound = Object;
                     return LoopAction::Break;
@@ -198,24 +202,14 @@ namespace RC::Unreal::UObjectGlobals
         return FindFirstOf(FName(ClassName));
     }
 
-    auto FindFirstOf(std::string_view ClassName) -> UObject*
-    {
-        return FindFirstOf(FName(to_wstring(ClassName)));
-    }
-
-    auto FindFirstOf(const std::string& ClassName) -> UObject*
-    {
-        return FindFirstOf(FName(to_wstring(ClassName)));
-    }
-
     auto FindAllOf(FName ClassName, std::vector<UObject*>& OutStorage) -> void
     {
         UObjectGlobals::ForEachUObject([&](UObject* Object, [[maybe_unused]]int32_t ChunkIndex, [[maybe_unused]]int32_t ObjectIndex) {
             if (!Object) { return LoopAction::Continue; }
 
-            UClass* Class = Object->GetClass();
+            UClass* Class = Object->GetClassPrivate();
 
-            if (Class->GetFName().Equals(ClassName) && IsValidObjectForFindXOf(Object))
+            if (Class->GetNamePrivate().Equals(ClassName) && IsValidObjectForFindXOf(Object))
             {
                 OutStorage.emplace_back(Object);
                 return LoopAction::Continue;
@@ -224,7 +218,7 @@ namespace RC::Unreal::UObjectGlobals
             if (!IsValidObjectForFindXOf(Object)) { return LoopAction::Continue; }
 
             Class->ForEachSuperStruct([&](UStruct* SuperStruct) {
-                if (SuperStruct->GetFName().Equals(ClassName))
+                if (SuperStruct->GetNamePrivate().Equals(ClassName))
                 {
                     OutStorage.emplace_back(Object);
                     return LoopAction::Break;
@@ -252,16 +246,6 @@ namespace RC::Unreal::UObjectGlobals
         FindAllOf(FName(ClassName), OutStorage);
     }
 
-    auto FindAllOf(std::string_view ClassName, std::vector<UObject*>& OutStorage) -> void
-    {
-        FindAllOf(FName(to_wstring(ClassName)), OutStorage);
-    }
-
-    auto FindAllOf(const std::string& ClassName, std::vector<UObject*>& OutStorage) -> void
-    {
-        FindAllOf(FName(to_wstring(ClassName)), OutStorage);
-    }
-
     auto FindObjects(size_t NumObjectsToFind, const FName ClassName, const FName ObjectShortName, std::vector<UObject*>& OutStorage, int32 RequiredFlags, int32 BannedFlags) -> void
     {
         bool bCareAboutClass = ClassName != FName(0u, 0u);
@@ -276,13 +260,13 @@ namespace RC::Unreal::UObjectGlobals
 
         ForEachUObject([&](UObject* Object, int32, int32) {
             bool bNameMatches{};
-            if (bCareAboutName && Object->GetFName().Equals(ObjectShortName))
+            if (bCareAboutName && Object->GetNamePrivate().Equals(ObjectShortName))
             {
                 bNameMatches = true;
             }
 
             bool bClassMatches{};
-            if (bCareAboutClass && Object->GetClass()->GetFName().Equals(ClassName))
+            if (bCareAboutClass && Object->GetClassPrivate()->GetNamePrivate().Equals(ClassName))
             {
                 bClassMatches = true;
             }

@@ -7,11 +7,12 @@
 namespace RC::Unreal
 {
     template<class TObjectID>
-    struct TPersistentObjectPtr
-    {
+    struct TPersistentObjectPtr {
         mutable FWeakObjectPtr WeakPtr;
-        mutable int32 TagAtLastTest;
+        mutable int32 TagAtLastTest{};
         TObjectID ObjectID;
+
+        IMPLEMENT_UNREAL_TYPE(TPersistentObjectPtr);
     };
 
     struct FUniqueObjectGuid

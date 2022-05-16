@@ -95,7 +95,7 @@ namespace RC::Output
         };
 
         template<EnumType OptionalArg>
-        auto send(File::StringViewType content, OptionalArg optional_arg) -> void
+        auto send(std::wstring_view content, OptionalArg optional_arg) -> void
         {
             if (m_opened_devices.empty())
             {
@@ -118,7 +118,7 @@ namespace RC::Output
         }
 
         template<typename ...FmtArgs>
-        auto send(File::StringViewType content, FmtArgs... fmt_args) -> void
+        auto send(std::wstring_view content, FmtArgs... fmt_args) -> void
         {
             if (m_opened_devices.empty())
             {
@@ -141,7 +141,7 @@ namespace RC::Output
         }
 
         template<EnumType OptionalArg, typename ...FmtArgs>
-        auto send(File::StringViewType content, OptionalArg optional_arg, FmtArgs... fmt_args) -> void
+        auto send(std::wstring_view content, OptionalArg optional_arg, FmtArgs... fmt_args) -> void
         {
             if (m_opened_devices.empty())
             {
@@ -162,7 +162,7 @@ namespace RC::Output
             }
         }
 
-        auto send(const File::StringType& content) -> void
+        auto send(const std::wstring& content) -> void
         {
             if (m_opened_devices.empty())
             {
@@ -185,7 +185,7 @@ namespace RC::Output
         }
 
         template<int32_t optional_arg, typename FmtArg, typename ...FmtArgs>
-        auto send(File::StringViewType content, FmtArg fmt_arg, FmtArgs... fmt_args) -> void
+        auto send(std::wstring_view content, FmtArg fmt_arg, FmtArgs... fmt_args) -> void
         {
             if (m_opened_devices.empty())
             {
@@ -207,7 +207,7 @@ namespace RC::Output
         }
 
         template<int32_t optional_arg>
-        auto send(const File::StringType& content) -> void
+        auto send(const std::wstring& content) -> void
         {
             if (m_opened_devices.empty())
             {
@@ -260,7 +260,7 @@ namespace RC::Output
     }
 
     template<typename ...FmtArgs>
-    auto send(File::StringViewType content, FmtArgs... fmt_args) -> void
+    auto send(std::wstring_view content, FmtArgs... fmt_args) -> void
     {
         for (const auto& device : DefaultTargets::get_default_devices_ref())
         {
@@ -278,7 +278,7 @@ namespace RC::Output
     }
 
     template<EnumType OptionalArg, typename ...FmtArgs>
-    auto send(File::StringViewType content, OptionalArg optional_arg, FmtArgs... fmt_args) -> void
+    auto send(std::wstring_view content, OptionalArg optional_arg, FmtArgs... fmt_args) -> void
     {
         for (const auto& device : DefaultTargets::get_default_devices_ref())
         {
@@ -295,10 +295,10 @@ namespace RC::Output
         }
     }
 
-    auto RC_DYNOUT_API send(File::StringViewType content) -> void;
+    auto RC_DYNOUT_API send(std::wstring_view content) -> void;
 
     template<EnumType OptionalArg>
-    auto send(File::StringViewType content, OptionalArg optional_arg) -> void
+    auto send(std::wstring_view content, OptionalArg optional_arg) -> void
     {
         for (const auto& device : DefaultTargets::get_default_devices_ref())
         {
@@ -316,7 +316,7 @@ namespace RC::Output
     }
 
     template<int32_t optional_arg, typename ...FmtArgs>
-    auto send(File::StringViewType content, FmtArgs... fmt_args) -> void
+    auto send(std::wstring_view content, FmtArgs... fmt_args) -> void
     {
         for (const auto& device : DefaultTargets::get_default_devices_ref())
         {
@@ -334,7 +334,7 @@ namespace RC::Output
     }
 
     template<int32_t optional_arg>
-    auto send(File::StringViewType content) -> void
+    auto send(std::wstring_view content) -> void
     {
         for (const auto& device : DefaultTargets::get_default_devices_ref())
         {

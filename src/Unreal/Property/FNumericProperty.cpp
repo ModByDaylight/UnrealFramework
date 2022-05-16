@@ -6,6 +6,7 @@
 namespace RC::Unreal
 {
     IMPLEMENT_FIELD_CLASS(FNumericProperty);
+    std::unordered_map<std::wstring, uint32_t> FNumericProperty::VTableLayoutMap;
 
     auto FNumericProperty::IsFloatingPoint() const -> bool
     {

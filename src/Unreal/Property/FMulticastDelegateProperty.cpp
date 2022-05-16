@@ -5,10 +5,13 @@
 namespace RC::Unreal
 {
     IMPLEMENT_FIELD_CLASS(FMulticastDelegateProperty);
+    std::unordered_map<std::wstring, uint32_t> FMulticastDelegateProperty::VTableLayoutMap;
+
+#include <MemberVariableLayout_SrcWrapper_FMulticastDelegateProperty.hpp>
 
     auto FMulticastDelegateProperty::GetFunctionSignature() -> UFunction*
     {
-        return Helper::Casting::offset_deref<UFunction*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::MulticastDelegateProperty_SignatureFunction));
+        return GetSignatureFunction();
     }
 
     const FMulticastScriptDelegate* FMulticastDelegateProperty::GetMulticastDelegate(const void* PropertyValue) const

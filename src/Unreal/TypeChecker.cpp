@@ -102,13 +102,13 @@ namespace RC::Unreal
         UCanvasPanel::StaticClassStorage = canvas_panel_ptr;
 
         // Not available in 4.12 (I've not checked exactly when it starts being available)
-        UClass* asset_data_ptr = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/AssetRegistry.AssetData"));
+        UScriptStruct* asset_data_ptr = UObjectGlobals::StaticFindObject<UScriptStruct*>(nullptr, nullptr, STR("/Script/AssetRegistry.AssetData"));
         if (!asset_data_ptr)
         {
             // In 4.26, they moved it from the 'AssetRegistry' package to the 'CoreUObject' package
-            asset_data_ptr = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/CoreUObject.AssetData"));
+            asset_data_ptr = UObjectGlobals::StaticFindObject<UScriptStruct*>(nullptr, nullptr, STR("/Script/CoreUObject.AssetData"));
         }
-        FAssetData::StaticClassStorage = asset_data_ptr;
+        FAssetData::InternalStaticStruct = asset_data_ptr;
 
         UPackage::StaticClassStorage = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Package");
         UInterface::StaticClassStorage = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, L"/Script/CoreUObject.Interface");
@@ -119,7 +119,7 @@ namespace RC::Unreal
         UFunction::StaticClassStorage = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/CoreUObject.Function"));
         //UDelegateFunction::StaticClassStorage = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/CoreUObject.DelegateFunction"));
 
-        if (Version::IsAtLeast(4, 23))
+        if constexpr(Version::IsAtLeast(4, 23))
         {
             //USparseDelegateFunction::StaticClassStorage = UObjectGlobals::StaticFindObject<UClass*>(nullptr, nullptr, STR("/Script/CoreUObject.SparseDelegateFunction"));
         }
@@ -159,10 +159,10 @@ namespace RC::Unreal
         //*/
 
         // FField / FProperty Types
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             auto find_all_property_types = [](const std::wstring& obj_string) -> void {
-                UClass* actor_obj = static_cast<UClass*>(UObjectGlobals::StaticFindObject(nullptr, nullptr, obj_string));
+                UClass* actor_obj = static_cast<UClass*>(UObjectGlobals::StaticFindObject_InternalSlow(nullptr, nullptr, obj_string.c_str()));
                 if (!actor_obj) { return; }
 
                 // Manually iterating fields here because 'ForEachProperty' isn't ready until after this function is done
@@ -203,6 +203,10 @@ namespace RC::Unreal
                                 ffield_super_class = ffield_super_class->GetSuperClass();
                             } while (ffield_super_class);
                         }
+                    }
+                    if (type_name == FName(L"ObjectPtrProperty"))
+                    {
+                        FObjectPtrProperty::StaticClassStorage = ffield_class;
                     }
                     if (type_name == FName(L"Int8Property"))
                     {
@@ -272,6 +276,10 @@ namespace RC::Unreal
                     if (type_name == FName(L"ClassProperty"))
                     {
                         FClassProperty::StaticClassStorage = ffield_class;
+                    }
+                    if (type_name == FName(L"ClassPtrProperty"))
+                    {
+                        FClassPtrProperty::StaticClassStorage = ffield_class;
                     }
                     if (type_name == FName(L"SoftClassProperty"))
                     {
@@ -362,7 +370,7 @@ namespace RC::Unreal
             // 4.24 and earlier, just use StaticFindObject to find all of the property type pointers
 
             auto add_property = []<typename PropertyType>(const wchar_t* full_property_name, [[maybe_unused]]PropertyType property_type_object) {
-                UObject* property = UObjectGlobals::StaticFindObject(nullptr, nullptr, full_property_name);
+                UObject* property = UObjectGlobals::StaticFindObject_InternalSlow(nullptr, nullptr, full_property_name);
                 if (!property)
                 {
                     // TODO: Put this error back when you've confirmed when every property type was introduced and you're only trying to find it in those versions and later
@@ -402,13 +410,13 @@ namespace RC::Unreal
             add_property(L"/Script/CoreUObject.WeakObjectProperty", FWeakObjectProperty{});
             add_property(L"/Script/CoreUObject.LazyObjectProperty", FLazyObjectProperty{});
             add_property(L"/Script/CoreUObject.SoftObjectProperty", FSoftObjectProperty{});
-            if (Version::IsAtLeast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", FEnumProperty{}); }
+            if constexpr(Version::IsAtLeast(4, 15)) { add_property(L"/Script/CoreUObject.EnumProperty", FEnumProperty{}); }
             add_property(L"/Script/CoreUObject.TextProperty", FTextProperty{});
             add_property(L"/Script/CoreUObject.StrProperty", FStrProperty{});
             add_property(L"/Script/CoreUObject.DelegateProperty", FDelegateProperty{});
             add_property(L"/Script/CoreUObject.MulticastDelegateProperty", FMulticastDelegateProperty{});
-            if (Version::IsAtLeast(4, 23)) { add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", FMulticastInlineDelegateProperty{}); }
-            if (Version::IsAtLeast(4, 23)) { add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", FMulticastSparseDelegateProperty{}); }
+            if constexpr(Version::IsAtLeast(4, 23)) { add_property(L"/Script/CoreUObject.MulticastInlineDelegateProperty", FMulticastInlineDelegateProperty{}); }
+            if constexpr(Version::IsAtLeast(4, 23)) { add_property(L"/Script/CoreUObject.MulticastSparseDelegateProperty", FMulticastSparseDelegateProperty{}); }
             add_property(L"/Script/CoreUObject.InterfaceProperty", FInterfaceProperty{});
 
             // Not yet supported, only here for completion and to prevent crashes
@@ -430,15 +438,15 @@ namespace RC::Unreal
 
     auto TypeChecker::is_property(UObject* object) -> bool
     {
-        UClass* obj_class = object->GetClass();
+        UClass* obj_class = object->GetClassPrivate();
         if (!obj_class) { return false; }
 
-        if (obj_class->GetFName() == GPropertyName) { return true; }
+        if (obj_class->GetNamePrivate() == GPropertyName) { return true; }
 
         UStruct* super_struct = obj_class->GetSuperStruct();
         while (super_struct)
         {
-            if (super_struct->GetFName() == GPropertyName)
+            if (super_struct->GetNamePrivate() == GPropertyName)
             {
                 return true;
             }

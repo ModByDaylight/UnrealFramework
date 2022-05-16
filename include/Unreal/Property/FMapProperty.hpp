@@ -14,17 +14,7 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FMapProperty);
 
     public:
-        auto GetKeyProp() -> FProperty*;
-        auto GetValueProp() -> FProperty*;
-
-        // Uncomment when and if we need these functions
-        /*
-        using FScriptMapLayout = void;
-        FScriptMapLayout GetMapLayout();
-
-        using EMapPropertyFlags = void;
-        EMapPropertyFlags GetMapFlags();
-        //*/
+#include <MemberVariableLayout_HeaderWrapper_FMapProperty.hpp>
     };
 }
 

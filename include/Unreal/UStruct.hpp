@@ -13,6 +13,7 @@
 #include <Unreal/FField.hpp>
 #include <Unreal/UField.hpp>
 #include <Unreal/Script.hpp>
+#include <Unreal/FieldPath.hpp>
 
 namespace RC::Unreal
 {
@@ -30,7 +31,10 @@ namespace RC::Unreal
         friend class StaticOffsetFinder;
 
     public:
-#include <VTableOffsets_UStruct.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
+
+    public:
+#include <MemberVariableLayout_HeaderWrapper_UStruct.hpp>
 
     public:
         // Wrappers for virtual engine functions
@@ -55,46 +59,17 @@ namespace RC::Unreal
         FGuid FindPropertyGuidFromName(const FName InName) const;
         bool ArePropertyGuidsAvailable() const;
 
-    protected:
-        /**
-         * Returns the linked list of UField* objects defined on this struct
-         * This will include both UFunction and UProperty objects on UE versions before 4.25,
-         * afterwards it will only include functions
-         */
-        auto GetChildren() -> UField*;
-
-        /**
-         * Returns the linked list of FField* objects defined on this struct
-         * As of modern UE versions, only FField objects in this list are FProperty objects
-         *
-         * Will throw the exception if UE version is below 4.25 since FField did not exist back then
-         */
-        auto GetChildProperties() -> FField*;
     public:
-        /**
-         * Returns the parent struct of this struct
-         * It might totally return nullptr when used on script structs or
-         * UObject itself, since it does not have a superclass
-         */
-        auto GetSuperStruct() -> UStruct*;
-        auto GetSuperStruct() const -> const UStruct*;
-
-        /**
-         * Returns the total size of this object's properties
-         * This is effectively the size of the object in memory
-         */
-        auto GetPropertiesSize() -> int32_t;
-
-        /**
-         * Returns the alignment of this struct
-         * Most of the objects and structs do not specify alignment requirements though
-         */
-        auto GetMinAlignment() -> int32_t;
+        /** Returns actual allocated size of structure in memory */
+        FORCEINLINE int32 GetStructureSize() const {
+            return Align(GetPropertiesSize(), GetMinAlignment());
+        }
 
         /**
          * Checks if this struct is a child of the provided one
          */
         auto IsChildOf(UStruct* Struct) const -> bool;
+        auto IsChildOf(const UStruct* Struct) const -> bool;
 
         template<UObjectDerivative UObjectDerivedType>
         auto IsChildOf() const -> bool

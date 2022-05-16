@@ -71,7 +71,7 @@ FileDevice
         // Due to the design of the Output system the opening of the file is done in receive instead of in the constructor
         // It's opened only once and stays open until the Output object (not the device) leaves scope
         // The destructor is responsible for closing the file
-        auto receive(File::StringViewType fmt) const -> void override
+        auto receive(std::wstring_view fmt) const -> void override
         {
             if (!m_is_device_ready)
             {
@@ -85,7 +85,7 @@ FileDevice
         }
         // OutputDevice Interface -> END
 
-        auto set_file_name_and_path(const File::StringType& file_name_and_path) -> void
+        auto set_file_name_and_path(const std::wstring& file_name_and_path) -> void
         {
             m_file_name_and_path = file_name_and_path;
         }

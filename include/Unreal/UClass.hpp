@@ -56,11 +56,10 @@ namespace RC::Unreal
         auto GetClassConfigName() -> FName;
         auto GetClassDefaultObject() -> UObject*;
         auto GetInterfaces() -> TArray<FImplementedInterface>&;
+        auto FindFunctionByName(FName FunctionName) -> UFunction*;
 
-        auto GetSuperClass() -> UClass*
-        {
-            return reinterpret_cast<UClass*>(GetSuperStruct());
-        }
+        auto GetSuperClass() -> UClass* { return static_cast<UClass*>(GetSuperStruct()); }
+        auto GetSuperClass() const -> const UClass* { return static_cast<const UClass*>(GetSuperStruct()); }
     };
 
     // TODO: Move these elsewhere

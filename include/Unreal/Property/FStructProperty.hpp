@@ -14,7 +14,7 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FStructProperty);
 
     public:
-        UScriptStruct* GetStruct();
+#include <MemberVariableLayout_HeaderWrapper_FStructProperty.hpp>
     };
 }
 

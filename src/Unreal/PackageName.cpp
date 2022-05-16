@@ -101,7 +101,7 @@ namespace RC::Unreal
 
     bool FPackageName::DoesPackageNameContainInvalidCharacters(FStringView InLongPackageName, EErrorCode* OutReason /*= nullptr */)
     {
-        File::StringType MatchedInvalidChars{};
+        std::wstring MatchedInvalidChars{};
         for (const TCHAR* InvalidCharacters = INVALID_LONGPACKAGE_CHARACTERS;  *InvalidCharacters; ++InvalidCharacters)
         {
             FStringView::size_type OutIndex = InLongPackageName.find(*InvalidCharacters);

@@ -3,15 +3,18 @@
 #include <Unreal/AActor.hpp>
 #include <Unreal/GameplayStatics.hpp>
 #include <DynamicOutput/DynamicOutput.hpp>
+#include <Helpers/Casting.hpp>
 
 namespace RC::Unreal
 {
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(UWorld)
 
+#include <MemberVariableLayout_SrcWrapper_UWorld.hpp>
+
     AActor* UWorld::SpawnActor(UClass* InClass, FVector const* Location, FRotator const* Rotation)
     {
         Unreal::FTransform Transform{
-                Rotation ? FQuat(*Rotation) : FQuat(),
+                Rotation ? Rotation->Quaternion() : FQuat(),
                 Location ? *Location : FVector(),
                 {1.0f, 1.0f, 1.0f},
         };

@@ -2,6 +2,7 @@
 #define RC_UNREAL_DERIVED413_HPP
 
 #include <Unreal/VersionedContainer/Base.hpp>
+#include <Unreal/VersionedContainer/Derived412.hpp>
 
 namespace RC::Unreal
 {
@@ -150,23 +151,7 @@ namespace RC::Unreal
             }
         };
 
-        struct FUObjectArray
-        {
-            using TUObjectArray = FFixedUObjectArray;
-
-            int32_t obj_first_gc_index;
-            int32_t obj_last_non_gc_index;
-            int32_t max_objects_not_considered_by_gc;
-            bool open_for_disregard_for_gc;
-            TUObjectArray obj_objects;
-
-            CRITICAL_SECTION ObjObjectsCritical;                    // 0x18
-            // Padding in <4.27 because we don't support 'TLockFreePointerListUnordered'
-            uint8 ObjAvailableList[0x88];                           // 0x58
-            TArray<void*> UObjectCreateListeners;                   // 0xE0
-            TArray<FUObjectDeleteListener*> UObjectDeleteListeners; // 0xF8
-        };
-
+        using FUObjectArray = Derived412::FUObjectArray;
         using GUObjectArray = FUObjectArray;
 
     protected:

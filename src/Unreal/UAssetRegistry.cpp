@@ -28,7 +28,7 @@ namespace RC::Unreal
         // This may be a design problem with UE4SS, but it would be annoying to have to construct the params variable outside this wrapper function
         // With TArray it's not super slow because we can simply copy the pointer and the num/max integers
         // We don't own the data pointer, so it won't get deallocated by doing this
-        OutAssetData.CopyFast(Params.OutAssetData);
+        OutAssetData = Params.OutAssetData;
         return Params.ReturnValue;
     }
 
@@ -49,7 +49,7 @@ namespace RC::Unreal
         GetAssetsByClass_Params Params{ClassName, OutAssetData, bSearchSubClasses};
         Functions::GetAssetsByClass(this, Params);
 
-        OutAssetData.CopyFast(Params.OutAssetData);
+        OutAssetData = Params.OutAssetData;
         return Params.ReturnValue;
     }
 
@@ -65,7 +65,7 @@ namespace RC::Unreal
             return;
         }
 
-        TArray<FAssetData> AllAssets{nullptr, 0, 0};
+        TArray<FAssetData> AllAssets{};
         AssetRegistry->GetAllAssets(AllAssets, false);
 
         auto* AssetDataScriptStruct = UObjectGlobals::StaticFindObject<UScriptStruct*>(nullptr, nullptr, STR("/Script/CoreUObject.AssetData"));

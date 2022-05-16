@@ -6,16 +6,10 @@
 #include <Unreal/FWeakObjectPtr.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/TArray.hpp>
+#include <Unreal/FieldPath.hpp>
 
 namespace RC::Unreal
 {
-    struct FFieldPath
-    {
-        mutable FField* ResolvedField = nullptr;
-        mutable /*TWeakObjectPtr<UStruct>*/FWeakObjectPtr ResolvedOwner;
-        TArray<FName> Path;
-    };
-
     class RC_UE_API FFieldPathProperty : public TProperty<FFieldPath, FProperty>
     {
         DECLARE_FIELD_CLASS(FFieldPathProperty);

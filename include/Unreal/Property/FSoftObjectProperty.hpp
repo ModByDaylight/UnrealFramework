@@ -7,14 +7,14 @@
 
 namespace RC::Unreal
 {
-    struct FSoftObjectPath
-    {
+    struct FSoftObjectPath {
         FName AssetPathName;
         FString SubPathString;
+
+        IMPLEMENT_UNREAL_TYPE(FSoftObjectPath);
     };
 
-    struct FSoftObjectPtr : public TPersistentObjectPtr<FSoftObjectPath>
-    {
+    struct FSoftObjectPtr : public TPersistentObjectPtr<FSoftObjectPath> {
     };
 
     class RC_UE_API FSoftObjectProperty : public TFObjectPropertyBase<FSoftObjectPtr>

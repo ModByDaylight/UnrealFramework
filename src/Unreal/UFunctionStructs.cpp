@@ -85,7 +85,7 @@ namespace RC::Unreal
         }
         catch (std::exception& e)
         {
-            Output::send(STR("{}\n"), RC::fmt(L"Error executing hooked function %s: %S", TheStack.CurrentNativeFunction->GetPathName().c_str(), e.what()));
+            Output::send(STR("Error executing hooked function {}: {}\n"), TheStack.CurrentNativeFunction->GetPathName(), to_wstring(e.what()));
         }
     }
 }

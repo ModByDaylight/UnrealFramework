@@ -23,9 +23,13 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FMulticastDelegateProperty);
 
     public:
-#include <VTableOffsets_FMulticastDelegateProperty.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
 
     public:
+#include <MemberVariableLayout_HeaderWrapper_FMulticastDelegateProperty.hpp>
+
+    public:
+        [[deprecated("Use 'GetSignatureFunction' instead")]]
         auto GetFunctionSignature() -> UFunction*;
 
     // Virtual Functions

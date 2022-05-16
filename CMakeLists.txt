@@ -2,6 +2,7 @@
 project(UnrealFramework)
 
 option(UNREAL_BUILD_SHARED_LIB "Build UnrealFramework as a shared library" ON)
+option(UNREAL_VERSION "Unreal Version to Build For" 4272)
 
 set(UNREAL_TARGET "UnrealFramework")
 file(GLOB_RECURSE SOURCES src/**.cpp)
@@ -15,6 +16,11 @@ else ()
     add_library(${UNREAL_TARGET} STATIC ${SOURCES} ${GENERATED_SOURCES})
     target_compile_definitions(${UNREAL_TARGET} PUBLIC RC_UNREAL_BUILD_STATIC RC_DYNAMIC_OUTPUT_BUILD_STATIC RC_SIG_SCANNER_BUILD_STATIC RC_FILE_BUILD_STATIC)
 endif ()
+
+target_compile_definitions(${UNREAL_TARGET} PUBLIC UNREAL_VERSION=${UNREAL_VERSION})
+if (UNREAL_WITH_CASE_PRESERVING_NAME)
+    target_compile_definitions(${UNREAL_TARGET} PUBLIC WITH_CASE_PRESERVING_NAME)
+endif()
 
 target_include_directories(${UNREAL_TARGET} PUBLIC include)
 target_include_directories(${UNREAL_TARGET} PUBLIC generated_include)

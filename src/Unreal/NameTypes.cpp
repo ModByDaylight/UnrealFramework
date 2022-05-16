@@ -3,28 +3,38 @@
 
 namespace RC::Unreal
 {
-    Function<void(FName*, class FStringOut&)> FName::ToStringInternal;
+    Function<void(const FName*, class FString&)> FName::ToStringInternal;
     Function<FName(const wchar_t*, EFindName)> FName::ConstructorInternal;
 
-    auto FName::ToString() -> std::wstring
+    const std::wstring ToStringInternalWrapper(const FName* name)
     {
-        if (!ToStringInternal.is_ready())
+        if (!FName::ToStringInternal.is_ready())
         {
             throw std::runtime_error{"FName::ToString was not ready but was called anyway"};
         }
 
-        FStringOut string{};
-        ToStringInternal(this, string);
+        FString string{};
+        FName::ToStringInternal(name, string);
 
         std::wstring name_string{string.GetCharArray() ? string.GetCharArray() : L"UE4SS_None"};
         return name_string;
+    }
+
+    auto FName::ToString() -> std::wstring
+    {
+        return ToStringInternalWrapper(this);
+    }
+
+    auto FName::ToString() const -> const std::wstring
+    {
+        return ToStringInternalWrapper(this);
     }
 
     uint32 FName::GetPlainNameString(TCHAR(&OutName)[NAME_SIZE])
     {
         const uint32 Entry = GetDisplayIndex();
         auto String = FName(Entry).ToString();
-        std::memcpy(OutName, &String[0], String.size() * sizeof(File::StringType::size_type));
+        std::memcpy(OutName, &String[0], String.size() * sizeof(std::wstring::size_type));
         return static_cast<uint32>(String.size());
     }
 }

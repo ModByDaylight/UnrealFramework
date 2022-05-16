@@ -48,7 +48,10 @@ namespace RC::Unreal
         friend class FUObjectDeleteListener;
 
     public:
-#include <VTableOffsets_UObjectBase.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
+
+    public:
+#include <MemberVariableLayout_HeaderWrapper_UObjectBase.hpp>
 
     public:
         // Wrappers for virtual engine functions
@@ -58,7 +61,6 @@ namespace RC::Unreal
     public:
         auto GetObjectItem() const -> const struct FUObjectItem*;
         auto GetObjectItem() -> struct FUObjectItem*;
-        auto GetInternalIndex() const -> uint32_t;
 
         /**
          * Returns the Class of the object
@@ -95,7 +97,7 @@ namespace RC::Unreal
     class RC_UE_API UObjectBaseUtility : public UObjectBase
     {
     public:
-#include <VTableOffsets_UObjectBaseUtility.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
 
     public:
         // Wrappers for virtual engine functions
@@ -125,7 +127,7 @@ namespace RC::Unreal
         friend class UAssetRegistry;
 
     public:
-#include <VTableOffsets_UObject.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
 
         // Wrappers for virtual engine functions
         FString GetDetailedInfoInternal() const;
@@ -140,9 +142,10 @@ namespace RC::Unreal
         void BeginDestroy();
         bool IsReadyForFinishDestroy();
         void FinishDestroy();
-        void Serialize(FArchive& Ar);
         // Implement this when the vtable offset generator supports multiple functions with the same name
-        //void Serialize(FStructuredArchive::FRecord Record);
+        struct FStructuredArchive { enum class FRecord {}; };
+        void Serialize(FStructuredArchive::FRecord Record);
+        void Serialize(FArchive& Ar);
         void ShutdownAfterError();
         void PostInterpChange(class FProperty* PropertyThatChanged);
         void PostRename(UObject* OldOuter, const FName OldName);
@@ -190,7 +193,7 @@ namespace RC::Unreal
         void BuildSubobjectMapping(UObject* OtherObject, TMap<UObject*, UObject*>& ObjectMapping) const;
         const TCHAR* GetConfigOverridePlatform() const;
         void OverridePerObjectConfigSection(FString& SectionName);
-        void ProcessEvent(UFunction* Function, void* Parms);
+        void ProcessEvent(UFunction* Function, void* Parms) const;
         int32 GetFunctionCallspace(UFunction* Function, FFrame* Stack);
         bool CallRemoteFunction(UFunction* Function, void* Parms, struct FOutParmRec* OutParms, FFrame* Stack);
         bool ProcessConsoleExec(const TCHAR* Cmd, FOutputDevice& Ar, UObject* Executor);
@@ -214,7 +217,7 @@ namespace RC::Unreal
          */
         inline auto GetName() const -> std::wstring
         {
-            return GetFName().ToString();
+            return GetNamePrivate().ToString();
         }
 
         /**
@@ -274,19 +277,19 @@ namespace RC::Unreal
          * Returns the outermost object for this object, normally the returned
          * object will always represent the UPackage instance
          */
-        auto GetOutermost() -> UObject*;
+        auto GetOutermost() const -> UObject*;
 
         /**
          * Returns the first outer of the object that is a subclass of the provided type
          */
-        auto GetTypedOuter(UClass* OuterType) -> UObject*;
+        auto GetTypedOuter(UClass* OuterType) const -> UObject*;
 
          /**
           * Templated version of the get_typed_outer function above,
           * returns the object already casted to the provided type too
           */
          template<UObjectDerivative T>
-         auto GetTypedOuter() -> T*
+         auto GetTypedOuter() const -> T*
          {
               return Cast<T>(GetTypedOuter(T::StaticClass()));
          }
@@ -306,20 +309,23 @@ namespace RC::Unreal
 
         size_t HashObject();
 
-        void* GetValuePtrByPropertyName(const TCHAR*);
+        const void* GetValuePtrByPropertyName(const TCHAR* PropertyName) const;
+        void* GetValuePtrByPropertyName(const TCHAR* PropertyName);
 
         template<typename ReturnType>
-        ReturnType* GetValuePtrByPropertyName(const TCHAR* PropertyName)
-        {
+        ReturnType* GetValuePtrByPropertyName(const TCHAR* PropertyName) {
+            static_assert(!std::is_same_v<ReturnType, bool>,
+                    "GetValuePtrByPropertyName will give incorrect results on FBoolProperty. "
+                    "Use GetClass()->FindProperty() and then FBoolProperty::GetPropertyValue");
             return static_cast<ReturnType*>(GetValuePtrByPropertyName(PropertyName));
         }
 
-        void* GetValuePtrByPropertyNameInChain(const TCHAR*);
-
         template<typename ReturnType>
-        ReturnType* GetValuePtrByPropertyNameInChain(const TCHAR* PropertyName)
-        {
-            return static_cast<ReturnType*>(GetValuePtrByPropertyNameInChain(PropertyName));
+        const ReturnType* GetValuePtrByPropertyName(const TCHAR* PropertyName) const {
+            static_assert(!std::is_same_v<ReturnType, bool>,
+                          "GetValuePtrByPropertyName will give incorrect results on FBoolProperty. "
+                          "Use GetClass()->FindProperty() and then FBoolProperty::GetPropertyValue");
+            return static_cast<const ReturnType*>(GetValuePtrByPropertyName(PropertyName));
         }
 
         static bool IsReal(const void* RawObject);

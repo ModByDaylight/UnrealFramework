@@ -1,6 +1,5 @@
 #include <Unreal/AActor.hpp>
 #include <Unreal/UClass.hpp>
-#include <Unreal/UObjectArray.hpp>
 #include <Unreal/UFunction.hpp>
 #include <Unreal/World.hpp>
 
@@ -8,73 +7,130 @@ namespace RC::Unreal
 {
     IMPLEMENT_EXTERNAL_OBJECT_CLASS(AActor)
 
-    auto AActor::GetLevel() -> UObject*
-    {
-        UObject* Outer = GetOuter();
-        if (!Outer) { return nullptr; }
-
-        if (!HasAnyFlags(Unreal::RF_ClassDefaultObject) && !Outer->HasAnyFlags(Unreal::RF_BeginDestroyed) && !Outer->GetObjectItem()->IsUnreachable())
-        {
-            while (Outer)
-            {
-                if (Outer->GetClass()->GetFName() == TypeChecker::get_level_name())
-                {
-                    return Outer;
-                }
-
-                Outer = Outer->GetOuter();
-            }
-        }
-
-        return nullptr;
+    USceneComponent* AActor::GetRootComponent() const {
+        return *GetValuePtrByPropertyName<USceneComponent*>(STR("RootComponent"));
     }
 
-    auto AActor::GetWorld() -> UWorld*
-    {
-        UObject* Outer = GetOuter();
-        if (!Outer) { return nullptr; }
+    TArray<UActorComponent*> AActor::GetComponentsByClass(UClass* ComponentClass) const {
+        static UFunction* Function = GetClass()->FindFunctionByName(FName(STR("K2_GetComponentsByClass"), FNAME_Add));
 
-        if (!HasAnyFlags(Unreal::RF_ClassDefaultObject) && !Outer->HasAnyFlags(Unreal::RF_BeginDestroyed) && !Outer->GetObjectItem()->IsUnreachable())
-        {
-            while (Outer)
-            {
-                if (Outer->GetClass()->GetFName() == TypeChecker::get_world_name())
-                {
-                    return static_cast<UWorld*>(Outer);
-                }
-
-                Outer = Outer->GetOuter();
-            }
-        }
-
-        return nullptr;
-    }
-
-    auto AActor::K2_TeleportTo(FVector DestLocation, FRotator DestRotation) -> bool
-    {
-        UFunction* Function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, L"/Script/Engine.Actor:K2_TeleportTo");
-
-        struct K2_TeleportTo_Params
-        {
-            FVector DestLocation;
-            FRotator DestRotation;
-            bool ReturnValue;
+        struct GetComponentsByClassParams {
+            RC::Unreal::UClass* ComponentClass{nullptr};
+            RC::Unreal::TArray<RC::Unreal::UActorComponent*> ReturnValue{};
         };
-        K2_TeleportTo_Params Params{
-            .DestLocation = DestLocation,
-            .DestRotation = DestRotation,
+        GetComponentsByClassParams Params{
+            .ComponentClass = ComponentClass
         };
-
         ProcessEvent(Function, &Params);
         return Params.ReturnValue;
     }
 
-    auto AActor::K2_GetActorLocation() -> FVector
-    {
-        UFunction* Function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, L"/Script/Engine.Actor:K2_GetActorLocation");
+    UActorComponent* AActor::FindComponentByClass(UClass* ComponentClass) const {
+        TArray<UActorComponent*> AllComponents = GetComponentsByClass(ComponentClass);
+        if (AllComponents.Num()) {
+            return AllComponents[0];
+        }
+        return nullptr;
+    }
 
-        struct K2_GetActorLocation_Params
-        {
+    UActorComponent* AActor::AddComponentByClass(UClass* ComponentClass, bool bManualAttachment, const FTransform& RelativeTransform, bool bDeferredFinish) {
+        static UFunction* Function = GetClass()->FindFunctionByName(STR("AddComponentByClass"));
+
+        struct AddComponentByClassParams {
+            UClass* ComponentClass{};
+            bool bManualAttachment{};
+            FTransform RelativeTransform{};
+            bool bDeferredFinish{};
+            UActorComponent* ReturnValue{};
+        };
+        AddComponentByClassParams Params{
+            .ComponentClass = ComponentClass,
+            .bManualAttachment = bManualAttachment,
+            .RelativeTransform = RelativeTransform,
+            .bDeferredFinish = bDeferredFinish
+        };
+        ProcessEvent(Function, &Params);
+        return Params.ReturnValue;
+    }
+
+    void AActor::FinishAddComponent(UActorComponent* Component, bool bManualAttachment, const FTransform& RelativeTransform) {
+        static UFunction* Function = GetClass()->FindFunctionByName(STR("FinishAddComponent"));
+
+        struct FinishAddComponentParams {
+            UActorComponent* Component{};
+            bool bManualAttachment{};
+            FTransform RelativeTransform{};
+        };
+        FinishAddComponentParams Params{
+            .Component = Component,
+            .bManualAttachment = bManualAttachment,
+            .RelativeTransform = RelativeTransform
+        };
+        ProcessEvent(Function, &Params);
+    }
+
+    void AActor::AttachToComponent(USceneComponent* Parent, FName SocketName, EAttachmentRule LocationRule, EAttachmentRule RotationRule, EAttachmentRule ScaleRule, bool bWeldSimulatedBodies) {
+        static UFunction* Function = GetClass()->FindFunctionByName(STR("K2_AttachToComponent"));
+
+        struct AttachToComponentParams {
+            USceneComponent* Parent{};
+            FName SocketName{};
+            EAttachmentRule LocationRule{};
+            EAttachmentRule RotationRule{};
+            EAttachmentRule ScaleRule{};
+            bool bWeldSimulatedBodies{};
+        };
+        AttachToComponentParams Params{
+            .Parent = Parent,
+            .SocketName = SocketName,
+            .LocationRule = LocationRule,
+            .RotationRule = RotationRule,
+            .ScaleRule = ScaleRule,
+            .bWeldSimulatedBodies = bWeldSimulatedBodies
+        };
+        ProcessEvent(Function, &Params);
+    }
+
+    void AActor::DestroyActor() {
+        static UFunction* Function = GetClass()->FindFunctionByName(STR("K2_DestroyActor"));
+
+        struct DestroyActorParams {
+        };
+        DestroyActorParams Params{};
+        ProcessEvent(Function, &Params);
+    }
+
+    bool AActor::HasAuthority() const {
+        static UFunction* Function = GetClass()->FindFunctionByName(STR("HasAuthority"));
+
+        struct HasAuthorityParams {
+            bool ReturnValue{};
+        };
+        HasAuthorityParams Params;
+        ProcessEvent(Function, &Params);
+        return Params.ReturnValue;
+    }
+
+    bool AActor::TeleportTo(FVector DestLocation, FRotator DestRotation)  {
+        static UFunction* Function = GetClass()->FindFunctionByName(STR("K2_TeleportTo"));
+
+        struct K2TeleportToParams {
+            FVector DestLocation;
+            FRotator DestRotation;
+            bool ReturnValue{};
+        };
+        K2TeleportToParams Params{
+            .DestLocation = DestLocation,
+            .DestRotation = DestRotation,
+        };
+        ProcessEvent(Function, &Params);
+        return Params.ReturnValue;
+    }
+
+    FVector AActor::GetActorLocation() const {
+        UFunction* Function = GetClass()->FindFunctionByName(STR("K2_GetActorLocation"));
+
+        struct K2_GetActorLocation_Params {
             FVector ReturnValue;
         };
         K2_GetActorLocation_Params Params{};
@@ -83,12 +139,10 @@ namespace RC::Unreal
         return Params.ReturnValue;
     }
 
-    auto AActor::GetActorForwardVector() -> FVector
-    {
-        UFunction* Function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, L"/Script/Engine.Actor:GetActorForwardVector");
+    FVector AActor::GetActorForwardVector() const {
+        static UFunction* Function = GetClass()->FindFunctionByName(STR("GetActorForwardVector"));
 
-        struct GetActorForwardVector_Params
-        {
+        struct GetActorForwardVector_Params {
             FVector ReturnValue;
         };
         GetActorForwardVector_Params Params{};
@@ -97,17 +151,19 @@ namespace RC::Unreal
         return Params.ReturnValue;
     }
 
-    FTransform AActor::GetTransform()
-    {
-        UFunction* Function = UObjectGlobals::StaticFindObject<UFunction*>(nullptr, nullptr, STR("/Script/Engine.Actor:GetTransform"));
+    FTransform AActor::GetTransform() const {
+        static UFunction* Function = GetClass()->FindFunctionByName(STR("GetTransform"));
 
-        struct GetTransform_Params
-        {
-            FTransform ReturnValue; // 0x0
+        struct GetTransform_Params {
+            FTransform ReturnValue;
         };
         GetTransform_Params Params{};
 
         ProcessEvent(Function, &Params);
         return Params.ReturnValue;
+    }
+
+    TArray<FName>& AActor::GetTags() {
+        return *GetValuePtrByPropertyName<TArray<FName>>(STR("Tags"));
     }
 }

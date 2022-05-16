@@ -441,6 +441,7 @@ namespace RC
                                         // One of the signatures have found a full match so lets forward the details to the callable
                                         signature_containers[container_index].index_into_signatures = signature_index;
                                         signature_containers[container_index].match_address = region_start;
+                                        signature_containers[container_index].module_base_address = ModuleStartAddress;
                                         signature_containers[container_index].relative_match_address = (uint64_t) (region_start - ModuleStartAddress);
                                         signature_containers[container_index].match_signature_size = sig.size() / 2;
 

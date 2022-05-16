@@ -36,7 +36,7 @@ namespace RC::Unreal
             }
             else
             {
-                if (!Object->GetClass()->IsChildOf(SuperStruct)) { return LoopAction::Continue; }
+                if (!Object->GetClassPrivate()->IsChildOf(SuperStruct)) { return LoopAction::Continue; }
             }
         }
         return Predicate(Object);

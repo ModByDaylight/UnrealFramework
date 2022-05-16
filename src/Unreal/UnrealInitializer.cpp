@@ -29,35 +29,34 @@ namespace RC::Unreal::UnrealInitializer
     std::filesystem::path StaticStorage::GameExe;
     bool StaticStorage::bIsInitialized{false};
 
-    RC_UE_API auto SetupUnrealModules() -> void
+    auto SetupUnrealModules() -> void
     {
         // Setup all modules for the aob scanner
         MODULEINFO ModuleInfo;
         K32GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &ModuleInfo, sizeof(MODULEINFO));
-        SigScannerStaticData::m_modules_info[ScanTarget::MainExe] = SignatureScanModuleInfo{(uint8_t*) ModuleInfo.lpBaseOfDll, ModuleInfo.SizeOfImage};
+        SignatureScanModuleInfo MainModuleInfo{
+            .StartAddress = (uint8_t*) ModuleInfo.lpBaseOfDll,
+            .ModuleSize = (uint64_t) ModuleInfo.SizeOfImage};
+        SigScannerStaticData::m_modules_info.insert({ScanTarget::MainExe, MainModuleInfo});
 
         HMODULE Modules[1024];
         DWORD BytesRequired;
 
-        if (K32EnumProcessModules(GetCurrentProcess(), Modules, sizeof(Modules), &BytesRequired) == 0)
-        {
+        if (K32EnumProcessModules(GetCurrentProcess(), Modules, sizeof(Modules), &BytesRequired) == 0) {
             throw std::runtime_error{std::format("Was unable to enumerate game modules. Error Code: {}", GetLastError())};
         }
 
         // Default all modules to be the same as MainExe
         // This is because most UE4 games only have the MainExe module
-        for (size_t i = 0; i < static_cast<size_t>(ScanTarget::Max); ++i)
-        {
-            SigScannerStaticData::m_modules_info[(ScanTarget) i] = SignatureScanModuleInfo{(uint8_t*) ModuleInfo.lpBaseOfDll, ModuleInfo.SizeOfImage};
+        for (size_t i = 0; i < static_cast<size_t>(ScanTarget::Max); ++i) {
+            SigScannerStaticData::m_modules_info.insert({(ScanTarget) i, MainModuleInfo});
         }
 
         // Check for modules and save the module info if they exist
-        for (auto i = 0; i < BytesRequired / sizeof(HMODULE); ++i)
-        {
+        for (auto i = 0; i < BytesRequired / sizeof(HMODULE); ++i) {
             char ModuleRawName[MAX_PATH];
             // TODO: Fix an occasional error: "Call to K32GetModuleBaseNameA failed. Error Code: 6 (ERROR_INVALID_HANDLE)"
-            if (K32GetModuleBaseNameA(GetCurrentProcess(), Modules[i], ModuleRawName, sizeof(ModuleRawName) / sizeof(char)) == 0)
-            {
+            if (K32GetModuleBaseNameA(GetCurrentProcess(), Modules[i], ModuleRawName, sizeof(ModuleRawName) / sizeof(char)) == 0) {
                 throw std::runtime_error{std::format("Call to K32GetModuleBaseNameA failed. Error Code: {}", GetLastError())};
             }
 
@@ -74,15 +73,18 @@ namespace RC::Unreal::UnrealInitializer
                 {
                     if (!SigScannerStaticData::m_is_modular) { SigScannerStaticData::m_is_modular = true; }
 
-                    MODULEINFO RawModuleInfo;
-                    K32GetModuleInformation(GetCurrentProcess(), Modules[i], &RawModuleInfo, sizeof(MODULEINFO));
-                    SigScannerStaticData::m_modules_info[(ScanTarget) i2] = SignatureScanModuleInfo{(uint8_t*) RawModuleInfo.lpBaseOfDll, RawModuleInfo.SizeOfImage};
+                    MODULEINFO NewModuleInfo{};
+                    K32GetModuleInformation(GetCurrentProcess(), Modules[i], &NewModuleInfo, sizeof(NewModuleInfo));
+                    SignatureScanModuleInfo SigScanModuleInfo{
+                            .StartAddress = (uint8_t*) NewModuleInfo.lpBaseOfDll,
+                            .ModuleSize = (uint64_t) NewModuleInfo.SizeOfImage};
+                    SigScannerStaticData::m_modules_info.insert_or_assign((ScanTarget) i2, SigScanModuleInfo);
                 }
             }
         }
     }
 
-    RC_UE_API auto VerifyModuleCache(const Config& UnrealConfig) -> CacheInfo
+    auto VerifyModuleCache(const Config& UnrealConfig) -> CacheInfo
     {
         if (!UnrealConfig.bEnableCache) { return {.GameExeFile = {}, .bShouldUseCache = false, .bShouldSerializeCache = false}; }
 
@@ -191,10 +193,10 @@ namespace RC::Unreal::UnrealInitializer
         return {GameExeFile, bUseCache, bShouldSerializeCache};
     }
 
-    RC_UE_API auto CreateCache(CacheInfo& CacheInfo) -> void
+    auto CreateCache(CacheInfo& CacheInfo) -> void
     {
         auto GetModuleOffset = [&](ScanTarget Target, void* Address) -> unsigned long {
-            SignatureScanModuleInfo Module = SigScannerStaticData::m_modules_info[Target];
+            auto Module = SigScannerStaticData::m_modules_info[Target];
             return Helper::Integer::to<unsigned long>(reinterpret_cast<uintptr_t>(Address) - reinterpret_cast<uintptr_t>(Module.StartAddress));
         };
 
@@ -213,29 +215,17 @@ namespace RC::Unreal::UnrealInitializer
 
         Serialize(ScanTarget::CoreUObject, Container::UnrealVC->UObjectArray_get_internal_storage_ptr());
 
-#if 0
-        // This is test code that shouldn't be compiled for release
-        serialize(ScanTarget::PakFile, PakFileTesting::Storage::is_non_pak_filename_allowed_address);
-        serialize(ScanTarget::PakFile, PakFileTesting::Storage::find_file_in_pak_files_address);
-        serialize(ScanTarget::PakFile, PakFileTesting::Storage::open_read_address);
-        serialize(ScanTarget::CoreUObject, PakFileTesting::Storage::static_load_object_address);
-#endif
-
-        // Version is special, it's major/minor instead of ScanTarget/ModuleOffset
-        CacheInfo.GameExeFile.serialize_item(Version::Major);
-        CacheInfo.GameExeFile.serialize_item(Version::Minor);
-
         Serialize(ScanTarget::Core, FName::ToStringInternal.get_function_address());
         Serialize(ScanTarget::Core, FName::ConstructorInternal.get_function_address());
         Serialize(ScanTarget::CoreUObject, UObjectGlobals::GlobalState::StaticConstructObjectInternal.get_function_address());
-        Serialize(ScanTarget::Core, FMalloc::UnrealStaticGMalloc);
+        Serialize(ScanTarget::Core, GMallocStorage);
     }
 
     auto LoadCache(CacheInfo& CacheInfo) -> void
     {
         auto ModuleOffsetToAddress = [](ScanTarget Target, unsigned long ModuleOffset) -> void* {
-            SignatureScanModuleInfo module = SigScannerStaticData::m_modules_info[Target];
-            return static_cast<void*>(static_cast<unsigned char*>(module.StartAddress) + ModuleOffset);
+            auto module = SigScannerStaticData::m_modules_info[Target];
+            return static_cast<void*>(module.StartAddress + ModuleOffset);
         };
 
         auto Deserialize = [&]() -> void* {
@@ -248,28 +238,6 @@ namespace RC::Unreal::UnrealInitializer
 
         void* GUObjectArray = Deserialize();
 
-#if 0
-        // This is test code that shouldn't be compiled for release
-        PakFileTesting::Storage::is_non_pak_filename_allowed_func = std::bit_cast<PakFileTesting::IsNonPakFilenameAllowedFunc>(PakFileTesting::Storage::is_non_pak_filename_allowed_address);
-        PakFileTesting::Storage::is_non_pak_filename_allowed_address = deserialize();
-        PakFileTesting::Storage::find_file_in_pak_files_address = deserialize();
-        PakFileTesting::Storage::find_file_in_pak_files_func = std::bit_cast<PakFileTesting::FindFileInPakFilesFunc>(PakFileTesting::Storage::find_file_in_pak_files_address);
-        PakFileTesting::Storage::open_read_address = deserialize();
-        PakFileTesting::Storage::open_read_func = std::bit_cast<PakFileTesting::OpenReadFunc>(PakFileTesting::Storage::open_read_address);
-        PakFileTesting::Storage::static_load_object_address = deserialize();
-        PakFileTesting::Storage::static_load_object_func = std::bit_cast<PakFileTesting::StaticLoadObjectFunc>(PakFileTesting::Storage::static_load_object_address);
-#endif
-
-        // Version is special, it's major/minor instead of ScanTarget/ModuleOffset
-       auto Major = CacheInfo.GameExeFile.get_serialized_item<unsigned int>();
-       auto Minor = CacheInfo.GameExeFile.get_serialized_item<unsigned int>();
-        if (Version::Major == -1)
-        {
-            // Only set the version if it's not already been set elsewhere
-            Version::Major = Major;
-            Version::Minor = Minor;
-        }
-
         InitializeVersionedContainer();
         Container::UnrealVC->UObjectArray_set_internal_storage_ptr(GUObjectArray);
 
@@ -278,8 +246,9 @@ namespace RC::Unreal::UnrealInitializer
         void* StaticConstructObjectAddress = Deserialize();
         UObjectGlobals::GlobalState::StaticConstructObjectInternal.assign_address(StaticConstructObjectAddress);
         UObjectGlobals::GlobalState::StaticConstructObjectInternalDeprecated.assign_address(StaticConstructObjectAddress);
-        FMalloc::UnrealStaticGMalloc = static_cast<FMalloc**>(Deserialize());
-        GMalloc = *FMalloc::UnrealStaticGMalloc;
+
+        GMallocStorage = static_cast<FMalloc**>(Deserialize());
+        GMalloc = *GMallocStorage;
 
         Output::send(STR("Deserialized FName::ToString address: {}\n"), FName::ToStringInternal.get_function_address());
         Output::send(STR("Deserialized StaticConstructObject_Internal address: {}\n"), StaticConstructObjectAddress);
@@ -288,36 +257,18 @@ namespace RC::Unreal::UnrealInitializer
         Output::send(STR("Deserialized GMalloc address: {}\n"), static_cast<void*>(GMalloc));
     }
 
-    RC_UE_API auto InitializeVersionedContainer() -> void
+    auto InitializeVersionedContainer() -> void
     {
         Container::SetDerivedBaseObjects();
     }
 
-    auto static PostInitialize() -> void
-    {
-        if (!GMalloc && FMalloc::UnrealStaticGMalloc)
-        {
-            GMalloc = *FMalloc::UnrealStaticGMalloc;
-            Output::send(STR("Post-initialization: GMalloc: {} -> {}\n"), (void*)FMalloc::UnrealStaticGMalloc, (void*)GMalloc);
+    auto static PostInitialize() -> void {
+        if (GMalloc == nullptr && GMallocStorage != nullptr) {
+            GMalloc = *GMallocStorage;
+            Output::send(STR("Post-initialization: GMalloc: {} -> {}\n"), (void*)GMallocStorage, (void*)GMalloc);
         }
-
-        if (!GMalloc || !FMalloc::UnrealStaticGMalloc)
-        {
+        if (GMalloc == nullptr) {
             throw std::runtime_error{"UnrealInitializer::PostInitialize: GMalloc or FMalloc::UnrealStaticGMalloc is uninitialized."};
-        }
-        else
-        {
-            FMalloc::bIsInitialized = true;
-        }
-
-        // FAssetData was not reflected before 4.17
-        // We'll need to manually add FAssetData for every engine version eventually
-        if (Version::IsAtLeast(4, 17))
-        {
-            if (FAssetData::FAssetDataAssumedStaticSize < FAssetData::StaticSize())
-            {
-                throw std::runtime_error{"Tell a developer: FAssetData::StaticSize is too small to hold the entire struct"};
-            }
         }
 
         // Construct searcher pools
@@ -353,7 +304,7 @@ namespace RC::Unreal::UnrealInitializer
         StaticStorage::bIsInitialized = true;
     }
 
-    RC_UE_API auto Initialize(const Config& UnrealConfig) -> void
+    auto Initialize(const Config& UnrealConfig) -> void
     {
         // Setup scanner
         SinglePassScanner::m_num_threads = UnrealConfig.NumScanThreads;
@@ -363,6 +314,11 @@ namespace RC::Unreal::UnrealInitializer
         // This is currently done outside the Unreal API in order to over come a problem
         // TODO: Put an option here to check if the modules are initialized and initialize if they aren't
         SetupUnrealModules();
+
+        Output::send(STR("========================================================="));
+        Output::send(STR("Target Unreal Engine Version: {}.{}.{}"), Version::Major, Version::Minor, Version::Patch);
+        Output::send(STR("MAKE SURE TARGET VERSION MATCHES THE VERSION OF THE GAME, OR THINGS WILL NOT WORK!"));
+        Output::send(STR("========================================================="));
 
         // Check if we have a valid cache or if a cache should be created after scanning
         CacheInfo CacheInfo = VerifyModuleCache(UnrealConfig);
@@ -467,6 +423,7 @@ namespace RC::Unreal::UnrealInitializer
             CacheInfo.GameExeFile.close();
         }
 
+        Container::UnrealVirtualVC->set_virtual_offsets();
 
         // Find offsets that are required for the StaticOffsetInternal implementation
         // These do not require that any objects in GUObjectArray to be initialized
@@ -510,15 +467,13 @@ namespace RC::Unreal::UnrealInitializer
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
 
-        Container::UnrealVirtualVC->set_virtual_offsets();
-
-        auto* Object = UObjectGlobals::StaticFindObject(nullptr, nullptr, STR("/Script/CoreUObject.Default__Object"));
+        auto* Object = UObjectGlobals::StaticFindObject_InternalSlow(nullptr, nullptr, STR("/Script/CoreUObject.Default__Object"));
         if (!Object)
         {
             throw std::runtime_error{"Post-initialization: Was unable to find 'CoreUObject.Default__Object' to use to retrieve the address of ProcessEvent"};
         }
 
-        auto* Struct = UObjectGlobals::StaticFindObject(nullptr, nullptr, STR("/Script/CoreUObject.Default__Struct"));
+        auto* Struct = UObjectGlobals::StaticFindObject_InternalSlow(nullptr, nullptr, STR("/Script/CoreUObject.Default__Struct"));
         if (!Struct)
         {
             throw std::runtime_error{"Post-initialization: Was unable to find 'CoreUObject.Default__Struct' to use to retrieve the address of SetSuperStruct"};

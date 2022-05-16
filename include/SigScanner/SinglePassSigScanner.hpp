@@ -229,6 +229,7 @@ namespace RC
         //Address of the signature matched, relative to the base of the module that is being scanned
         //Not zero on the same conditions when match address is present
         uint64_t relative_match_address{};
+        uint8_t* module_base_address{};
 
         // The scanner will set this to the size of the signature that was matched
         size_t match_signature_size{};
@@ -259,6 +260,7 @@ namespace RC
     public:
         [[nodiscard]] auto get_match_address() const -> uint8_t* { return match_address; }
         [[nodiscard]] auto get_relative_match_address() const -> uint64_t { return relative_match_address; }
+        [[nodiscard]] auto get_module_base_address() const -> uint8_t* { return module_base_address; }
         [[nodiscard]] auto get_index_into_signatures() const -> size_t { return index_into_signatures; }
         [[nodiscard]] auto get_did_succeed() -> bool& { return did_succeed; }
         auto mark_scan_succeeded() -> void { this->did_succeed = true; }

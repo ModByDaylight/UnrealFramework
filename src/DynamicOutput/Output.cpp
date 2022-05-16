@@ -28,7 +28,7 @@ namespace RC::Output
         default_devices.clear();
     }
 
-    auto send(File::StringViewType content) -> void
+    auto send(std::wstring_view content) -> void
     {
         for (const auto& device : DefaultTargets::get_default_devices_ref())
         {

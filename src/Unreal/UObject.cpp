@@ -16,6 +16,11 @@ namespace RC::Unreal
 
     Function<UObject::ProcessEventSignature> UObject::ProcessEventInternal;
     Function<UObject::ProcessConsoleExecSignature> UObject::ProcessConsoleExecInternal;
+    std::unordered_map<std::wstring, uint32_t> UObjectBase::VTableLayoutMap{};
+    std::unordered_map<std::wstring, uint32_t> UObjectBaseUtility::VTableLayoutMap{};
+    std::unordered_map<std::wstring, uint32_t> UObject::VTableLayoutMap{};
+
+    #include <MemberVariableLayout_SrcWrapper_UObjectBase.hpp>
 
     auto UObjectBase::RegisterDependencies() -> void
     {
@@ -37,29 +42,24 @@ namespace RC::Unreal
         return static_cast<FUObjectItem*>(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()));
     }
 
-    auto UObjectBase::GetInternalIndex() const -> uint32_t
-    {
-        return Container::UnrealObjectVC->UObject_get_internal_index(this);
-    }
-
     auto UObjectBase::GetClass() const -> UClass*
     {
-        return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_ClassPrivate));
+        return (UClass*) GetClassPrivate();
     }
 
     auto UObjectBase::GetOuter() const -> UObject*
     {
-        return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_OuterPrivate));
+        return (UObject*) GetOuterPrivate();
     }
 
     auto UObjectBase::GetFName() const -> FName
     {
-        return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UObject_NamePrivate));
+        return GetNamePrivate();
     }
 
     auto UObjectBase::IsA(UClass* Class) const -> bool
     {
-        return GetClass()->IsChildOf(Class);
+        return GetClassPrivate()->IsChildOf(Class);
     }
 
     auto UObjectBaseUtility::CanBeClusterRoot() const -> bool
@@ -147,9 +147,14 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, FinishDestroy, void)
     }
 
+    void UObject::Serialize(FStructuredArchive::FRecord Record)
+    {
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, Serialize, void, PARAMS(FStructuredArchive::FRecord), ARGS(Record))
+    }
+
     void UObject::Serialize(FArchive& Ar)
     {
-        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, Serialize, void, PARAMS(FArchive&), ARGS(Ar))
+        IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, Serialize_2, void, PARAMS(FArchive&), ARGS(Ar))
     }
 
     void UObject::ShutdownAfterError()
@@ -393,7 +398,7 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, OverridePerObjectConfigSection, void, PARAMS(FString&), ARGS(SectionName))
     }
 
-    void UObject::ProcessEvent(UFunction* Function, void* Parms)
+    void UObject::ProcessEvent(UFunction* Function, void* Parms) const
     {
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(UObject, ProcessEvent, void, PARAMS(UFunction*, void*), ARGS(Function, Parms))
     }
@@ -451,9 +456,9 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UObject, GetNetPushIdDynamic, int32)
     }
 
-    auto UObject::GetOutermost() -> UObject*
+    auto UObject::GetOutermost() const -> UObject*
     {
-        UObject* CurrentObject = this;
+        UObject* CurrentObject = (UObject*) this;
         while (CurrentObject->GetOuter())
         {
             CurrentObject = CurrentObject->GetOuter();
@@ -461,7 +466,7 @@ namespace RC::Unreal
         return CurrentObject;
     }
 
-    auto UObject::GetTypedOuter(UClass* OuterType) -> UObject*
+    auto UObject::GetTypedOuter(UClass* OuterType) const -> UObject*
     {
         UObject* CurrentOuter = GetOuter();
         while (CurrentOuter != nullptr)
@@ -470,7 +475,7 @@ namespace RC::Unreal
             {
                 return CurrentOuter;
             }
-            CurrentOuter = CurrentOuter->GetOuter();
+            CurrentOuter = CurrentOuter->GetOuterPrivate();
         }
         return nullptr;
     }
@@ -486,7 +491,7 @@ namespace RC::Unreal
     {
         if(this != StopOuter && this != nullptr)
         {
-            UObject* Outer = GetOuter();
+            auto* Outer = GetOuterPrivate();
 
             if (Outer && Outer != StopOuter)
             {
@@ -495,10 +500,10 @@ namespace RC::Unreal
                 // SUBOBJECT_DELIMITER_CHAR is used to indicate that this object's outer is not a UPackage
                 // We use the name of UPackage here instead of StaticClass because StaticClass has not yet been initialized,
                 // and it cannot be initialized until after a bunch of GetPathName calls has already happened
-                if (Outer->GetClass()
-                    && Outer->GetClass()->GetFName() != GPackageName
-                    && Outer->GetOuter()
-                    && Outer->GetOuter()->GetClass()->GetFName() == GPackageName)
+                if (Outer->GetClassPrivate()
+                    && Outer->GetClassPrivate()->GetNamePrivate() != GPackageName
+                    && Outer->GetOuterPrivate()
+                    && Outer->GetOuterPrivate()->GetClassPrivate()->GetNamePrivate() == GPackageName)
                 {
                     ResultString.push_back(SUBOBJECT_DELIMITER_CHAR);
                 }
@@ -529,51 +534,19 @@ namespace RC::Unreal
         else
         {
             std::wstring OutName;
-            OutName.append(GetClass()->GetName() + STR(" "));
+            OutName.append(GetClassPrivate()->GetName() + STR(" "));
             GetPathName(StopOuter, OutName);
             return OutName;
         }
     }
 
-    void* UObject::GetValuePtrByPropertyName(const TCHAR* PropertyName)
-    {
-        FProperty* FoundProperty{};
-        FName PropertyFName = FName(PropertyName);
-        GetClass()->ForEachProperty([&](FProperty* Property) {
-            if (Property->GetFName() == PropertyFName)
-            {
-                FoundProperty = Property;
-                return LoopAction::Break;
-            }
-            else
-            {
-                return LoopAction::Continue;
-            }
-        });
-
-        if (!FoundProperty) { return nullptr; }
-
+    const void* UObject::GetValuePtrByPropertyName(const TCHAR* PropertyName) const {
+        FProperty* FoundProperty = GetClass()->FindProperty(PropertyName);
         return FoundProperty->ContainerPtrToValuePtr<void>(this);
     }
 
-    void* UObject::GetValuePtrByPropertyNameInChain(const TCHAR* PropertyName)
-    {
-        FProperty* FoundProperty{};
-        FName PropertyFName = FName(PropertyName);
-        GetClass()->ForEachPropertyInChain([&](FProperty* Property) {
-            if (Property->GetFName() == PropertyFName)
-            {
-                FoundProperty = Property;
-                return LoopAction::Break;
-            }
-            else
-            {
-                return LoopAction::Continue;
-            }
-        });
-
-        if (!FoundProperty) { return nullptr; }
-
+    void* UObject::GetValuePtrByPropertyName(const TCHAR* PropertyName) {
+        FProperty* FoundProperty = GetClass()->FindProperty(PropertyName);
         return FoundProperty->ContainerPtrToValuePtr<void>(this);
     }
 

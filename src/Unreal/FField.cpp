@@ -6,14 +6,14 @@
 #include <Helpers/Casting.hpp>
 
 #define IMPLEMENT_FFIELD_VIRTUAL_WRAPPER(class_name, function_name, return_type, params, args) \
-if (Version::IsBelow(4, 25)) \
+if constexpr(Version::IsBelow(4, 25)) \
 { \
     throw std::runtime_error{"FField virtual called in <4.25 and it has no equivalent virtual in <4.25"}; \
 } \
 IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(class_name, function_name, return_type, params, args)
 
 #define IMPLEMENT_FFIELD_VIRTUAL_WRAPPER_NO_PARAMS(class_name, function_name, return_type) \
-if (Version::is_below(4, 25)) \
+if constexpr(Version::is_below(4, 25)) \
 { \
     throw std::runtime_error{"FField virtual called in <4.25 and it has no equivalent virtual in <4.25"}; \
 } \
@@ -27,6 +27,9 @@ namespace RC::Unreal
 
     bool Internal::FFieldTypeAccessor::TypeSystemInitialized = false;
     std::vector<void(*)()> Internal::FFieldTypeAccessor::LateBindCallbacks{};
+    std::unordered_map<std::wstring, uint32_t> FField::VTableLayoutMap{};
+
+#include <MemberVariableLayout_SrcWrapper_FField.hpp>
 
     auto Internal::FFieldTypeAccessor::GetObjectClass(FField* Field) -> FFieldClassVariant
     {
@@ -71,9 +74,9 @@ namespace RC::Unreal
 
     auto FField::GetClass() -> FFieldClassVariant
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
-            return AsUFieldUnsafe()->GetClass();
+            return AsUFieldUnsafe()->GetClassPrivate();
         }
         else
         {
@@ -83,9 +86,9 @@ namespace RC::Unreal
 
     auto FField::GetFName() -> FName
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
-            return AsUFieldUnsafe()->GetFName();
+            return AsUFieldUnsafe()->GetNamePrivate();
         }
         else
         {
@@ -93,11 +96,11 @@ namespace RC::Unreal
         }
     }
 
-    File::StringType FField::GetFullName()
+    std::wstring FField::GetFullName()
     {
-        if (Version::IsAtLeast(4, 25 ))
+        if constexpr(Version::IsAtLeast(4, 25 ))
         {
-            File::StringType FullName = GetClass().GetName();
+            std::wstring FullName = GetClass().GetName();
             FullName += STR(" ");
             FullName += GetPathName();
             return FullName;
@@ -108,11 +111,11 @@ namespace RC::Unreal
         }
     }
 
-    File::StringType FField::GetPathName(UObject* StopOuter)
+    std::wstring FField::GetPathName(UObject* StopOuter)
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
-            File::StringType PathName;
+            std::wstring PathName;
             for (FFieldVariant TempOwner = GetOwnerVariant(); TempOwner.IsValid(); TempOwner = TempOwner.GetOwnerVariant())
             {
                 if (!TempOwner.IsUObject())
@@ -144,9 +147,9 @@ namespace RC::Unreal
 
     auto FField::GetOwnerVariant() -> FFieldVariant
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
-            return AsUFieldUnsafe()->GetOuter();
+            return AsUFieldUnsafe()->GetOuterPrivate();
         }
         else
         {
@@ -182,9 +185,9 @@ namespace RC::Unreal
 
     bool FField::HasNext()
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
-            return AsUFieldUnsafe()->GetNextField();
+            return AsUFieldUnsafe()->GetNext();
         }
         else
         {
@@ -197,7 +200,7 @@ namespace RC::Unreal
         // In <4.25, we can cast to a property because all properties inherits from UField
         // In <4.25, this FField struct represents UField
         // In 4.25+, properties inherit from FField so there's no problem with this cast
-        auto* Next = Helper::Casting::ptr_cast_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Next));
+        auto* Next = GetNext();
         return CastField<FProperty>(Next);
     }
 
@@ -222,34 +225,34 @@ namespace RC::Unreal
 
     auto FField::GetFFieldClassUnsafe() -> FFieldClass*
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FFieldClass is not available in UE versions below 4.25");
         }
-        return Helper::Casting::offset_deref<FFieldClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Class));
+        return GetClassPrivate();
     }
 
     auto FField::GetFFieldOwnerUnsafe() -> FFieldVariant
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FField::Owner is not available in UE versions below 4.25");
         }
-        return Helper::Casting::offset_deref<FFieldVariant>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Owner));
+        return GetOwner();
     }
 
     auto FField::GetFFieldFNameUnsafe() -> FName
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FField::FName is not available in UE versions below 4.25");
         }
-        return Helper::Casting::offset_deref<FName>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_NamePrivate));
+        return GetNamePrivate();
     }
 
     auto FField::Serialize(FArchive& Ar) -> void
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, Serialize, void, PARAMS(FArchive & ), ARGS(Ar))
         }
@@ -263,7 +266,7 @@ namespace RC::Unreal
 
     auto FField::PostLoad() -> void
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, PostLoad, void)
         }
@@ -277,7 +280,7 @@ namespace RC::Unreal
 
     auto FField::GetPreloadDependencies(TArray<UObject*>& OutDeps) -> void
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, GetPreloadDependencies, void, PARAMS(TArray<UObject*> & ), ARGS(OutDeps))
         }
@@ -289,7 +292,7 @@ namespace RC::Unreal
 
     auto FField::BeginDestroy() -> void
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, BeginDestroy, void)
         }
@@ -307,7 +310,7 @@ namespace RC::Unreal
 
     auto FField::AddCppProperty(FProperty* Property) -> void
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER(FField, AddCppProperty, void, PARAMS(FProperty*), ARGS(Property))
         }
@@ -321,7 +324,7 @@ namespace RC::Unreal
 
     auto FField::Bind() -> void
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(FField, Bind, void)
         }
@@ -350,7 +353,7 @@ namespace RC::Unreal
 
     void FField::PostDuplicate(bool bDuplicateForPIE)
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             throw std::runtime_error{"FField::PostDuplicate overload with bool param is only allowed to be called in <4.25"};
         }
@@ -362,7 +365,7 @@ namespace RC::Unreal
 
     bool FField::NeedsLoadForClient() const
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             throw std::runtime_error{"FField::NeedsLoadForClient is only allowed to be called in <4.25"};
         }
@@ -374,7 +377,7 @@ namespace RC::Unreal
 
     bool FField::NeedsLoadForServer() const
     {
-        if (Version::IsAtLeast(4, 25))
+        if constexpr(Version::IsAtLeast(4, 25))
         {
             throw std::runtime_error{"FField::NeedsLoadForServer is only allowed to be called in <4.25"};
         }
@@ -386,11 +389,11 @@ namespace RC::Unreal
 
     auto FField::GetNextFFieldUnsafe() -> FField*
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FField::Next is not available in UE versions below 4.25");
         }
-        return Helper::Casting::offset_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::FField_Next));
+        return GetNext();
     }
 
     FFieldClassVariant::FFieldClassVariant(FFieldClass* Field) : IsObject(false)
@@ -399,6 +402,11 @@ namespace RC::Unreal
     }
 
     FFieldClassVariant::FFieldClassVariant(UClass* Object) : IsObject(true)
+    {
+        Container.Object = Object;
+    }
+
+    FFieldClassVariant::FFieldClassVariant(const UClass* Object) : IsObject(true)
     {
         Container.Object = Object;
     }
@@ -435,7 +443,7 @@ namespace RC::Unreal
         }
     }
 
-    auto FFieldClassVariant::ToUClass() const -> UClass*
+    auto FFieldClassVariant::ToUClass() const -> const UClass*
     {
         if (IsUClass())
         {
@@ -450,7 +458,7 @@ namespace RC::Unreal
     auto FFieldClassVariant::GetFName() const -> FName {
         if (IsUClass())
         {
-            return ToUClass()->GetFName();
+            return ToUClass()->GetNamePrivate();
         }
         else
         {
@@ -551,7 +559,7 @@ namespace RC::Unreal
     {
         if (IsUObject())
         {
-            return Container.Object->GetOuter();
+            return Container.Object->GetOuterPrivate();
         }
         else
         {

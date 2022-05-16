@@ -11,6 +11,7 @@
 #include <Unreal/PrimitiveTypes.hpp>
 #include <Unreal/NameTypes.hpp>
 #include <Unreal/UnrealFlags.hpp>
+#include <Unreal/Function.hpp>
 
 namespace RC::Unreal
 {
@@ -47,9 +48,10 @@ namespace RC::Unreal
     bool bAssumeTemplateIsArchetype_,\
     void* ExternalPackage_\
 
-    // Struct From UE4.26 Source
+    // Struct From UE5.00 Source
     struct RC_UE_API FStaticConstructObjectParameters
     {
+    public:
         /** The class of the object to create */
         const class UClass* Class;
 
@@ -83,9 +85,17 @@ namespace RC::Unreal
         /** Assign an external Package to the created object if non-null */
         class UPackage* ExternalPackage = nullptr;
 
-        // 5.0+
+        // Accessing parameters below here is disallowed because we don't support these parameters
+    private:
+        // 5.00+
+        /** Callback for custom code to initialize properties before PostInitProperties runs */
+        TFunction<void()> PropertyInitCallback{};
+
+        // 5.00+
         void* SubobjectOverrides = nullptr;
 
+    public:
+        FStaticConstructObjectParameters(const class UClass* InClass, UObject* InOuter) : Class(InClass), Outer(InOuter) {}
     };
 }
 
@@ -108,29 +118,6 @@ namespace RC::Unreal::UObjectGlobals
 
     // Internal work-around for not having access to UnrealVersion due to circ-inclusion
     RC_UE_API auto VersionIsAtMost(uint32_t Major, uint32_t Minor) -> bool;
-
-    // Internal game function implementations
-    // Slow implementation that's to be avoided whenever possible
-    // This only exists for compatibility reasons with old Lua scripts
-    // All params except 'orig_in_name' are also just there for compatibility reasons and do not have any effect
-    RC_UE_API auto StaticFindObjectImpl(UClass* Object, UObject* ChunkIndex, const wchar_t* ObjectIndex, bool bExactClass = false) -> UObject*;
-
-    template<UObjectPointerDerivative ObjectType = UObject*>
-    auto StaticFindObject(UClass* ObjectClass, UObject* InObjectPackage, const wchar_t* OrigInName, bool bExactClass = false) -> ObjectType
-    {
-        return static_cast<ObjectType>(StaticFindObjectImpl(ObjectClass, InObjectPackage, OrigInName, bExactClass));
-    }
-    template<UObjectPointerDerivative ObjectType = UObject*>
-    auto StaticFindObject(UClass* ObjectClass, UObject* InObjectPackage, std::wstring_view OrigInName, bool bExactClass = false) -> ObjectType
-    {
-        return static_cast<ObjectType>(StaticFindObjectImpl(ObjectClass, InObjectPackage, OrigInName.data(), bExactClass));
-    }
-
-    template<UObjectPointerDerivative ObjectType = UObject*>
-    auto StaticFindObject(UClass* ObjectClass, UObject* InObjectPackage, const std::wstring& OrigInName, bool bExactClass = false) -> ObjectType
-    {
-        return static_cast<ObjectType>(StaticFindObjectImpl(ObjectClass, InObjectPackage, OrigInName.c_str(), bExactClass));
-    }
 
     template<UObjectPointerDerivative ObjectType = UObject*>
     auto StaticConstructObject(const FStaticConstructObjectParameters& Params) -> ObjectType
@@ -198,18 +185,41 @@ namespace RC::Unreal::UObjectGlobals
     }
 
     // UE compatible overload for 'FindObject'.
-    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass = false, ObjectSearcher* = nullptr);
+    RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, std::wstring_view InName, bool bExactClass = false, ObjectSearcher* = nullptr);
     RC_UE_API UObject* FindObject(UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass = false, ObjectSearcher* = nullptr);
 
     // Convenience overload for the UE compatible 'FindObject' overload.
     // It exists so that you don't have to specify all the optional params in order to specify a searcher.
-    RC_UE_API UObject* FindObject(ObjectSearcher&, UClass* Class, UObject* InOuter, File::StringViewType InName, bool bExactClass = false);
+    RC_UE_API UObject* FindObject(ObjectSearcher&, UClass* Class, UObject* InOuter, std::wstring_view InName, bool bExactClass = false);
     RC_UE_API UObject* FindObject(ObjectSearcher&, UClass* Class, UObject* InOuter, const TCHAR* InName, bool bExactClass = false);
 
-    template<typename UObjectDerivative>
-    UObjectDerivative* FindObject(UObject* Outer, const TCHAR* Name, bool ExactClass = false)
+    template<UObjectDerivative ObjectType>
+    ObjectType* FindObject(UObject* Outer, const TCHAR* Name, bool ExactClass = false)
     {
-        return FindObject(UObjectDerivative::StaticClass(), Outer, Name, ExactClass);
+        return static_cast<ObjectType*>(FindObject(ObjectType::StaticClass(), Outer, Name, ExactClass));
+    }
+
+    // Internal game function implementations
+    // Slow implementation that's to be avoided whenever possible
+    // This only exists for compatibility reasons with old Lua scripts
+    // All params except 'orig_in_name' are also just there for compatibility reasons and do not have any effect
+    RC_UE_API auto StaticFindObject_InternalSlow(UClass* Object, UObject* ChunkIndex, const wchar_t* ObjectIndex, bool bExactClass = false) -> UObject*;
+
+    template<UObjectPointerDerivative ObjectType = UObject*>
+    auto StaticFindObject(UClass* ObjectClass, UObject* InObjectPackage, const wchar_t* OrigInName, bool bExactClass = false) -> ObjectType
+    {
+        return static_cast<ObjectType>(FindObject(ObjectClass, InObjectPackage, OrigInName, bExactClass));
+    }
+    template<UObjectPointerDerivative ObjectType = UObject*>
+    auto StaticFindObject(UClass* ObjectClass, UObject* InObjectPackage, std::wstring_view OrigInName, bool bExactClass = false) -> ObjectType
+    {
+        return static_cast<ObjectType>(FindObject(ObjectClass, InObjectPackage, OrigInName.data(), bExactClass));
+    }
+
+    template<UObjectPointerDerivative ObjectType = UObject*>
+    auto StaticFindObject(UClass* ObjectClass, UObject* InObjectPackage, const std::wstring& OrigInName, bool bExactClass = false) -> ObjectType
+    {
+        return static_cast<ObjectType>(FindObject(ObjectClass, InObjectPackage, OrigInName.c_str(), bExactClass));
     }
 
     // Custom Helpers -> START
@@ -221,8 +231,6 @@ namespace RC::Unreal::UObjectGlobals
     RC_UE_API auto FindFirstOf(const wchar_t* ClassName) -> UObject*;
     RC_UE_API auto FindFirstOf(std::wstring_view ClassName) -> UObject*;
     RC_UE_API auto FindFirstOf(const std::wstring& ClassName) -> UObject*;
-    RC_UE_API auto FindFirstOf(std::string_view ClassName) -> UObject*;
-    RC_UE_API auto FindFirstOf(const std::string& ClassName) -> UObject*;
 
     // Find all instances of a class
     // Follows the same rules as 'find_first_of'
@@ -230,8 +238,6 @@ namespace RC::Unreal::UObjectGlobals
     RC_UE_API auto FindAllOf(const wchar_t* ClassName, std::vector<UObject*>& OutStorage) -> void;
     RC_UE_API auto FindAllOf(std::wstring_view ClassName, std::vector<UObject*>& OutStorage) -> void;
     RC_UE_API auto FindAllOf(const std::wstring& ClassName, std::vector<UObject*>& OutStorage) -> void;
-    RC_UE_API auto FindAllOf(std::string_view ClassName, std::vector<UObject*>& OutStorage) -> void;
-    RC_UE_API auto FindAllOf(const std::string& ClassName, std::vector<UObject*>& OutStorage) -> void;
 
     // Find a specified number of objects with the specified class (or none) and name (or none)
     // Must have at least either class or name, or both

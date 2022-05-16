@@ -54,7 +54,7 @@ namespace RC::Unreal
         this->ForEachProperty([&](FProperty* Param) {
             if (Param->HasAnyPropertyFlags(Unreal::CPF_Parm))
             {
-                ParamsSize = Param->GetOffset_ForInternal() + Param->GetSize();
+                ParamsSize = Param->GetOffset_Internal() + Param->GetSize();
             }
             return LoopAction::Continue;
         });

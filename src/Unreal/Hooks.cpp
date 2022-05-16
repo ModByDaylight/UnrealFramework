@@ -2,6 +2,7 @@
 #include <Unreal/Hooks.hpp>
 #include <DynamicOutput/DynamicOutput.hpp>
 #include <Unreal/UnrealInitializer.hpp>
+#include <Unreal/NameTypes.hpp>
 #include <Unreal/FFrame.hpp>
 #include <Unreal/UObjectGlobals.hpp>
 #include <Unreal/UnrealVersion.hpp>
@@ -36,7 +37,7 @@ namespace RC::Unreal
 
     auto Hook::AddRequiredObject(const std::wstring& ObjectFullTypelessName) -> void
     {
-        if (!UObjectGlobals::StaticFindObject(nullptr, nullptr, ObjectFullTypelessName))
+        if (!UObjectGlobals::StaticFindObject_InternalSlow(nullptr, nullptr, ObjectFullTypelessName.c_str()))
         {
             Output::send(STR("Need to construct: {}\n"), ObjectFullTypelessName);
             StaticStorage::RequiredObjectsForInit.emplace_back(Hook::StaticStorage::RequiredObject{ObjectFullTypelessName});
@@ -101,7 +102,7 @@ namespace RC::Unreal
 
                 if (RequiredObject.ObjectConstructed) { continue; }
 
-                UObject* required_object_ptr = UObjectGlobals::StaticFindObject(nullptr, nullptr, RequiredObject.ObjectName);
+                UObject* required_object_ptr = UObjectGlobals::StaticFindObject_InternalSlow(nullptr, nullptr, RequiredObject.ObjectName.c_str());
                 if (required_object_ptr)
                 {
                     RequiredObject.ObjectConstructed = true;
@@ -136,19 +137,15 @@ namespace RC::Unreal
 
     auto HookedStaticConstructObjectDeprecated(StaticConstructObject_Internal_Params_Deprecated) -> UObject*
     {
-        const FStaticConstructObjectParameters Params{
-            .Class = InClass_,
-            .Outer = InOuter_,
-            .Name = InName_,
-            .SetFlags = InFlags_,
-            .InternalSetFlags = InternalSetFlags_,
-            .bCopyTransientsFromClassDefaults = bCopyTransientsFromClassDefaults_,
-            .bAssumeTemplateIsArchetype = bAssumeTemplateIsArchetype_,
-            .Template = InTemplate_,
-            .InstanceGraph = InInstanceGraph_,
-            .ExternalPackage = static_cast<class UPackage*>(ExternalPackage_),
-            .SubobjectOverrides = nullptr
-        };
+        FStaticConstructObjectParameters Params{InClass_, InOuter_};
+        Params.Name = InName_;
+        Params.SetFlags = InFlags_;
+        Params.InternalSetFlags = InternalSetFlags_;
+        Params.bCopyTransientsFromClassDefaults = bCopyTransientsFromClassDefaults_;
+        Params.bAssumeTemplateIsArchetype = bAssumeTemplateIsArchetype_;
+        Params.Template = InTemplate_;
+        Params.InstanceGraph = InInstanceGraph_;
+        Params.ExternalPackage = static_cast<class UPackage*>(ExternalPackage_);
 
         UObject* AlteredReturnValue = HookedStaticConstructObjectPre(Params);
         UObject* ConstructedObject = PLH::FnCast(HookTrampolineStaticConstructObject, UObjectGlobals::GlobalState::StaticConstructObjectInternalDeprecated.get_function_pointer())(
@@ -239,7 +236,7 @@ namespace RC::Unreal
     {
         PLH::ZydisDisassembler Dis(PLH::Mode::x64);
 
-        if (Version::IsAtMost(4, 25))
+        if constexpr(Version::IsAtMost(4, 25))
         {
             Hook::StaticStorage::StaticConstructObjectDetour = std::make_unique<PLH::x64Detour>(
                     static_cast<char*>(UObjectGlobals::GlobalState::StaticConstructObjectInternalDeprecated.get_function_address()),

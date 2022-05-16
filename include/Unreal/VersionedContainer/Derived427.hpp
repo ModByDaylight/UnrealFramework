@@ -16,9 +16,10 @@ namespace RC::Unreal
             int32_t max_objects_not_considered_by_gc;               // 0x8
             bool open_for_disregard_for_gc;                         // 0xC
             TUObjectArray obj_objects;                              // 0x10
+
             CRITICAL_SECTION ObjObjectsCritical;                    // 0x18
             TArray<int32> ObjAvailableList;                         // 0x58
-            TArray<void*> UObjectCreateListeners;                   // 0x68
+            TArray<FUObjectCreateListener*> UObjectCreateListeners; // 0x68
             TArray<FUObjectDeleteListener*> UObjectDeleteListeners; // 0x78
 
             void AddUObjectDeleteListener(FUObjectDeleteListener* Listener)

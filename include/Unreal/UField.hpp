@@ -12,7 +12,10 @@ namespace RC::Unreal
         friend class FField;
 
     public:
-#include <VTableOffsets_UField.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
+
+    public:
+#include <MemberVariableLayout_HeaderWrapper_UField.hpp>
 
     protected:
         friend class UStruct;
@@ -22,6 +25,7 @@ namespace RC::Unreal
          * Keep in mind that in UE versions below 4.25 it will also include UProperty objects!
          * Only for internal use, if you want to iterate properties or functions use for_each_property/function
          */
+        [[deprecated("Use 'GetNext' instead")]]
         auto GetNextField() -> UField*;
 
         /**

@@ -1,28 +1,99 @@
+#include <stdexcept>
+
 #include <Unreal/FText.hpp>
 #include <Unreal/FString.hpp>
-#include <stdexcept>
+#include <Unreal/UnrealVersion.hpp>
 
 namespace RC::Unreal
 {
-    auto FText::ToFString() -> FString*
+    struct FTextDataImplBefore5
     {
-        return Data->Data;
+        void* vtable{};
+        FTextDisplayStringPtr LocalizedString{};
+    };
+
+    struct FTextDataImplAfter5
+    {
+        void* vtable{};
+
+        // FTextHistory
+        uint16 GlobalRevision{};
+        uint16 LocalRevision{};
+
+        // FTextHistory_Base
+        FTextId TextId{};
+        FString SourceString{};
+        FTextDisplayStringPtr LocalizedString{};
+    };
+
+    FString* FTextToLocalizedFString(auto* PtrToImpl)
+    {
+        if (!PtrToImpl || !PtrToImpl->LocalizedString)
+        {
+            return nullptr;
+        }
+        else
+        {
+            return PtrToImpl->LocalizedString;
+        }
     }
 
-    auto FText::ToString() -> std::wstring
+    std::wstring FTextToLocalizedString(auto* PtrToImpl)
     {
-        if (!Data || !Data->Data)
+        if (!PtrToImpl || !PtrToImpl->LocalizedString)
         {
             return STR("");
         }
         else
         {
-            return std::wstring{Data->Data->GetCharArray()};
+            return PtrToImpl->LocalizedString->GetCharArray();
         }
     }
 
-    auto FText::SetString(FString* new_string) -> void
+    void SetLocalizedFString(auto* PtrToImpl, FString* ReplacementString)
     {
-        Data->Data = new_string;
+        PtrToImpl->LocalizedString = ReplacementString;
+    }
+
+    auto FText::ToString() -> std::wstring
+    {
+        if constexpr(Version::IsBelow(5, 0))
+        {
+            auto* TypedData = static_cast<FTextDataImplBefore5*>(Data);
+            return FTextToLocalizedString(TypedData);
+        }
+        else
+        {
+            auto* TypedData = static_cast<FTextDataImplAfter5*>(Data);
+            return FTextToLocalizedString(TypedData);
+        }
+    }
+
+    auto FText::ToFString() -> FString*
+    {
+        if constexpr(Version::IsBelow(5, 0))
+        {
+            auto* TypedData = static_cast<FTextDataImplBefore5*>(Data);
+            return FTextToLocalizedFString(TypedData);
+        }
+        else
+        {
+            auto* TypedData = static_cast<FTextDataImplAfter5*>(Data);
+            return FTextToLocalizedFString(TypedData);
+        }
+    }
+
+    auto FText::SetString(FString* NewString) -> void
+    {
+        if constexpr(Version::IsBelow(5, 0))
+        {
+            auto* TypedData = static_cast<FTextDataImplBefore5*>(Data);
+            SetLocalizedFString(TypedData, NewString);
+        }
+        else
+        {
+            auto* TypedData = static_cast<FTextDataImplAfter5*>(Data);
+            SetLocalizedFString(TypedData, NewString);
+        }
     }
 }

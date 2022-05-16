@@ -2,6 +2,7 @@
 #include <Unreal/TArray.hpp>
 #include <Unreal/FProperty.hpp>
 #include <Helpers/Casting.hpp>
+#include <Unreal/UFunction.hpp>
 
 namespace RC::Unreal
 {
@@ -45,5 +46,36 @@ namespace RC::Unreal
     auto UClass::GetInterfaces() -> TArray<FImplementedInterface>&
     {
         return *Helper::Casting::ptr_cast<TArray<FImplementedInterface>*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_Interfaces));
+    }
+
+    auto UClass::FindFunctionByName(FName FunctionName) -> UFunction* {
+        UFunction* ResultFunction = nullptr;
+
+        ForEachFunction([&](UFunction* Function) {
+            if (Function->GetFName() == FunctionName) {
+                ResultFunction = Function;
+                return LoopAction::Break;
+            }
+            return LoopAction::Continue;
+        });
+
+        if (ResultFunction != nullptr) {
+            return ResultFunction;
+        }
+
+        ForEachSuperStruct([&](UStruct* SuperStruct) {
+            SuperStruct->ForEachFunction([&](UFunction* Function) {
+                if (Function->GetFName() == FunctionName) {
+                    ResultFunction = Function;
+                    return LoopAction::Break;
+                }
+                return LoopAction::Continue;
+            });
+            if (ResultFunction != nullptr) {
+                return LoopAction::Break;
+            }
+            return LoopAction::Continue;
+        });
+        return ResultFunction;
     }
 }

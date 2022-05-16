@@ -12,6 +12,9 @@ namespace RC::Unreal
     using MemberOffsets = ::RC::Unreal::StaticOffsetFinder::MemberOffsets;
 
     Function<UStruct::LinkSignature> UStruct::LinkInternal;
+    std::unordered_map<std::wstring, uint32_t> UStruct::VTableLayoutMap;
+
+#include <MemberVariableLayout_SrcWrapper_UStruct.hpp>
 
     UStruct* UStruct::GetInheritanceSuper() const
     {
@@ -98,43 +101,9 @@ namespace RC::Unreal
         IMPLEMENT_UNREAL_VIRTUAL_WRAPPER_NO_PARAMS(UStruct, ArePropertyGuidsAvailable, bool)
     }
 
-    auto UStruct::GetChildren() -> UField*
+    static bool IsChildOfInternal(const UStruct* This, const UStruct* Struct)
     {
-        return Helper::Casting::offset_deref<UField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XField_Children));
-    }
-
-    auto UStruct::GetChildProperties() -> FField*
-    {
-        if (Version::IsBelow(4, 25))
-        {
-            throw std::runtime_error("UStruct::ChildProperties is not available before UE 4.25");
-        }
-        return Helper::Casting::offset_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XField_ChildProperties));
-    }
-
-    auto UStruct::GetSuperStruct() -> UStruct*
-    {
-        return Helper::Casting::offset_deref<UStruct*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_SuperStruct));
-    }
-
-    auto UStruct::GetSuperStruct() const -> const UStruct*
-    {
-        return Helper::Casting::offset_deref<UStruct*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_SuperStruct));
-    }
-
-    auto UStruct::GetPropertiesSize() -> int32_t
-    {
-        return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_PropertiesSize));
-    }
-
-    auto UStruct::GetMinAlignment() -> int32_t
-    {
-        return Helper::Casting::offset_deref<int32_t>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UStruct_MinAlignment));
-    }
-
-    auto UStruct::IsChildOf(UStruct* Struct) const -> bool
-    {
-        auto* CurrentStruct = this;
+        auto* CurrentStruct = This;
         do {
             if (CurrentStruct == Struct)
             {
@@ -144,6 +113,16 @@ namespace RC::Unreal
         }
         while (CurrentStruct);
         return false;
+    }
+
+    auto UStruct::IsChildOf(const UStruct* Struct) const -> bool
+    {
+        return IsChildOfInternal(this, Struct);
+    }
+
+    auto UStruct::IsChildOf(UStruct* Struct) const -> bool
+    {
+        return IsChildOfInternal(this, Struct);
     }
 
     auto UStruct::ForEachFunction(const std::function<LoopAction(UFunction*)>& Callable) -> void
@@ -159,13 +138,13 @@ namespace RC::Unreal
                     break;
                 }
             }
-            CurrentField = CurrentField->GetNextField();
+            CurrentField = CurrentField->GetNext();
         }
     }
 
     auto UStruct::ForEachProperty(const std::function<LoopAction(FProperty* Property)>& Callable) -> void
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
             UField* CurrentField = GetChildren();
 
@@ -180,7 +159,7 @@ namespace RC::Unreal
                         break;
                     }
                 }
-                CurrentField = CurrentField->GetNextField();
+                CurrentField = CurrentField->GetNext();
             }
         }
         else
@@ -260,7 +239,7 @@ namespace RC::Unreal
 
             if (bShouldOuterLoopBreak) { break; }
 
-            UStruct* NextClass = Class->GetClass();
+            UStruct* NextClass = Class->GetClassPrivate();
             if (NextClass != Class)
             {
                 Class = NextClass;
@@ -292,7 +271,7 @@ namespace RC::Unreal
 
     bool UStruct::HasChildren()
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
             return GetChildren();
         }
@@ -304,12 +283,11 @@ namespace RC::Unreal
 
     FProperty* UStruct::GetFirstProperty()
     {
-        if (Version::IsBelow(4, 25))
+        if constexpr(Version::IsBelow(4, 25))
         {
             // In <4.25, this is safe if a UField is a property, which 'CastField' checks
             // In <4.25, all properties are of type UField
-            auto* Child = Helper::Casting::ptr_cast_deref<FField*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::XField_Children));
-            return CastField<FProperty>(Child);
+            return CastField<FProperty>(std::bit_cast<FField*>(GetChildren()));
         }
         else
         {

@@ -15,7 +15,7 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FNumericProperty);
 
     public:
-#include <VTableOffsets_FNumericProperty.hpp>
+        static std::unordered_map<std::wstring, uint32_t> VTableLayoutMap;
 
     public:
         /** Return true if this property is for a floating point number **/

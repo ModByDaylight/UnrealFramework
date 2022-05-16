@@ -14,7 +14,7 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FArrayProperty);
 
     public:
-        auto GetInner() -> FProperty*;
+#include <MemberVariableLayout_HeaderWrapper_FArrayProperty.hpp>
     };
 }
 

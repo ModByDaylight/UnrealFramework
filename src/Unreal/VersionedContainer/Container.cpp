@@ -3,6 +3,8 @@
 #include <Unreal/VersionedContainer/Derived412.hpp>
 #include <Unreal/VersionedContainer/Derived413.hpp>
 #include <Unreal/VersionedContainer/Derived415.hpp>
+#include <Unreal/VersionedContainer/Derived417.hpp>
+#include <Unreal/VersionedContainer/Derived420.hpp>
 #include <Unreal/VersionedContainer/Derived422.hpp>
 #include <Unreal/VersionedContainer/Derived425.hpp>
 #include <Unreal/VersionedContainer/Derived427.hpp>
@@ -36,106 +38,109 @@ namespace RC::Unreal
 
     auto Container::SetDerivedBaseObjects() -> void
     {
-        if (Version::IsEqual(4, 12))
+        if constexpr(Version::IsEqual(4, 12))
         {
             UnrealVC = std::make_unique<Derived412>();
             UnrealObjectVC = std::make_unique<UObject412>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual412>();
         }
-        else if (Version::IsEqual(4, 13))
+        else if constexpr(Version::IsEqual(4, 13))
         {
             // FUObjectItem changed in this version
             UnrealVC = std::make_unique<Derived413>();
             UnrealObjectVC = std::make_unique<UObject415>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual413>();
         }
-        else if (Version::IsEqual(4, 14))
+        else if constexpr(Version::IsEqual(4, 14))
         {
             UnrealVC = std::make_unique<Derived413>();
             UnrealObjectVC = std::make_unique<UObject415>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual414>();
         }
-        else if (Version::IsEqual(4, 15))
+        else if constexpr(Version::IsEqual(4, 15))
         {
             UnrealVC = std::make_unique<Derived413>();
             UnrealObjectVC = std::make_unique<UObject412>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual415>();
         }
-        else if (Version::IsEqual(4, 16))
+        else if constexpr(Version::IsEqual(4, 16))
         {
             UnrealVC = std::make_unique<Derived413>();
             UnrealObjectVC = std::make_unique<UObject412>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual416>();
         }
-        else if (Version::IsEqual(4, 17))
+        else if constexpr(Version::IsEqual(4, 17))
         {
-            UnrealVC = std::make_unique<Derived413>();
+            // TLockFreePointerListUnordered was changed and is now a pointer surrounded by padding
+            UnrealVC = std::make_unique<Derived417>();
             UnrealObjectVC = std::make_unique<UObject412>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual417>();
         }
-        else if (Version::IsEqual(4, 18))
+        else if constexpr(Version::IsEqual(4, 18))
         {
             // Using 4.12 since it seems to have the correct GUObjectArray definition
-            UnrealVC = std::make_unique<Derived413>();
+            UnrealVC = std::make_unique<Derived417>();
             UnrealObjectVC = std::make_unique<UObject412>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual418>();
         }
-        else if (Version::IsEqual(4, 19))
+        else if constexpr(Version::IsEqual(4, 19))
         {
-            UnrealVC = std::make_unique<Derived413>();
+            UnrealVC = std::make_unique<Derived417>();
             UnrealObjectVC = std::make_unique<UObject422>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual419>();
         }
-        else if (Version::IsEqual(4, 20))
+        else if constexpr(Version::IsEqual(4, 20))
         {
             // FFixedUObjectArray was replaced with FChunkedFixedUObjectArray
             UnrealVC = std::make_unique<Derived420>();
             UnrealObjectVC = std::make_unique<UObject422>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual420>();
         }
-        else if (Version::IsEqual(4, 21))
+        else if constexpr(Version::IsEqual(4, 21))
         {
             UnrealVC = std::make_unique<Derived420>();
             UnrealObjectVC = std::make_unique<UObject422>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual421>();
         }
-        else if (Version::IsEqual(4, 22))
+        else if constexpr(Version::IsEqual(4, 22))
         {
+            // PLATFORM_CACHE_LINE_SIZE changed from 128 to 64
             UnrealVC = std::make_unique<Derived422>();
             UnrealObjectVC = std::make_unique<UObject422>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual422>();
         }
-        else if (Version::IsEqual(4, 23))
+        else if constexpr(Version::IsEqual(4, 23))
         {
             UnrealVC = std::make_unique<Derived422>();
             UnrealObjectVC = std::make_unique<UObject422>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual423>();
         }
-        else if (Version::IsEqual(4, 24))
+        else if constexpr(Version::IsEqual(4, 24))
         {
             UnrealVC = std::make_unique<Derived422>();
             UnrealObjectVC = std::make_unique<UObject422>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual424>();
         }
-        else if (Version::IsEqual(4, 25))
+        else if constexpr(Version::IsEqual(4, 25))
         {
             UnrealVC = std::make_unique<Derived425>();
             UnrealObjectVC = std::make_unique<UObject425>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual425>();
         }
-        else if (Version::IsEqual(4, 26))
+        else if constexpr(Version::IsEqual(4, 26))
         {
             UnrealVC = std::make_unique<Derived425>();
             UnrealObjectVC = std::make_unique<UObject425>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual426>();
         }
-        else if (Version::IsEqual(4, 27))
+        else if constexpr(Version::IsEqual(4, 27))
         {
+            // Type of FUObjectArray.ObjAvailableList was changed to TArray<int32>
             UnrealVC = std::make_unique<Derived427>();
             UnrealObjectVC = std::make_unique<UObject425>();
             UnrealVirtualVC = std::make_unique<UnrealVirtual427>();
         }
-        else if (Version::IsEqual(4, 5))
+        else if constexpr(Version::IsEqual(5, 0))
         {
             UnrealVC = std::make_unique<Derived427>();
             UnrealObjectVC = std::make_unique<UObject425>();
@@ -146,9 +151,7 @@ namespace RC::Unreal
             // If this code is ever reached then the version isn't explicitly supported
             // Using 4.25 as a long-shot, sometimes this will work but in the future it's likely that this will break
             // Update: It will break in 4.27+ because GUObjectArray is different
-            UnrealVC = std::make_unique<Derived425>();
-            UnrealObjectVC = std::make_unique<UObject425>();
-            UnrealVirtualVC = std::make_unique<UnrealVirtual426>();
+            throw std::runtime_error{"Engine version is not supported."};
         }
     }
 }

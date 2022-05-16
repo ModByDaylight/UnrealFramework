@@ -7,21 +7,30 @@
 
 namespace RC::Unreal
 {
-    class RC_UE_API AActor : public UObject
-    {
-    DECLARE_EXTERNAL_OBJECT_CLASS(AActor, Engine)
+    class UActorComponent;
+    class USceneComponent;
 
+    class RC_UE_API AActor : public UObject {
+        DECLARE_EXTERNAL_OBJECT_CLASS(AActor, Engine)
     public:
-        auto GetLevel() -> UObject*;
-        auto GetWorld() -> UWorld*;
+        TArray<FName>& GetTags();
 
-    public:
-        // UFunction interfaces -> START
-        auto K2_TeleportTo(FVector DestLocation, FRotator DestRotation) -> bool;
-        auto K2_GetActorLocation() -> FVector;
-        auto GetActorForwardVector() -> FVector;
-        FTransform GetTransform();
-        // UFunction interfaces -> END
+        FVector GetActorLocation() const;
+        FVector GetActorForwardVector() const;
+        FTransform GetTransform() const;
+        bool TeleportTo(FVector DestLocation, FRotator DestRotation);
+
+        void DestroyActor();
+        bool HasAuthority() const;
+
+        USceneComponent* GetRootComponent() const;
+        TArray<UActorComponent*> GetComponentsByClass(UClass* ComponentClass) const;
+        UActorComponent* FindComponentByClass(UClass* ComponentClass) const;
+
+        UActorComponent* AddComponentByClass(UClass* ComponentClass, bool bManualAttachment, const FTransform& RelativeTransform, bool bDeferredFinish);
+        void FinishAddComponent(UActorComponent* Component, bool bManualAttachment, const FTransform& RelativeTransform);
+
+        void AttachToComponent(USceneComponent* Parent, FName SocketName, EAttachmentRule LocationRule, EAttachmentRule RotationRule, EAttachmentRule ScaleRule, bool bWeldSimulatedBodies = true);
     };
 }
 

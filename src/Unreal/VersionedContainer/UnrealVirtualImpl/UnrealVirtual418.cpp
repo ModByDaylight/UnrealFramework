@@ -7,6 +7,11 @@
 #include <Unreal/FProperty.hpp>
 #include <Unreal/Property/FNumericProperty.hpp>
 #include <Unreal/Property/FObjectProperty.hpp>
+#include <Unreal/Property/FMulticastDelegateProperty.hpp>
+#include <Unreal/Property/FStructProperty.hpp>
+#include <Unreal/Property/FArrayProperty.hpp>
+#include <Unreal/Property/FMapProperty.hpp>
+#include <Unreal/World.hpp>
 
 namespace RC::Unreal
 {
@@ -22,6 +27,20 @@ namespace RC::Unreal
 #include <FunctionBodies/4_18_VTableOffsets_UField_FunctionBody.cpp>
 #include <FunctionBodies/4_18_VTableOffsets_FProperty_FunctionBody.cpp>
 #include <FunctionBodies/4_18_VTableOffsets_FNumericProperty_FunctionBody.cpp>
+#include <FunctionBodies/4_18_VTableOffsets_FMulticastDelegateProperty_FunctionBody.cpp>
 #include <FunctionBodies/4_18_VTableOffsets_FObjectPropertyBase_FunctionBody.cpp>
+
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_UObjectBase.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_UScriptStruct__ICppStructOps.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_FOutputDevice.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_UStruct.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_UField.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_FProperty.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_FMulticastDelegateProperty.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_FObjectPropertyBase.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_FStructProperty.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_FArrayProperty.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_FMapProperty.cpp>
+#include <FunctionBodies/4_18_MemberVariableLayout_DefaultSetter_UWorld.cpp>
     }
 }

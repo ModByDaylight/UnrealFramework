@@ -149,6 +149,7 @@ namespace RC::Unreal
             }
         };
 
+    public:
         struct FUObjectArray
         {
             using TUObjectArray = FFixedUObjectArray;
@@ -158,11 +159,13 @@ namespace RC::Unreal
             int32_t max_objects_not_considered_by_gc;
             bool open_for_disregard_for_gc;
             TUObjectArray obj_objects;
-            CRITICAL_SECTION ObjObjectsCritical;                    // 0x18
-            // Padding in <4.27 because we don't support 'TLockFreePointerListUnordered'
-            uint8 ObjAvailableList[0x88];                           // 0x58
-            TArray<void*> UObjectCreateListeners;                   // 0xE0
-            TArray<FUObjectDeleteListener*> UObjectDeleteListeners; // 0xF8
+
+            CRITICAL_SECTION_414_AND_BELOW ObjObjectsCritical;      // 0x18
+            // Real type: TLockFreePointerListUnordered
+            // In <4.17, this is just a pointer.
+            uint8 ObjAvailableList[0x8];                            // 0x40
+            TArray<void*> UObjectCreateListeners;                   // 0x48
+            TArray<FUObjectDeleteListener*> UObjectDeleteListeners; // 0x58
         };
 
         using GUObjectArray = FUObjectArray;

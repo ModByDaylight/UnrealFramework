@@ -6,7 +6,7 @@ namespace RC::Unreal
     IMPLEMENT_FIELD_CLASS(FClassProperty);
     IMPLEMENT_FIELD_CLASS(FClassPtrProperty);
 
-    UClass* FClassProperty::GetMetaClass()
+    UClass* FClassProperty::GetMetaClass() const
     {
         return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::ClassProperty_MetaClass));
     }

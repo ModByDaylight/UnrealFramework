@@ -49,17 +49,19 @@ namespace RC::Unreal
             static int32_t class_config_name;
         };
     public:
-        auto HasAnyClassFlags(EClassFlags FlagsToCheck) -> bool;
-        auto HasAllClassFlags(EClassFlags FlagsToCheck) -> bool;
-        auto GetClassFlags() -> EClassFlags;
-        auto GetClassWithin() -> UClass*;
-        auto GetClassConfigName() -> FName;
-        auto GetClassDefaultObject() -> UObject*;
+        auto HasAnyClassFlags(EClassFlags FlagsToCheck) const -> bool;
+        auto HasAllClassFlags(EClassFlags FlagsToCheck) const -> bool;
+        auto GetClassFlags() const -> EClassFlags;
+        auto GetClassWithin() const -> UClass*;
+        auto GetClassConfigName() const -> FName;
+        auto GetClassDefaultObject() const -> UObject*;
         auto GetInterfaces() -> TArray<FImplementedInterface>&;
         auto FindFunctionByName(FName FunctionName) -> UFunction*;
 
-        auto GetSuperClass() -> UClass* { return static_cast<UClass*>(GetSuperStruct()); }
-        auto GetSuperClass() const -> const UClass* { return static_cast<const UClass*>(GetSuperStruct()); }
+        auto GetSuperClass() -> UClass* { return Cast<UClass>(GetSuperStruct()); }
+        auto GetSuperClass() const -> const UClass* { return Cast<const UClass>(GetSuperStruct()); }
+
+        auto GetDefaultObject(bool bCreateIfNotFound = true) -> UObject*;
     };
 
     // TODO: Move these elsewhere

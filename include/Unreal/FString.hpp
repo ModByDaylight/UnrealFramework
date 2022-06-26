@@ -5,6 +5,8 @@
 #include <Unreal/Common.hpp>
 #include <Unreal/TArray.hpp>
 
+#define MAX_SPRINTF 1024
+
 namespace RC::Unreal
 {
     class RC_UE_API FString {
@@ -53,8 +55,7 @@ namespace RC::Unreal
         }
 
         /** Append a string and return a reference to this */
-        template<class CharType>
-        FORCEINLINE FString& Append(const CharType* Str, int32 Count) {
+        FORCEINLINE FString& Append(const TCHAR* Str, int32 Count) {
             AppendChars(Str, Count);
             return *this;
         }
@@ -105,6 +106,37 @@ namespace RC::Unreal
             return *this;
         }
 
+        /**
+         * Removes characters within the string.
+         *
+         * @param Index           The index of the first character to remove.
+         * @param Count           The number of characters to remove.
+         * @param bAllowShrinking Whether or not to reallocate to shrink the storage after removal.
+         */
+        FORCEINLINE void RemoveAt(int32 Index, int32 Count = 1, bool bAllowShrinking = true) {
+            Data.RemoveAtSwap(Index, std::clamp(Count, 0, Len()-Index), bAllowShrinking);
+        }
+
+        FORCEINLINE void InsertAt(int32 Index, TCHAR Character) {
+            if (Character != 0) {
+                if (Data.Num() == 0) {
+                    *this += Character;
+                } else {
+                    Data.Insert(Character, Index);
+                }
+            }
+        }
+
+        FORCEINLINE void InsertAt(int32 Index, const FString& Characters) {
+            if (Characters.Len()) {
+                if (Data.Num() == 0) {
+                    *this += Characters;
+                } else {
+                    Data.Insert(Characters.Data.GetData(), Characters.Len(), Index);
+                }
+            }
+        }
+
         FORCEINLINE bool IsEmpty() const {
             return Data.Num() <= 1;
         }
@@ -149,6 +181,21 @@ namespace RC::Unreal
             return ConcatFStrings(Lhs, Rhs);
         }
 
+        FORCEINLINE friend FString& operator+=(FString& Lhs, const FString& Rhs) {
+            Lhs.Append(Rhs);
+            return Lhs;
+        }
+
+        FORCEINLINE friend FString& operator+=(FString& Lhs, const TCHAR* Rhs) {
+            Lhs.Append(Rhs);
+            return Lhs;
+        }
+
+        FORCEINLINE friend FString& operator+=(FString& Lhs, const TCHAR Rhs) {
+            Lhs.AppendChar(Rhs);
+            return Lhs;
+        }
+
         FORCEINLINE friend bool operator==(const FString& Lhs, const FString& Rhs) {
             return _wcsicmp(*Lhs, *Rhs) == 0;
         }
@@ -161,25 +208,28 @@ namespace RC::Unreal
             return _wcsicmp(Lhs, *Rhs) == 0;
         }
 
-        FORCEINLINE friend std::weak_ordering operator<=>(const FString& Lhs, const FString& Rhs) {
-            int compareResult = _wcsicmp(*Lhs, *Rhs);
-            if (compareResult == 0)
-                return std::weak_ordering::equivalent;
-            return compareResult < 0 ? std::weak_ordering::less : std::weak_ordering::greater;
+        FORCEINLINE friend bool operator>(const FString& Lhs, const FString& Rhs) {
+            return _wcsicmp(*Lhs, *Rhs) > 0;
         }
 
-        FORCEINLINE friend std::weak_ordering operator<=>(const FString& Lhs, const TCHAR* Rhs) {
-            int compareResult = _wcsicmp(*Lhs, Rhs);
-            if (compareResult == 0)
-                return std::weak_ordering::equivalent;
-            return compareResult < 0 ? std::weak_ordering::less : std::weak_ordering::greater;
+        FORCEINLINE friend bool operator>(const FString& Lhs, const TCHAR* Rhs) {
+            return _wcsicmp(*Lhs, Rhs) > 0;
         }
 
-        FORCEINLINE friend std::weak_ordering operator<=>(const TCHAR* Lhs, const FString& Rhs) {
-            int compareResult = _wcsicmp(Lhs, *Rhs);
-            if (compareResult == 0)
-                return std::weak_ordering::equivalent;
-            return compareResult < 0 ? std::weak_ordering::less : std::weak_ordering::greater;
+        FORCEINLINE friend bool operator>(const TCHAR* Lhs, const FString& Rhs) {
+            return _wcsicmp(Lhs, *Rhs) > 0;
+        }
+
+        FORCEINLINE friend bool operator<(const FString& Lhs, const FString& Rhs) {
+            return _wcsicmp(*Lhs, *Rhs) < 0;
+        }
+
+        FORCEINLINE friend bool operator<(const FString& Lhs, const TCHAR* Rhs) {
+            return _wcsicmp(*Lhs, Rhs) < 0;
+        }
+
+        FORCEINLINE friend bool operator<(const TCHAR* Lhs, const FString& Rhs) {
+            return _wcsicmp(Lhs, *Rhs) < 0;
         }
 
         /** Returns the left most given number of characters */
@@ -205,7 +255,6 @@ namespace RC::Unreal
             return FString(**this + Length-std::clamp(Length-Count,0, Length));
         }
 
-
         /** Returns the substring from Start position for Count characters. */
         FORCEINLINE FString Mid(int32 Start, int32 Count = INT32_MAX) const {
             FString Result;
@@ -219,6 +268,33 @@ namespace RC::Unreal
             }
             return Result;
         }
+
+        /**
+         * Constructs FString object similarly to how classic sprintf works.
+         *
+         * @param Format	Format string that specifies how FString should be built optionally using additional args. Refer to standard printf format.
+         * @param ...		Depending on format function may require additional arguments to build output object.
+         *
+         * @returns FString object that was constructed using format and additional parameters.
+         */
+        template <typename... Types>
+        static FString Printf(const TCHAR* Fmt, Types... Args) {
+            int BufferLength = _snwprintf(nullptr, 0, Fmt, Args...) + 1;
+            FString ResultString;
+            ResultString.Data.AddZeroed(BufferLength);
+
+            _snwprintf(ResultString.Data.GetData(), BufferLength, Fmt, Args...);
+            return ResultString;
+        }
+
+        /**
+         * DO NOT USE DIRECTLY
+         * STL-like iterators to enable range-based for loop support.
+         */
+        FORCEINLINE TCHAR* begin()             { auto Result = Data.begin();                                 return Result; }
+        FORCEINLINE const TCHAR* begin() const { auto Result = Data.begin();                                 return Result; }
+        FORCEINLINE TCHAR* end()               { auto Result = Data.end();   if (Data.Num()) { --Result; }   return Result; }
+        FORCEINLINE const TCHAR* end() const   { auto Result = Data.end();   if (Data.Num()) { --Result; }   return Result; }
     };
 }
 

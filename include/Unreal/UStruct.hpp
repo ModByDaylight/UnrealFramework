@@ -14,6 +14,7 @@
 #include <Unreal/UField.hpp>
 #include <Unreal/Script.hpp>
 #include <Unreal/FieldPath.hpp>
+#include <Unreal/TPair.hpp>
 
 namespace RC::Unreal
 {

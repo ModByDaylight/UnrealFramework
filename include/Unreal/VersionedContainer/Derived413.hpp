@@ -27,6 +27,11 @@ namespace RC::Unreal
             {
                 return !!(flags & static_cast<int32_t>(EInternalObjectFlags::PendingKill));
             }
+            [[nodiscard]] auto is_native() const -> bool
+            {
+                return !!(flags & static_cast<int32_t>(EInternalObjectFlags::Native));
+            }
+
             auto set_root_set(SetOrUnsetFlag set_or_unset_flag)
             {
                 if (set_or_unset_flag == SetOrUnsetFlag::Set)
@@ -60,6 +65,16 @@ namespace RC::Unreal
             if (!p_typed_this->object) { return true; }
 
             return p_typed_this->is_unreachable();
+        }
+
+        auto FUObjectItem_is_object_native(const void* p_this) const -> bool override
+        {
+            if (!p_this) { return true; }
+            auto* p_typed_this = static_cast<const FUObjectItem*>(p_this);
+
+            if (!p_typed_this->object) { return true; }
+
+            return p_typed_this->is_native();
         }
 
         auto FUObjectItem_set_object_root_set(void* p_this, SetOrUnsetFlag set_or_unset_flag) -> void override

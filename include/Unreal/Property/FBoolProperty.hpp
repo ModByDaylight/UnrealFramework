@@ -16,13 +16,13 @@ namespace RC::Unreal
         typedef bool TCppType;
 
         /** Offset from the member variable to the byte of the property (0-7). */
-        auto GetByteOffset() -> uint8_t;
+        auto GetByteOffset() const -> uint8_t;
 
         /** Mask of the byte with the property value. */
-        auto GetByteMask() -> uint8_t;
+        auto GetByteMask() const -> uint8_t;
 
         /** Mask of the field with the property value. Either equal to ByteMask or 255 in case of 'bool' type. */
-        auto GetFieldMask() -> uint8_t;
+        auto GetFieldMask() const -> uint8_t;
 
         /** Returns the value of the boolean property */
         FORCEINLINE auto GetPropertyValue(const void* A) -> bool
@@ -69,7 +69,7 @@ namespace RC::Unreal
         }
 
         /** If the return value is true this FBoolProperty represents C++ bool type */
-        FORCEINLINE auto IsNativeBool() -> bool
+        FORCEINLINE auto IsNativeBool() const -> bool
         {
             return GetFieldMask() == 0xff;
         }

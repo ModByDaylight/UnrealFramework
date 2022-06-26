@@ -25,3 +25,5 @@ Testing/cmake-build-release/
 *.pdb
 *.lastbuildstate
 *.recipe
+
+dependencies/**

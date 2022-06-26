@@ -12,13 +12,14 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FSetProperty);
 
     public:
-        FProperty* GetElementProp();
+        FProperty* GetElementProp() const;
 
         // Uncomment when and if we need these functions
         /*
         using FScriptSetLayout = void;
         FScriptSetLayout GetSetLayout();
         //*/
+        FString GetCPPTypeCustom(FString* ExtendedTypeText, uint32 CPPExportFlags, const FString& ElementTypeText, const FString& InElementExtendedTypeText) const;
     };
 }
 

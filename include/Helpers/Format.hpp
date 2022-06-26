@@ -8,7 +8,7 @@ namespace RC
     template<typename ...Args>
     auto static fmt(const char* fmt, Args... args) -> std::string
     {
-        constexpr size_t out_string_length = 1000;
+        constexpr size_t out_string_length = 1024;
         char out_string[out_string_length];
 
         size_t msg_len = strlen(fmt);

@@ -13,32 +13,32 @@ namespace RC::Unreal
 
     int32_t UClass::Offset::class_config_name{};
 
-    auto UClass::HasAnyClassFlags(EClassFlags FlagsToCheck) -> bool
+    auto UClass::HasAnyClassFlags(EClassFlags FlagsToCheck) const -> bool
     {
         return (GetClassFlags() & FlagsToCheck) != 0;
     }
 
-    auto UClass::HasAllClassFlags(EClassFlags FlagsToCheck) -> bool
+    auto UClass::HasAllClassFlags(EClassFlags FlagsToCheck) const -> bool
     {
         return (GetClassFlags() & FlagsToCheck) == FlagsToCheck;
     }
 
-    auto UClass::GetClassFlags() -> EClassFlags
+    auto UClass::GetClassFlags() const -> EClassFlags
     {
         return Helper::Casting::offset_deref<EClassFlags>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_ClassFlags));
     }
 
-    auto UClass::GetClassWithin() -> UClass*
+    auto UClass::GetClassWithin() const -> UClass*
     {
         return Helper::Casting::offset_deref<UClass*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_ClassWithin));
     }
 
-    auto UClass::GetClassConfigName() -> FName
+    auto UClass::GetClassConfigName() const -> FName
     {
         return Helper::Casting::offset_deref<FName>(this, Offset::class_config_name);
     }
 
-    auto UClass::GetClassDefaultObject() -> UObject*
+    auto UClass::GetClassDefaultObject() const -> UObject*
     {
         return Helper::Casting::offset_deref<UObject*>(this, StaticOffsetFinder::retrieve_static_offset(MemberOffsets::UClass_ClassDefaultObject));
     }
@@ -77,5 +77,14 @@ namespace RC::Unreal
             return LoopAction::Continue;
         });
         return ResultFunction;
+    }
+
+    auto UClass::GetDefaultObject(bool bCreateIfNotFound) -> UObject* {
+        UObject* ClassDefaultObject = GetClassDefaultObject();
+
+        if (ClassDefaultObject == nullptr && bCreateIfNotFound) {
+            check()
+        }
+        return ClassDefaultObject;
     }
 }

@@ -72,7 +72,7 @@ namespace RC::Unreal
         }
     }
 
-    auto FField::GetClass() -> FFieldClassVariant
+    auto FField::GetClass() const -> FFieldClassVariant
     {
         if constexpr(Version::IsBelow(4, 25))
         {
@@ -84,7 +84,7 @@ namespace RC::Unreal
         }
     }
 
-    auto FField::GetFName() -> FName
+    auto FField::GetFName() const -> FName
     {
         if constexpr(Version::IsBelow(4, 25))
         {
@@ -96,7 +96,7 @@ namespace RC::Unreal
         }
     }
 
-    std::wstring FField::GetFullName()
+    std::wstring FField::GetFullName() const
     {
         if constexpr(Version::IsAtLeast(4, 25 ))
         {
@@ -111,7 +111,7 @@ namespace RC::Unreal
         }
     }
 
-    std::wstring FField::GetPathName(UObject* StopOuter)
+    std::wstring FField::GetPathName(UObject* StopOuter) const
     {
         if constexpr(Version::IsAtLeast(4, 25))
         {
@@ -140,12 +140,12 @@ namespace RC::Unreal
         }
     }
 
-    auto FField::IsA(const FFieldClassVariant& UClass) -> bool
+    auto FField::IsA(const FFieldClassVariant& UClass) const -> bool
     {
         return GetClass().IsChildOf(UClass);
     }
 
-    auto FField::GetOwnerVariant() -> FFieldVariant
+    auto FField::GetOwnerVariant() const -> FFieldVariant
     {
         if constexpr(Version::IsBelow(4, 25))
         {
@@ -157,7 +157,7 @@ namespace RC::Unreal
         }
     }
 
-    UObject* FField::GetOutermostOwner()
+    UObject* FField::GetOutermostOwner() const
     {
         auto CurrentVariant = GetOwnerVariant();
 
@@ -169,21 +169,22 @@ namespace RC::Unreal
         return CurrentVariant.ToUObject();
     }
 
-    auto FField::GetTypedOwner(UClass* OwnerType) -> UObject*
+    auto FField::GetTypedOwner(UClass* OwnerType) const -> UObject*
     {
         FFieldVariant CurrentVariant = GetOwnerVariant();
 
         while (CurrentVariant.IsValid()) {
-            if (CurrentVariant.IsUObject())
-            {
-                return CurrentVariant.ToUObject()->GetTypedOuter(OwnerType);
+            if (CurrentVariant.IsUObject()) {
+                if (CurrentVariant.ToUObject()->IsA(OwnerType)) {
+                    return CurrentVariant.ToUObject();
+                }
             }
             CurrentVariant = CurrentVariant.GetOwnerVariant();
         }
         return nullptr;
     }
 
-    bool FField::HasNext()
+    bool FField::HasNext() const
     {
         if constexpr(Version::IsBelow(4, 25))
         {
@@ -195,16 +196,16 @@ namespace RC::Unreal
         }
     }
 
-    FProperty* FField::GetNextFieldAsProperty()
+    FProperty* FField::GetNextFieldAsProperty() const
     {
         // In <4.25, we can cast to a property because all properties inherits from UField
         // In <4.25, this FField struct represents UField
         // In 4.25+, properties inherit from FField so there's no problem with this cast
-        auto* Next = GetNext();
+        FField* Next = (FField*) GetNext();
         return CastField<FProperty>(Next);
     }
 
-    auto FField::AsUFieldUnsafe() -> UField*
+    auto FField::AsUFieldUnsafe() const -> UField*
     {
         if (!Version::IsBelow(4, 25))
         {
@@ -213,26 +214,16 @@ namespace RC::Unreal
         return std::bit_cast<UField*>(this);
     }
 
-
-    auto FField::AsUFieldUnsafe() const -> const UField*
-    {
-        if (!Version::IsBelow(4, 25))
-        {
-            throw std::runtime_error("FField does not inherit from UObject in UE4.25+");
-        }
-        return std::bit_cast<const UField*>(this);
-    }
-
-    auto FField::GetFFieldClassUnsafe() -> FFieldClass*
+    auto FField::GetFFieldClassUnsafe() const -> FFieldClass*
     {
         if constexpr(Version::IsBelow(4, 25))
         {
             throw std::runtime_error("FFieldClass is not available in UE versions below 4.25");
         }
-        return GetClassPrivate();
+        return (FFieldClass*) GetClassPrivate();
     }
 
-    auto FField::GetFFieldOwnerUnsafe() -> FFieldVariant
+    auto FField::GetFFieldOwnerUnsafe() const -> FFieldVariant
     {
         if constexpr(Version::IsBelow(4, 25))
         {
@@ -241,7 +232,7 @@ namespace RC::Unreal
         return GetOwner();
     }
 
-    auto FField::GetFFieldFNameUnsafe() -> FName
+    auto FField::GetFFieldFNameUnsafe() const -> FName
     {
         if constexpr(Version::IsBelow(4, 25))
         {
@@ -564,6 +555,22 @@ namespace RC::Unreal
         else
         {
             return Container.Field->GetOwnerVariant();
+        }
+    }
+
+    auto FFieldVariant::GetName() -> FString {
+        if (IsUObject()) {
+            return ToUObject()->GetNameString();
+        } else {
+            return ToField()->GetNameString();
+        }
+    }
+
+    auto FFieldVariant::GetTopmostObject() -> UObject* {
+        if (IsUObject()) {
+            return ToUObject();
+        } else {
+           return ToField()->GetTypedOwner<UObject>();
         }
     }
 

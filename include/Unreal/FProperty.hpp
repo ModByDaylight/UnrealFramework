@@ -18,6 +18,35 @@ namespace RC::Unreal
         Weak = 1 << 1,
     };
 
+    enum class EExportedDeclaration {
+        Local,
+        Member,
+        Parameter,
+        /** Type and mane are separated by comma */
+        MacroParameter,
+    };
+
+    enum EPropertyExportCPPFlags {
+        /** Indicates that there are no special C++ export flags */
+        CPPF_None						=	0x00000000,
+        /** Indicates that we are exporting this property's CPP text for an optional parameter value */
+        CPPF_OptionalValue				=	0x00000001,
+        /** Indicates that we are exporting this property's CPP text for an argument or return value */
+        CPPF_ArgumentOrReturnValue		=	0x00000002,
+        /** Indicates thet we are exporting this property's CPP text for C++ definition of a function. */
+        CPPF_Implementation				=	0x00000004,
+        /** Indicates thet we are exporting this property's CPP text with an custom type name */
+        CPPF_CustomTypeName				=	0x00000008,
+        /** No 'const' keyword */
+        CPPF_NoConst					=	0x00000010,
+        /** No reference '&' sign */
+        CPPF_NoRef						=	0x00000020,
+        /** No static array [%d] */
+        CPPF_NoStaticArray				=	0x00000040,
+        /** Blueprint compiler generated C++ code */
+        CPPF_BlueprintCppBackend		=	0x00000080,
+    };
+
     class RC_UE_API FProperty : public FField
     {
         DECLARE_FIELD_CLASS(FProperty);
@@ -48,17 +77,17 @@ namespace RC::Unreal
          * Returns the total size of the property, correctly handling the statically sized array properties
          * Equivalent to element size for other properties
          */
-        inline auto GetSize() -> int32_t
+        inline auto GetSize() const -> int32_t
         {
             return GetElementSize() * GetArrayDim();
         }
 
-        inline auto HasAnyPropertyFlags(EPropertyFlags FlagsToCheck) -> bool
+        inline auto HasAnyPropertyFlags(EPropertyFlags FlagsToCheck) const -> bool
         {
             return (GetPropertyFlags() & FlagsToCheck) != 0 || FlagsToCheck == CPF_AllFlags;
         }
 
-        inline auto HasAllPropertyFlags(EPropertyFlags flags_to_check) -> bool
+        inline auto HasAllPropertyFlags(EPropertyFlags flags_to_check) const -> bool
         {
             return ((GetPropertyFlags() & flags_to_check) == flags_to_check);
         }
@@ -77,6 +106,10 @@ namespace RC::Unreal
         {
             return reinterpret_cast<const T*>(reinterpret_cast<uintptr_t>(Container) + GetOffset_Internal() + GetElementSize() * ArrayIndex);
         }
+
+        FString GetNameCPP() const;
+
+        FString ExportCppDeclaration(EExportedDeclaration DeclarationType, const TCHAR* ArrayDimOverride = nullptr, uint32 AdditionalExportCPPFlags = 0, bool bSkipParameterName = false, const FString* ActualCppType = nullptr, const FString* ActualExtendedType = nullptr, const FString* ActualParameterName = nullptr) const;
 
         auto GetCPPMacroType(FString& ExtendedTypeText) const -> FString;
 
@@ -130,7 +163,7 @@ namespace RC::Unreal
          * @param port_flags the additional flags for property serialization
          * @param export_root_scope the scope to create relative paths from, if the PPF_ExportsNotFullyQualified flag is passed in. If nullptr, the package containing the object will be used instead.
          */
-        auto ExportTextItem(FString& ValueStr, const void* PropertyValue, const void* DefaultValue, UObject* Parent, int32_t PortFlags, UObject* ExportRootScope = nullptr) -> void;
+        auto ExportTextItem(FString& ValueStr, const void* PropertyValue, const void* DefaultValue, UObject* Parent, int32_t PortFlags, UObject* ExportRootScope = nullptr) const -> void;
 
         /**
          * Imports the property value from the provided text string

@@ -2,10 +2,10 @@
 #define RC_UNREAL_NAMETYPES_HPP
 
 #include <string>
-
 #include <Function/Function.hpp>
 #include <Unreal/Common.hpp>
 #include <Unreal/PrimitiveTypes.hpp>
+#include <Unreal/FString.hpp>
 
 #define INVALID_LONGPACKAGE_CHARACTERS TEXT("\\:*?\"<>|' ,.&!~\n\r\t@#")
 
@@ -82,8 +82,7 @@ namespace RC::Unreal
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        explicit FName(int64_t IndexAndNumber)
-        {
+        explicit FName(int64_t IndexAndNumber) {
             // Split the 64-bit integer into two 32-bit integers
             Number = (IndexAndNumber & 0xFFFFFFFF00000000LL) >> 32;
             ComparisonIndex = (IndexAndNumber & 0xFFFFFFFFLL);
@@ -95,8 +94,7 @@ namespace RC::Unreal
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        constexpr FName(uint32_t IndexParam, uint32_t NumberParam)
-        {
+        constexpr FName(uint32_t IndexParam, uint32_t NumberParam) {
             ComparisonIndex = IndexParam;
 #ifdef WITH_CASE_PRESERVING_NAME
             DisplayIndex = IndexParam;
@@ -108,63 +106,53 @@ namespace RC::Unreal
         // Construct from an existing FName without looking up
         // Safe to pass to Unreal Engine internals
         // Not safe to use for return values from Unreal Engine internals
-        FName(uint32_t IndexParam, uint32_t DisplayIndexParam, uint32_t NumberParam)
-        {
+        FName(uint32_t IndexParam, uint32_t DisplayIndexParam, uint32_t NumberParam) {
             ComparisonIndex = IndexParam;
             DisplayIndex = DisplayIndexParam;
             Number = NumberParam;
         }
 #endif
-
         // Lookup & create from an existing FName
         // Not safe to pass to Unreal Engine internals
         // Safe to use for return values from Unreal Engine internals
-        FName(const wchar_t* StrName, EFindName FindType = FNAME_Add, void* FunctionAddressOverride = nullptr)
-        {
+        FName(const wchar_t* StrName, EFindName FindType = FNAME_Add, void* FunctionAddressOverride = nullptr) {
             construct_with_string(StrName, FindType, FunctionAddressOverride);
         }
 
-        FName(std::wstring_view str_name, EFindName FindType = FNAME_Add, void* FunctionAddressOverride = nullptr)
-        {
+        FName(std::wstring_view str_name, EFindName FindType = FNAME_Add, void* FunctionAddressOverride = nullptr) {
             construct_with_string(str_name.data(), FindType, FunctionAddressOverride);
         }
 
-        FName(std::wstring_view Name, uint32 InNumber, EFindName FindType = FNAME_Add, void* FunctionAddressOverride = nullptr)
-        {
+        FName(std::wstring_view Name, uint32 InNumber, EFindName FindType = FNAME_Add, void* FunctionAddressOverride = nullptr) {
             construct_with_string(Name.data(), InNumber, FindType, FunctionAddressOverride);
         }
 
-        auto inline operator==(FName other) const -> bool
-        {
+        auto inline operator==(FName other) const -> bool {
             return (ComparisonIndex == other.ComparisonIndex) & (Number == other.Number);
         }
 
-        auto inline operator==(const wchar_t* Other) -> bool
-        {
+        auto inline operator==(const wchar_t* Other) -> bool {
             return ToString() == Other;
         }
 
-        auto inline operator!=(FName Other) const -> bool
-        {
+        auto inline operator!=(FName Other) const -> bool {
             return !(*this == Other);
         }
 
-        auto inline operator!() const -> bool
-        {
+        auto inline operator!() const -> bool {
             return ComparisonIndex == 0 && Number == 0;
         }
 
         // Returns whether the ComparisonIndex is equal
         // Use this when you don't care for an identical match
         // The operator overloads will make sure both ComparisonIndex and Number are equal
-        [[nodiscard]] auto Equals(const FName& Other) const -> bool
-        {
+        [[nodiscard]] auto Equals(const FName& Other) const -> bool {
             return ComparisonIndex == Other.ComparisonIndex;
         }
 
-        auto ToString() -> std::wstring;
-        auto ToString() const -> const std::wstring;
-        uint32 GetPlainNameString(TCHAR(&OutName)[NAME_SIZE]);
+        std::wstring ToString() const;
+        FString ToFString() const;
+        FString GetPlainNameString() const;
 
         [[nodiscard]] auto GetComparisonIndex() const -> uint32_t { return ComparisonIndex; }
         [[nodiscard]] auto GetDisplayIndex() const -> uint32_t

@@ -480,6 +480,58 @@ namespace RC::Unreal
         return nullptr;
     }
 
+    bool UObject::IsIn(const UObject* SomeOuter) const {
+        if (SomeOuter->IsA<UPackage>()) {
+            return IsInPackage(static_cast<const UPackage*>(SomeOuter));
+        }
+        return IsInOuter(SomeOuter);
+    }
+
+    /** Overload to determine if an object is in the specified package which can now be different than its outer chain. */
+    bool UObject::IsIn(const UPackage* SomePackage) const {
+        return IsInPackage(SomePackage);
+    }
+
+    bool UObject::IsInPackage(const UPackage* SomePackage) const {
+        return SomePackage != this && GetPackage() == SomePackage;
+    }
+
+    bool UObject::IsInOuter(const UObject* SomeOuter) const {
+        for (UObject* It = GetOuter(); It; It = It->GetOuter()) {
+            if (It == SomeOuter) {
+                return true;
+            }
+        }
+        return SomeOuter == nullptr;
+    }
+
+    UPackage* UObject::GetPackage() const {
+        const UObject* Top = static_cast<const UObject*>(this);
+        for (;;) {
+            // GetExternalPackage will return itself if called on a UPackage
+            if (UPackage* Package = Top->GetExternalPackage()) {
+                return Package;
+            }
+            Top = Top->GetOuter();
+        }
+    }
+
+    UPackage* UObject::GetExternalPackage() const {
+        // if we have no outer, consider this a package, packages returns themselves as their external package
+        if (GetOuterPrivate() == nullptr) {
+            return Cast<UPackage>((UObject*)(this));
+        }
+        UPackage* ExternalPackage = nullptr;
+        if (HasAnyFlags(RF_HasExternalPackage) != 0) {
+            //TODO: unsupported, requires access to global UObject tables
+            checkf(0, STR("GetObjectExternalPackageThreadSafe not implemented"));
+            //ExternalPackage = GetObjectExternalPackageThreadSafe(this);
+            // if the flag is set there should be an override set.
+            //ensure(ExternalPackage);
+        }
+        return ExternalPackage;
+    }
+
     auto UObject::GetPathName(UObject* StopOuter) const -> std::wstring
     {
         std::wstring ResultName;

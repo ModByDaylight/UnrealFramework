@@ -10,11 +10,17 @@ namespace RC::Unreal {
     }
 
     FAssetData::FAssetData(const FAssetData& InData) {
+        StaticStruct()->InitializeStruct(this);
         StaticStruct()->CopyScriptStruct(this, &InData);
     }
 
     FAssetData::~FAssetData() {
         StaticStruct()->DestroyStruct(this);
+    }
+
+    FAssetData& FAssetData::operator=(const FAssetData& Other) {
+        StaticStruct()->CopyScriptStruct(this, &Other);
+        return *this;
     }
 
     UScriptStruct* FAssetData::StaticStruct() {

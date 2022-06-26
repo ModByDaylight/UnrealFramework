@@ -82,6 +82,7 @@ namespace RC::Unreal
         using FUObjectItem = void;
         using UObject = void;
         enum class SetOrUnsetFlag { Set, Unset };
+        virtual auto FUObjectItem_is_object_native(const FUObjectItem* p_this) const -> bool = 0;
         virtual auto FUObjectItem_is_object_unreachable(const FUObjectItem* p_this) const -> bool = 0;
         virtual auto FUObjectItem_set_object_root_set(FUObjectItem* p_this, SetOrUnsetFlag) -> void = 0;
         virtual auto FUObjectItem_set_object_gc_keep(FUObjectItem* p_this, SetOrUnsetFlag) -> void = 0;
@@ -143,6 +144,10 @@ namespace RC::Unreal
             [[nodiscard]] auto is_pending_kill() const
             {
                 return !!(flags & static_cast<int32_t>(EInternalObjectFlags::PendingKill));
+            }
+            [[nodiscard]] auto is_native() const -> bool
+            {
+                return !!(flags & static_cast<int32_t>(EInternalObjectFlags::Native));
             }
 
             auto set_root_set(SetOrUnsetFlag set_or_unset_flag)

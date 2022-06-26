@@ -53,31 +53,34 @@ namespace RC::Unreal
          * Regardless of the underlying type, you can retrieve the name using GetName
          * and check the class hierarchy using get_superclass and IsChildOf
          */
-        auto GetClass() -> FFieldClassVariant;
+        auto GetClass() const -> FFieldClassVariant;
 
         /**
          * Returns name of this property, as FName instance
          */
-        auto GetFName() -> FName;
+        auto GetFName() const -> FName;
 
         /**
         * Returns name of this property, as string
         */
-        inline auto GetName() -> std::wstring
-        {
+        inline auto GetName() const -> std::wstring {
             return GetFName().ToString();
         }
 
-        std::wstring GetFullName();
-        std::wstring GetPathName(UObject* StopOuter = nullptr);
+        inline auto GetNameString() const -> FString {
+            return GetFName().ToFString();
+        }
+
+        std::wstring GetFullName() const;
+        std::wstring GetPathName(UObject* StopOuter = nullptr) const;
 
         /**
          * Checks whenever this property is of the class specified by the argument
          */
-        auto IsA(const FFieldClassVariant& UClass) -> bool;
+        auto IsA(const FFieldClassVariant& UClass) const -> bool;
 
         template<FFieldDerivative FFieldDerivedType>
-        inline auto IsA() -> bool
+        inline auto IsA() const -> bool
         {
             return IsA(FFieldDerivedType::StaticClass());
         }
@@ -86,21 +89,21 @@ namespace RC::Unreal
          * Returns the owner of this field
          * In versions below 4.25, it would always represent the object
          */
-        auto GetOwnerVariant() -> FFieldVariant;
+        auto GetOwnerVariant() const -> FFieldVariant;
 
-        UObject* GetOutermostOwner();
+        UObject* GetOutermostOwner() const;
 
         /**
          * Returns the first UObject owner of this field of the provided type
          */
-        auto GetTypedOwner(UClass* OwnerType) -> UObject*;
+        auto GetTypedOwner(UClass* OwnerType) const -> UObject*;
 
         /**
          * Templated version of GetTypedOwner, will also cast the
          * returned object pointer automatically
          */
         template<UObjectDerivative T>
-        inline auto GetTypedOwner() -> T*
+        inline auto GetTypedOwner() const -> T*
         {
             return Cast<T>(GetTypedOwner(T::StaticClass()));
         }
@@ -108,9 +111,9 @@ namespace RC::Unreal
         /**
          * Returns whether the 'Next' pointer is non-nullptr
          */
-        bool HasNext();
+        bool HasNext() const;
 
-        FProperty* GetNextFieldAsProperty();
+        FProperty* GetNextFieldAsProperty() const;
 
     private:
         friend class UStruct;
@@ -121,33 +124,32 @@ namespace RC::Unreal
          * properties defined by the UClass::ChildrenProperties
          * Will throw the exception if the UE version is below 4.25
          */
-        auto GetNextFFieldUnsafe() -> FField*;
+        auto GetNextFFieldUnsafe() const -> FField*;
 
         /**
          * Converts this field to the underlying UField object
          * Conversion is only possible in UE versions below 4.25, so if this function
          * is called on newer UE versions it will throw exception
          */
-        auto AsUFieldUnsafe() -> class UField*;
-        auto AsUFieldUnsafe() const -> const class UField*;
+        auto AsUFieldUnsafe() const -> class UField*;
 
         /**
          * Retrieves the underlying FFieldClass of this field if possible
          * Will throw the exception if UE version is below 4.25
          */
-        auto GetFFieldClassUnsafe() -> FFieldClass*;
+        auto GetFFieldClassUnsafe() const -> FFieldClass*;
 
         /**
          * Returns the owner of the FField in the UE versions above 4.25
          * Will throw the exception if UE version is below 4.25
          */
-        auto GetFFieldOwnerUnsafe() -> FFieldVariant;
+        auto GetFFieldOwnerUnsafe() const -> FFieldVariant;
 
         /**
         * Returns the name of the FField in the UE versions above 4.25
         * Will throw the exception if UE version is below 4.25
         */
-        auto GetFFieldFNameUnsafe() -> FName;
+        auto GetFFieldFNameUnsafe() const -> FName;
 
 
         // Virtual Functions
@@ -184,14 +186,20 @@ namespace RC::Unreal
         } Container;
         bool IsObject;
     public:
-        FFieldVariant(FField* Field) : IsObject(false)
-        {
+        FFieldVariant(FField* Field) : IsObject(false) {
             Container.Field = Field;
         }
 
-        FFieldVariant(UObject* Object) : IsObject(true)
-        {
+        FFieldVariant(const FField* Field) : IsObject(false) {
+            Container.Field = const_cast<FField*>(Field);
+        }
+
+        FFieldVariant(UObject* Object) : IsObject(true) {
             Container.Object = Object;
+        }
+
+        FFieldVariant(const UObject* Object) : IsObject(true) {
+            Container.Object = const_cast<UObject*>(Object);
         }
     public:
         auto IsValid() -> bool
@@ -199,7 +207,11 @@ namespace RC::Unreal
             return Container.Object;
         }
 
+        auto GetName() -> FString;
+
         auto GetOwnerVariant() -> FFieldVariant;
+
+        auto GetTopmostObject() -> UObject*;
 
         auto IsUObject() -> bool
         {
@@ -347,6 +359,12 @@ namespace RC::Unreal
     template<FFieldDerivative T>
     inline auto CastField(FField* Field) -> T* {
         return Field != nullptr && Field->IsA<T>() ? static_cast<T*>(Field) : nullptr;
+    }
+
+    /** Casts the field to the specified type after performing the type checking */
+    template<FFieldDerivative T>
+    inline auto CastField(const FField* Field) -> const T* {
+        return Field != nullptr && Field->IsA<T>() ? static_cast<const T*>(Field) : nullptr;
     }
 
     namespace Internal

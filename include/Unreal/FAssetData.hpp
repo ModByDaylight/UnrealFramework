@@ -77,6 +77,7 @@ namespace RC::Unreal {
         FAssetData();
         FAssetData(const FAssetData& InData);
         ~FAssetData();
+        FAssetData& operator=(const FAssetData& Other);
 
         FORCEINLINE FName ObjectPath() const { return Data.ObjectPath; }
         FORCEINLINE FName PackageName() const { return Data.PackageName; };

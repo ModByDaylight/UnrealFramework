@@ -220,6 +220,10 @@ namespace RC::Unreal
             return GetNamePrivate().ToString();
         }
 
+        inline auto GetNameString() const -> FString {
+            return GetNamePrivate().ToFString();
+        }
+
         /**
          * Adds new flags to the object
          */
@@ -239,17 +243,17 @@ namespace RC::Unreal
         /**
          * Checks whenever the object has any of the provided flags set
          */
-        inline auto HasAnyFlags(EObjectFlags FlagsToCheck) -> bool
+        inline auto HasAnyFlags(EObjectFlags FlagsToCheck) const -> bool
         {
-            return Container::UnrealObjectVC->UObject_has_any_flag(this, FlagsToCheck);
+            return Container::UnrealObjectVC->UObject_has_any_flag(const_cast<UObject*>(this), FlagsToCheck);
         }
 
         /**
          * Checks whenever the object has all of the flags specified
          */
-        auto HasAllFlags(EObjectFlags FlagsToCheck) -> bool
+        auto HasAllFlags(EObjectFlags FlagsToCheck) const -> bool
         {
-            return Container::UnrealObjectVC->UObject_has_all_flags(this, FlagsToCheck);
+            return Container::UnrealObjectVC->UObject_has_all_flags(const_cast<UObject*>(this), FlagsToCheck);
         }
 
         bool HasAnyInternalFlags(EInternalObjectFlags FlagsToCheck)
@@ -257,7 +261,7 @@ namespace RC::Unreal
             return Container::UnrealVC->FUObjectItem_HasAnyFlags(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()), FlagsToCheck);
         }
 
-        bool IsUnreachable()
+        bool IsUnreachable() const
         {
             return Container::UnrealVC->FUObjectItem_is_object_unreachable(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()));
         }
@@ -267,10 +271,14 @@ namespace RC::Unreal
             Container::UnrealVC->FUObjectItem_set_object_root_set(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()), Base::SetOrUnsetFlag::Set);
         }
 
-
         void ClearRootSet()
         {
             Container::UnrealVC->FUObjectItem_set_object_root_set(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()), Base::SetOrUnsetFlag::Unset);
+        }
+
+        /** Checks if the object is unreachable. */
+        FORCEINLINE bool IsNative() const {
+            return Container::UnrealVC->FUObjectItem_is_object_native(Container::UnrealVC->UObjectArray_index_to_object(GetInternalIndex()));
         }
 
         /**
@@ -294,11 +302,37 @@ namespace RC::Unreal
               return Cast<T>(GetTypedOuter(T::StaticClass()));
          }
 
+         /** Checks if the object is inside of the specified outer object */
+        bool IsIn(const UObject* SomeOuter) const;
+
+        /** Checks if the object is inside of the specified outer object */
+        bool IsIn(const UPackage* SomePackage) const;
+
+        /** Checks if the object is inside of the specified outer object */
+        bool IsInOuter(const UObject* SomeOuter) const;
+
+        /** Checks if the object is inside of the provided package */
+        bool IsInPackage(const UPackage* SomePackage) const;
+
+        /**
+         * Walks up the list of outers until it finds a package directly associated with the object.
+         *
+         * @return the package the object is in.
+         */
+        UPackage* GetPackage() const;
+
+        /** Returns the external UPackage associated with this object, if any */
+        UPackage* GetExternalPackage() const;
+
         /**
          * Returns the full path to the object in form of Package.Outer:ObjectName
          * Safe to call on the NULL objects and will return None in that case
          */
         auto GetPathName(UObject* StopOuter = nullptr) const -> std::wstring;
+
+        inline auto GetPathNameString(UObject* StopOuter = nullptr) const -> FString {
+            return GetPathName(StopOuter).c_str();
+        }
 
         /**
          * Returns the full name of the object in form Class Package.Outer:ObjectName
@@ -332,9 +366,13 @@ namespace RC::Unreal
     };
 
     template<UObjectDerivative CastResultType>
-    auto Cast(UObject* Object) -> CastResultType*
-    {
+    auto Cast(UObject* Object) -> CastResultType* {
         return Object != nullptr && Object->IsA<CastResultType>() ? static_cast<CastResultType*>(Object) : nullptr;
+    }
+
+    template<UObjectDerivative CastResultType>
+    auto Cast(const UObject* Object) -> const CastResultType* {
+        return Object != nullptr && Object->IsA<CastResultType>() ? static_cast<const CastResultType*>(Object) : nullptr;
     }
 }
 

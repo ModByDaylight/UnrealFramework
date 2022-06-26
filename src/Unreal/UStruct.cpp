@@ -4,6 +4,7 @@
 #include <Unreal/UFunction.hpp>
 #include <Unreal/FProperty.hpp>
 #include <Helpers/Casting.hpp>
+#include <Unreal/TPair.hpp>
 
 namespace RC::Unreal
 {

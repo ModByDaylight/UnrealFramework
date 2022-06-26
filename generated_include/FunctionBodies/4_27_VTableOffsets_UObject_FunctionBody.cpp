@@ -1,6 +1,6 @@
-if (auto it = UObject::VTableLayoutMap.find(STR("__vecDelDtor")); it == UObject::VTableLayoutMap.end())
+if (auto it = UObject::VTableLayoutMap.find(STR("__vecDelDtor_3")); it == UObject::VTableLayoutMap.end())
 {
-    UObject::VTableLayoutMap.emplace(STR("__vecDelDtor"), 0x0);
+    UObject::VTableLayoutMap.emplace(STR("__vecDelDtor_3"), 0x0);
 }
 
 if (auto it = UObject::VTableLayoutMap.find(STR("GetDetailedInfoInternal")); it == UObject::VTableLayoutMap.end())
@@ -338,23 +338,33 @@ if (auto it = UObject::VTableLayoutMap.find(STR("MarkAsEditorOnlySubobject")); i
     UObject::VTableLayoutMap.emplace(STR("MarkAsEditorOnlySubobject"), 0x248);
 }
 
+if (auto it = UObject::VTableLayoutMap.find(STR("DBD_IsConsideredCheatObject")); it == UObject::VTableLayoutMap.end())
+{
+    UObject::VTableLayoutMap.emplace(STR("DBD_IsConsideredCheatObject"), 0x250);
+}
+
+if (auto it = UObject::VTableLayoutMap.find(STR("DBD_IsExecAllowed")); it == UObject::VTableLayoutMap.end())
+{
+    UObject::VTableLayoutMap.emplace(STR("DBD_IsExecAllowed"), 0x258);
+}
+
 if (auto it = UObject::VTableLayoutMap.find(STR("CheckDefaultSubobjectsInternal")); it == UObject::VTableLayoutMap.end())
 {
-    UObject::VTableLayoutMap.emplace(STR("CheckDefaultSubobjectsInternal"), 0x250);
+    UObject::VTableLayoutMap.emplace(STR("CheckDefaultSubobjectsInternal"), 0x260);
 }
 
 if (auto it = UObject::VTableLayoutMap.find(STR("ValidateGeneratedRepEnums")); it == UObject::VTableLayoutMap.end())
 {
-    UObject::VTableLayoutMap.emplace(STR("ValidateGeneratedRepEnums"), 0x258);
+    UObject::VTableLayoutMap.emplace(STR("ValidateGeneratedRepEnums"), 0x268);
 }
 
 if (auto it = UObject::VTableLayoutMap.find(STR("SetNetPushIdDynamic")); it == UObject::VTableLayoutMap.end())
 {
-    UObject::VTableLayoutMap.emplace(STR("SetNetPushIdDynamic"), 0x260);
+    UObject::VTableLayoutMap.emplace(STR("SetNetPushIdDynamic"), 0x270);
 }
 
 if (auto it = UObject::VTableLayoutMap.find(STR("GetNetPushIdDynamic")); it == UObject::VTableLayoutMap.end())
 {
-    UObject::VTableLayoutMap.emplace(STR("GetNetPushIdDynamic"), 0x268);
+    UObject::VTableLayoutMap.emplace(STR("GetNetPushIdDynamic"), 0x278);
 }
 

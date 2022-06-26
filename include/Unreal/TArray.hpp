@@ -199,6 +199,64 @@ namespace RC::Unreal
             return operator[](Index);
         }
 
+    private:
+        template <typename OtherSizeType>
+        void InsertUninitializedImpl(SizeType Index, OtherSizeType Count) {
+            const SizeType OldNum = ArrayNum;
+            if ((ArrayNum += Count) > ArrayMax) {
+                ResizeGrow(OldNum);
+            }
+            ElementType* Data = GetData() + Index;
+            memmove(Data + Count, Data, sizeof(ElementType) * (OldNum - Index));
+        }
+    public:
+        /**
+         * Inserts a raw array of elements at a particular index in the TArray.
+         *
+         * @param Ptr A pointer to an array of elements to add.
+         * @param Count The number of elements to insert from Ptr.
+         * @param Index The index to insert the elements at.
+         * @return The index of the first element inserted.
+         * @see Add, Remove
+         */
+        SizeType Insert(const ElementType* Ptr, SizeType Count, SizeType Index) {
+            InsertUninitializedImpl(Index, Count);
+            ConstructItems(GetData() + Index, Ptr, Count);
+
+            return Index;
+        }
+
+        /**
+         * Inserts a given element into the array at given location.
+         *
+         * @param Item The element to insert.
+         * @param Index Tells where to insert the new elements.
+         * @returns Location at which the insert was done.
+         * @see Add, Remove
+         */
+        SizeType Insert(const ElementType& Item, SizeType Index) {
+            InsertUninitializedImpl(Index, 1);
+
+            new(GetData() + Index) ElementType(Item);
+            return Index;
+        }
+
+        /**
+         * Inserts a given element into the array at given location.
+         *
+         * @param Item The element to insert.
+         * @param Index Tells where to insert the new element.
+         * @return A reference to the newly-inserted element.
+         * @see Add, Remove
+         */
+        ElementType& Insert_GetRef(const ElementType& Item, SizeType Index) {
+            InsertUninitializedImpl(Index, 1);
+
+            ElementType* Ptr = GetData() + Index;
+            new(Ptr) ElementType(Item);
+            return *Ptr;
+        }
+
         /**
          * Recalculates the allocation size according to the number of elements in the array currently for growing
          * @param OldNum old number of elements in the array

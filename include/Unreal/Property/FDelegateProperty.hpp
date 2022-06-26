@@ -27,7 +27,7 @@ namespace RC::Unreal
         DECLARE_VIRTUAL_TYPE(FDelegateProperty);
 
     public:
-        auto GetFunctionSignature() -> class UFunction*;
+        auto GetFunctionSignature() const -> class UFunction*;
     };
 }
 

@@ -15,6 +15,8 @@ namespace RC::Unreal
 
     public:
 #include <MemberVariableLayout_HeaderWrapper_FArrayProperty.hpp>
+
+        FString GetCPPTypeCustom(FString* ExtendedTypeText, uint32 CPPExportFlags, const FString& InnerTypeText, const FString& InInnerExtendedTypeText) const;
     };
 }
 

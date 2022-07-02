@@ -105,6 +105,10 @@ namespace RC::Unreal
         return std::memcpy(Dest, Src, Count);
     }
 
+    void* FMemory::Memmove(void* Dest, const void* Src, SIZE_T Count) {
+        return std::memmove(Dest, Src, Count);
+    }
+
     FORCENOINLINE void FMemory::Memswap(void *Ptr1, void *Ptr2, SIZE_T Size) {
         void* Temp = _alloca(Size);
         FMemory::Memcpy(Temp, Ptr1, Size);

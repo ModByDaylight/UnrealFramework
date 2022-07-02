@@ -13,7 +13,7 @@ if (UNREAL_BUILD_SHARED_LIB)
     target_compile_definitions(${UNREAL_TARGET} PRIVATE RC_UNREAL_EXPORTS RC_DYNAMIC_OUTPUT_EXPORTS RC_SIG_SCANNER_EXPORTS RC_FILE_EXPORTS)
 else ()
     message("Creating static ${TARGET} library")
-    add_library(${UNREAL_TARGET} STATIC ${SOURCES} ${GENERATED_SOURCES})
+    add_library(${UNREAL_TARGET} STATIC ${SOURCES} ${GENERATED_SOURCES} include/Unreal/PlatformMisc.hpp)
     target_compile_definitions(${UNREAL_TARGET} PUBLIC RC_UNREAL_BUILD_STATIC RC_DYNAMIC_OUTPUT_BUILD_STATIC RC_SIG_SCANNER_BUILD_STATIC RC_FILE_BUILD_STATIC)
 endif ()
 
@@ -34,7 +34,7 @@ target_compile_features(${UNREAL_TARGET} PUBLIC cxx_std_20)
 set(POLYHOOK_BUILD_SHARED_LIB ON CACHE BOOL "")
 set(POLYHOOK_BUILD_STATIC_RUNTIME OFF CACHE BOOL "")
 
-set(POLYHOOK2_DIR dependencies/stevemk14ebr/PolyHook_2_0)
+set(POLYHOOK2_DIR dependencies/stevemk14ebr/polyhook_2_0)
 add_subdirectory(${POLYHOOK2_DIR})
 target_include_directories(${UNREAL_TARGET} PUBLIC ${POLYHOOK2_DIR})
 

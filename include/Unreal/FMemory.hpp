@@ -64,6 +64,8 @@ public:
 
     static void* Memcpy(void* Dest, const void* Src, SIZE_T Count);
 
+    static void* Memmove(void* Dest, const void* Src, SIZE_T Count);
+
     static void Memswap(void* Ptr1, void* Ptr2, SIZE_T Size);
 
     static SIZE_T QuantizeSize(SIZE_T Count, uint32 Alignment = DEFAULT_ALIGNMENT);

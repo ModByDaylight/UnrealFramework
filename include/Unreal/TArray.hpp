@@ -103,6 +103,79 @@ namespace RC::Unreal
         }
     public:
         /**
+         * Appends the specified array to this array.
+         *
+         * Allocator changing version.
+         *
+         * @param Source The array to append.
+         * @see Add, Insert
+         */
+        template <typename OtherElementType, typename OtherAllocator>
+        void Append(const TArray<OtherElementType, OtherAllocator>& Source) {
+            check((void*)this != (void*)&Source);
+
+            SizeType SourceCount = Source.Num();
+
+            // Do nothing if the source is empty.
+            if (!SourceCount) {
+                return;
+            }
+            // Allocate memory for the new elements.
+            Reserve(ArrayNum + SourceCount);
+            ConstructItems(GetData() + ArrayNum, Source.GetData(), SourceCount);
+
+            ArrayNum += SourceCount;
+        }
+
+        /**
+         * Adds a raw array of elements to the end of the TArray.
+         *
+         * @param Ptr   A pointer to an array of elements to add.
+         * @param Count The number of elements to insert from Ptr.
+         * @see Add, Insert
+         */
+        void Append(const ElementType* Ptr, SizeType Count) {
+            check(Ptr != nullptr || Count == 0);
+
+            SizeType Pos = AddUninitialized(Count);
+            ConstructItems(GetData() + Pos, Ptr, Count);
+        }
+
+        /**
+         * Adds an initializer list of elements to the end of the TArray.
+         *
+         * @param InitList The initializer list of elements to add.
+         * @see Add, Insert
+         */
+        FORCEINLINE void Append(std::initializer_list<ElementType> InitList) {
+            SizeType Count = (SizeType)InitList.size();
+
+            SizeType Pos = AddUninitialized(Count);
+            ConstructItems(GetData() + Pos, InitList.begin(), Count);
+        }
+
+        /**
+         * Appends the specified array to this array.
+         * Cannot append to self.
+         *
+         * @param Other The array to append.
+         */
+        TArray& operator+=(const TArray& Other) {
+            Append(Other);
+            return *this;
+        }
+
+        /**
+         * Appends the specified initializer list to this array.
+         *
+         * @param InitList The initializer list to append.
+         */
+        TArray& operator+=(std::initializer_list<ElementType> InitList) {
+            Append(InitList);
+            return *this;
+        }
+
+        /**
          * Empties the array by calling destructors on all of the elements and setting size to zero
          * Array allocation will be resized in accordance to the slack you want to keep
          * @param Slack slack to keep in the array
@@ -221,7 +294,7 @@ namespace RC::Unreal
          */
         SizeType Insert(const ElementType* Ptr, SizeType Count, SizeType Index) {
             InsertUninitializedImpl(Index, Count);
-            ConstructItems(GetData() + Index, Ptr, Count);
+            ConstructItems(GetData() + Index, Count);
 
             return Index;
         }
@@ -289,6 +362,19 @@ namespace RC::Unreal
         }
 
         /**
+         * Finds element within the array.
+         *
+         * @param Item Item to look for.
+         * @param Index Will contain the found index.
+         * @returns True if found. False otherwise.
+         * @see FindLast, FindLastByPredicate
+         */
+        FORCEINLINE bool Find(const ElementType& Item, SizeType& Index) const {
+            Index = this->Find(Item);
+            return Index != INDEX_NONE;
+        }
+
+        /**
          * Attempts to find index of the provided element inside of the Array
          * @param Item element to find
          * @return index of the element, or INDEX_NONE if not found
@@ -301,6 +387,65 @@ namespace RC::Unreal
                 }
             }
             return INDEX_NONE;
+        }
+
+        /**
+         * Finds element within the array starting from the end.
+         *
+         * @param Item Item to look for.
+         * @param Index Output parameter. Found index.
+         * @returns True if found. False otherwise.
+         * @see Find, FindLastByPredicate
+         */
+        FORCEINLINE bool FindLast(const ElementType& Item, SizeType& Index) const {
+            Index = this->FindLast(Item);
+            return Index != INDEX_NONE;
+        }
+
+        /**
+         * Finds element within the array starting from the end.
+         *
+         * @param Item Item to look for.
+         * @returns Index of the found element. INDEX_NONE otherwise.
+         */
+        SizeType FindLast(const ElementType& Item) const {
+            for (const ElementType* RESTRICT Start = GetData(), *RESTRICT Data = Start + ArrayNum; Data != Start; ) {
+                --Data;
+                if (*Data == Item) {
+                    return static_cast<SizeType>(Data - Start);
+                }
+            }
+            return INDEX_NONE;
+        }
+
+        /**
+         * Searches an initial subrange of the array for the last occurrence of an element which matches the specified predicate.
+         *
+         * @param Pred Predicate taking array element and returns true if element matches search criteria, false otherwise.
+         * @param Count The number of elements from the front of the array through which to search.
+         * @returns Index of the found element. INDEX_NONE otherwise.
+         */
+        template <typename Predicate>
+        SizeType FindLastByPredicate(Predicate Pred, SizeType Count) const {
+            check(Count >= 0 && Count <= this->Num());
+            for (const ElementType* RESTRICT Start = GetData(), *RESTRICT Data = Start + Count; Data != Start; ) {
+                --Data;
+                if (Pred(*Data)) {
+                    return static_cast<SizeType>(Data - Start);
+                }
+            }
+            return INDEX_NONE;
+        }
+
+        /**
+         * Searches the array for the last occurrence of an element which matches the specified predicate.
+         *
+         * @param Pred Predicate taking array element and returns true if element matches search criteria, false otherwise.
+         * @returns Index of the found element. INDEX_NONE otherwise.
+         */
+        template <typename Predicate>
+        FORCEINLINE SizeType FindLastByPredicate(Predicate Pred) const {
+            return FindLastByPredicate(Pred, ArrayNum);
         }
 
         /**
@@ -335,6 +480,31 @@ namespace RC::Unreal
          */
         bool Contains(const ElementType& Item) const {
             return Find(Item) != INDEX_NONE;
+        }
+
+        /**
+         * Removes an element (or elements) at given location optionally shrinking
+         * the array.
+         *
+         * @param Index Location in array of the element to remove.
+         * @param Count (Optional) Number of elements to remove. Default is 1.
+         * @param bAllowShrinking (Optional) Tells if this call can shrink array if suitable after remove. Default is true.
+         */
+        FORCEINLINE void RemoveAt(SizeType Index) {
+            RemoveAtImpl(Index, 1, true);
+        }
+
+        /**
+         * Removes an element (or elements) at given location optionally shrinking
+         * the array.
+         *
+         * @param Index Location in array of the element to remove.
+         * @param Count (Optional) Number of elements to remove. Default is 1.
+         * @param bAllowShrinking (Optional) Tells if this call can shrink array if suitable after remove. Default is true.
+         */
+        template <typename CountType>
+        FORCEINLINE void RemoveAt(SizeType Index, CountType Count, bool bAllowShrinking = true) {
+            RemoveAtImpl(Index, (SizeType)Count, bAllowShrinking);
         }
 
         template<typename CountType>
@@ -414,6 +584,30 @@ namespace RC::Unreal
          */
         const ElementType& operator[](SizeType Index) const {
             return *At(Index);
+        }
+
+        /**
+         * Pops element from the array.
+         *
+         * @param bAllowShrinking If this call allows shrinking of the array during element remove.
+         * @returns Popped element.
+         */
+        FORCEINLINE ElementType Pop(bool bAllowShrinking = true) {
+            ElementType Result = operator[](ArrayNum - 1);
+            RemoveAt(ArrayNum - 1, 1, bAllowShrinking);
+            return Result;
+        }
+
+        /**
+         * Pushes element into the array.
+         *
+         * Const ref version of the above.
+         *
+         * @param Item Item to push.
+         * @see Pop, Top
+         */
+        FORCEINLINE void Push(const ElementType& Item) {
+            Add(Item);
         }
 
         void ForEach(const std::function<LoopAction(ElementType*, size_t)>& Callable) {
@@ -514,6 +708,26 @@ namespace RC::Unreal
                                     NumElementsToMoveIntoHole * GetElementSize());
                 }
                 ArrayNum -= Count;
+                if (bAllowShrinking) {
+                    ResizeShrink();
+                }
+            }
+        }
+
+        void RemoveAtImpl(SizeType Index, SizeType Count, bool bAllowShrinking) {
+            if (Count) {
+                DestructItems(GetData() + Index, Count);
+
+                // Skip memmove in the common case that there is nothing to move.
+                SizeType NumToMove = ArrayNum - Index - Count;
+                if (NumToMove) {
+                    FMemory::Memmove(
+                            (uint8*)AllocatorInstance.GetAllocation() + (Index)* sizeof(ElementType),
+                            (uint8*)AllocatorInstance.GetAllocation() + (Index + Count) * sizeof(ElementType),
+                            NumToMove * sizeof(ElementType));
+                }
+                ArrayNum -= Count;
+
                 if (bAllowShrinking) {
                     ResizeShrink();
                 }

@@ -29,10 +29,6 @@ namespace UE4Paths_Private {
     }
 }
 
-FString FPaths::LaunchDir() {
-    return FString(FPlatformMisc::LaunchDir());
-}
-
 FString FPaths::EngineDir() {
     return FString(FPlatformMisc::EngineDir());
 }
@@ -297,11 +293,9 @@ void FPaths::NormalizeFilename(FString& InPath) {
     FPlatformMisc::NormalizePath(InPath);
 }
 
-void FPaths::NormalizeDirectoryName(FString& InPath)
-{
+void FPaths::NormalizeDirectoryName(FString& InPath) {
     InPath.ReplaceInline(TEXT("\\"), TEXT("/"), ESearchCase::CaseSensitive);
-    if (InPath.EndsWith(TEXT("/"), ESearchCase::CaseSensitive) && !InPath.EndsWith(TEXT("//"), ESearchCase::CaseSensitive) && !InPath.EndsWith(TEXT(":/"), ESearchCase::CaseSensitive))
-    {
+    if (InPath.EndsWith(TEXT("/"), ESearchCase::CaseSensitive) && !InPath.EndsWith(TEXT("//"), ESearchCase::CaseSensitive) && !InPath.EndsWith(TEXT(":/"), ESearchCase::CaseSensitive)) {
         // overwrite trailing slash with terminator
         InPath.GetCharArray()[InPath.Len() - 1] = TEXT('\0');
         // shrink down

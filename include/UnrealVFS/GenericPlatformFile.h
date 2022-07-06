@@ -127,6 +127,9 @@ public:
 
     /** Return the total size of the file **/
     virtual int64 Size() = 0;
+
+    ///That's quite important because this type needs to be manually deleted
+    IMPLEMENT_UNREAL_TYPE(IFileHandle);
 };
 
 //TODO: Provide full definitions for these if we ever need them
@@ -177,6 +180,8 @@ struct RC_UE_API FFileStatData {
 
     /** True if file or directory was found, false otherwise. Note that this value being true does not ensure that the other members are filled in with meaningful data, as not all file systems have access to all of this data */
     bool bIsValid : 1;
+
+    IMPLEMENT_UNREAL_TYPE(FFileStatData);
 };
 
 /**
@@ -313,7 +318,7 @@ public:
     /** Base class for file and directory visitors that take only the name. **/
     class FDirectoryVisitor {
     public:
-        FDirectoryVisitor(EDirectoryVisitorFlags InDirectoryVisitorFlags = EDirectoryVisitorFlags::None) : DirectoryVisitorFlags(InDirectoryVisitorFlags) {
+        explicit FDirectoryVisitor(EDirectoryVisitorFlags InDirectoryVisitorFlags = EDirectoryVisitorFlags::None) : DirectoryVisitorFlags(InDirectoryVisitorFlags) {
         }
 
         virtual ~FDirectoryVisitor() { }
@@ -413,7 +418,7 @@ public:
      * @param Visitor		Visitor to call for each element of the directory (see FDirectoryVisitor::Visit for the signature)
      * @return				false if the directory did not exist or if the visitor returned false.
     **/
-    virtual bool IterateDirectory(const TCHAR* Directory, FDirectoryVisitorFunc Visitor) = 0;
+    virtual bool IterateDirectoryFunc(const TCHAR* Directory, FDirectoryVisitorFunc Visitor) = 0;
 
     /**
      * Call the visitor once for each file or directory in a single directory. This function does not explore subdirectories.
@@ -421,7 +426,7 @@ public:
      * @param Visitor		Visitor to call for each element of the directory (see FDirectoryStatVisitor::Visit for the signature)
      * @return				false if the directory did not exist or if the visitor returned false.
     **/
-    virtual bool IterateDirectoryStat(const TCHAR* Directory, FDirectoryStatVisitorFunc Visitor) = 0;
+    virtual bool IterateDirectoryStatFunc(const TCHAR* Directory, FDirectoryStatVisitorFunc Visitor) = 0;
 
     /**
      * Call the Visit function of the visitor once for each file or directory in a directory tree. This function explores subdirectories.
@@ -445,7 +450,7 @@ public:
      * @param Visitor		Visitor to call for each element of the directory and each element of all subdirectories (see FDirectoryVisitor::Visit for the signature).
      * @return				false if the directory did not exist or if the visitor returned false.
     **/
-    virtual bool IterateDirectoryRecursively(const TCHAR* Directory, FDirectoryVisitorFunc Visitor) = 0;
+    virtual bool IterateDirectoryRecursivelyFunc(const TCHAR* Directory, FDirectoryVisitorFunc Visitor) = 0;
 
     /**
      * Call the Visit function of the visitor once for each file or directory in a directory tree. This function explores subdirectories.
@@ -453,7 +458,7 @@ public:
      * @param Visitor		Visitor to call for each element of the directory and each element of all subdirectories (see FDirectoryStatVisitor::Visit for the signature).
      * @return				false if the directory did not exist or if the visitor returned false.
     **/
-    virtual bool IterateDirectoryStatRecursively(const TCHAR* Directory, FDirectoryStatVisitorFunc Visitor) = 0;
+    virtual bool IterateDirectoryStatRecursivelyFunc(const TCHAR* Directory, FDirectoryStatVisitorFunc Visitor) = 0;
 
     /**
      * Finds all the files within the given directory, with optional file extension filter
@@ -563,6 +568,8 @@ public:
      */
     virtual void SetCreatePublicFiles(bool bCreatePublicFiles) {
     }
+
+    IMPLEMENT_UNREAL_TYPE(IPlatformFile);
 };
 
 #endif //UNREAL_PLATFORMFILE_HPP

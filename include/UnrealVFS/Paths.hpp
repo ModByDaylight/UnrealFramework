@@ -10,11 +10,6 @@ NS_RC_UE_START
 class RC_UE_API FPaths {
 public:
     /**
-     * Returns the directory the application was launched from (useful for commandline utilities)
-     */
-    static FString LaunchDir();
-
-    /**
      * Returns the base directory of the "core" engine that can be shared across
      * several games or across games & mods. Shaders and base localization files
      * e.g. reside in the engine directory.
